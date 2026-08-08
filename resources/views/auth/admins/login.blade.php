@@ -29,9 +29,9 @@
 
             <div class="left-center">
                 <span class="level-badge">Admin Portal</span>
-                <h1 class="school-title">National Aviation Academy of the Philippines</h1>
+                <h1 class="school-title">Guilhulugan National High School</h1>
                 <p class="school-subtitle">
-                    <strong>WELCOME</strong> to the <strong>HOME</strong> of the <strong>AVIATORS</strong>
+                    <strong>WELCOME</strong> to the <strong>HOME</strong> of the <strong>GNHSPN</strong>
                 </p>
             </div>
 

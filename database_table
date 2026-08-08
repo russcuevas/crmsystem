@@ -1,3 +1,179 @@
-system_configuration
-system_title
-system_logo
+users
+-----
+id
+name
+email
+password
+role -> e.g (superadmin, admin, teacher)
+status -> nullable
+last_login_at
+created_at
+updated_at
+
+school_years
+------------
+id
+school_year -> e.g (2024-2025)
+is_active -> boolean
+created_at
+updated_at
+
+education_levels
+----------------
+id
+name e.g (Basic Education Level, Junior High School Level, Senior High School Level, College Level)
+code e.g (BED, JHS, SHS, COLLEGE)
+description
+
+grade_levels
+------------
+id
+education_level_id -> foreign key to education_levels
+name -> e.g (Kinder, Grade 1, Grade 2, Grade 3, Grade 4, Grade 5, Grade 6, Grade 7, Grade 8, Grade 9, Grade 10, Grade 11, Grade 12, First Year, Second Year, Third Year, Fourth Year, Fifth Year)
+code -> e.g (Roman Numeral like I, II, III, IV, V, VI, VII, VIII, IX, X, XI, XII,XIII, XIV, XV)
+
+courses
+-------
+id
+course_code -> e.g (BSIT, BSCS, BSHM, BSTM, BSED, BEED, BSBA, BSENTREP, BSECE)
+course_name -> e.g (Bachelor of Science in Information Technology, Bachelor of Science in Computer Science, Bachelor of Science in Hospitality Management, Bachelor of Science in Tourism Management, Bachelor of Secondary Education, Bachelor of Elementary Education, Bachelor of Science in Business Administration, Bachelor of Science in Entrepreneurship, Bachelor of Science in Civil Engineering)
+description -> string
+created_at
+updated_at
+
+subjects
+--------
+id
+subject_code -> (COMP101, FIL101, Math101, GenEd101)
+subject_name -> (Introduction to Computer Science, Introduction to Filipino, Introduction to Mathematics, Introduction to General Education)
+education_level_id -> foreign key to education_levels
+units -> nullable
+semester -> (1st quarter, 2nd quarter, 3rd quarter, 4th quarter, 1st sem, 2nd sem)
+course_id -> foreign key to courses
+created_at
+updated_at
+
+teachers
+--------
+id
+user_id -> foreign key to users
+teacher_id -> unique
+first_name
+middle_name
+last_name
+extension_name
+education_level_id -> foreign key to education_levels
+position
+birthday
+phone_number
+province
+city
+barangay
+gender
+created_at
+updated_at
+
+students
+--------
+id
+user_id -> foreign key to users nullable
+lrn -> 12 digits
+student_number -> unique
+first_name
+middle_name
+last_name
+extension_name
+birthday
+phone_number
+gender
+province
+city
+barangay
+status
+created_at
+updated_at
+
+class_sections
+-------------
+id
+school_year_id -> foreign key to school_years
+grade_level_id -> foreign key to grade_levels
+course_id -> foreign key to courses nullable
+section_name e.g (10-ABM-A, 10-STEM-B, 11-HUMSS-C, BSIT-2A, BSCS-2B)
+class_adviser_id -> foreign key to teachers
+created_at
+updated_at
+
+class_section_subjects
+----------------------
+id
+class_section_id -> foreign key to class_sections
+subject_id -> foreign key to subjects
+teacher_id -> foreign key to teachers
+created_at
+updated_at
+
+enrollments
+-----------
+id
+student_id -> foreign key to students
+class_section_id -> foreign key to class_sections
+school_year_id -> foreign key to school_years
+grade_level_id -> foreign key to grade_levels
+status -> (active, inactive, dropped, graduated)
+enrolled_at -> date
+created_at
+updated_at
+
+attendance
+----------
+id
+enrollment_id -> foreign key to enrollments
+class_section_subject_id -> foreign key to class_section_subjects
+attendance_date -> date
+status -> (present, absent, late, excused)
+remarks -> string
+created_at -> datetime
+updated_at
+
+grading_categories
+------------------
+id
+class_section_subject_id -> foreign key to class_section_subjects
+academic_period -> (1st quarter, 2nd quarter, 3rd quarter, 4th quarter, 1st sem, 2nd sem)
+name -> (Written Works, Performance Tasks, Quarterly Exam)
+weight -> decimal
+created_at -> datetime
+updated_at -> datetime
+
+grading_tasks
+------------
+id
+grading_category_id -> foreign key to grading_categories
+task_name -> (Quiz 1, Project 1, Exam 1)
+description -> string
+max_score -> decimal or integer
+task_date -> date
+status -> (graded, not graded)
+created_at -> datetime
+updated_at -> datetime
+
+student_task_scores
+-------------------
+id
+grading_task_id -> foreign key to grading_tasks
+enrollment_id -> foreign key to enrollments
+score -> decimal or integer
+remarks -> string
+created_at -> datetime
+updated_at -> datetime
+
+grades
+id
+enrollment_id
+class_section_subject_id
+academic_period
+final_grade
+remarks
+created_at
+updated_at
