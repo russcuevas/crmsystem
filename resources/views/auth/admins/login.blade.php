@@ -7,7 +7,7 @@
     <title>Admin Login - Class Record Management System</title>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ asset('assets/images/home/logo.png') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('assets/images/home/logo-school.png') }}" type="image/x-icon">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,7 +24,7 @@
         <!-- Left Banner Panel (Dark Slate / Admin Theme) -->
         <div class="left-panel theme-admin">
             <div class="left-top">
-                <img src="{{ asset('assets/images/home/logo.png') }}" alt="NAAP Logo" class="school-logo">
+                <img src="{{ asset('assets/images/home/logo-school.png') }}" alt="NAAP Logo" class="school-logo">
             </div>
 
             <div class="left-center">

@@ -12,7 +12,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Fredoka:wght@600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="shortcut icon" href="{{ asset('assets/images/home/logo.png') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('assets/images/home/logo-school.png') }}" type="image/x-icon">
 
     <style>
         * {
@@ -24,7 +24,7 @@
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             min-height: 100vh;
-            background-image: url("{{ asset('assets/images/home/background-home.jpg') }}");
+            background: linear-gradient(135deg, #0D0E4C, #080670, #0F5643);
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -98,7 +98,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            background-color: #183153;
+            background-color: #d89f1a;
             color: rgb(245, 245, 245);
             font-weight: 800;
             font-size: 0.88rem;
@@ -205,13 +205,13 @@
 
         <!-- School Level Buttons -->
         <div class="buttons-group">
-            <a href="{{ route('elementary.login.page') }}" class="school-btn">
+            {{-- <a href="{{ route('elementary.login.page') }}" class="school-btn">
                 <svg viewBox="0 0 24 24">
                     <path
                         d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.78c0-2.33 4.67-3.5 7-3.5s7 1.17 7 3.5v.78z" />
                 </svg>
                 Basic Education School <br> (Kinder - Grade 6)
-            </a>
+            </a> --}}
 
             <a href="{{ route('junior_high_school.login.page') }}" class="school-btn">
                 <svg viewBox="0 0 24 24">
@@ -227,13 +227,13 @@
                 Senior High School <br> (Grade 11 - Grade 12)
             </a>
 
-            <a href="{{ route('college.login.page') }}" class="school-btn">
+            {{-- <a href="{{ route('college.login.page') }}" class="school-btn">
                 <svg viewBox="0 0 24 24">
                     <path
                         d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z" />
                 </svg>
                 Tertiary School <br> (First Year - Fifth Year)
-            </a>
+            </a> --}}
         </div>
     </div>
 </body>

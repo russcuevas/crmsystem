@@ -7,7 +7,7 @@
     <title>Class Record Management System</title>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ asset('assets/images/home/logo.png') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ asset('assets/images/home/logo-school.png') }}" type="image/x-icon">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,14 +24,14 @@
         <!-- Left Banner Panel (Royal Purple Theme) -->
         <div class="left-panel theme-jhs">
             <div class="left-top">
-                <img src="{{ asset('assets/images/home/logo.png') }}" alt="NAAP Logo" class="school-logo">
+                <img src="{{ asset('assets/images/home/logo-school.png') }}" alt="NAAP Logo" class="school-logo">
             </div>
 
             <div class="left-center">
                 <span class="level-badge">Junior High School (Grade 7 - Grade 10)</span>
-                <h1 class="school-title">National Aviation Academy of the Philippines</h1>
+                <h1 class="school-title">Guilhulugan National High School</h1>
                 <p class="school-subtitle">
-                    <strong>WELCOME</strong> to the <strong>HOME</strong> of the <strong>AVIATORS</strong>
+                    <strong>WELCOME</strong> to the <strong>HOME</strong> of the <strong>GNHSPN</strong>
                 </p>
             </div>
 
