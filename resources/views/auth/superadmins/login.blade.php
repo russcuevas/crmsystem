@@ -28,11 +28,13 @@
             align-items: center;
             gap: 0.5rem;
         }
+
         .alert-error {
             background-color: #fef2f2;
             color: #991b1b;
             border: 1px solid #fecaca;
         }
+
         .alert-success {
             background-color: #ecfdf5;
             color: #065f46;
@@ -51,7 +53,7 @@
 
             <div class="left-center">
                 <span class="level-badge">Super Admin Portal</span>
-                <h1 class="school-title">General Nakar National High School</h1>
+                <h1 class="school-title">Guilhulugan National High School</h1>
                 <p class="school-subtitle">
                     <strong>GNHS</strong> Class Record Management System
                 </p>
@@ -77,7 +79,8 @@
                 @if (session('error'))
                     <div class="alert alert-error">
                         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span>{{ session('error') }}</span>
                     </div>
@@ -86,7 +89,7 @@
                 @if (session('success'))
                     <div class="alert alert-success">
                         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
                         <span>{{ session('success') }}</span>
                     </div>

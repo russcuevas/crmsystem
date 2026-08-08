@@ -9,18 +9,59 @@ use App\Models\Teacher;
 use App\Models\Student;
 use App\Models\ClassSection;
 use App\Models\SchoolYear;
+use App\Models\EducationLevel;
 
 class SuperAdminSubjectListController extends Controller
 {
     public function SuperAdminSubjectListPage()
     {
-        $subjects = Subject::with(['educationLevel', 'course'])->latest()->paginate(10);
-        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        $activeSyId = session('active_school_year_id');
+        $activeSchoolYear = $activeSyId ? SchoolYear::find($activeSyId) : SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            $activeSchoolYear = SchoolYear::first();
+        }
+
+        $selectedLevel = request('level');
+        $educationLevelsList = EducationLevel::all();
+
+        $subjectsQuery = Subject::with(['educationLevel', 'course']);
+        if ($activeSchoolYear) {
+            $subjectsQuery->whereHas('classSectionSubjects.classSection', function ($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            });
+        }
+
+        if ($selectedLevel) {
+            $subjectsQuery->whereHas('educationLevel', function ($q) use ($selectedLevel) {
+                $q->where('code', $selectedLevel);
+            });
+        }
+
+        $subjects = $subjectsQuery->latest()->paginate(10);
         $totalAccounts = User::count();
-        $totalFaculty = Teacher::count();
-        $totalStudents = Student::count();
-        $totalSubjects = Subject::count();
-        $totalSections = ClassSection::count();
+
+        if ($activeSchoolYear) {
+            $totalFaculty = Teacher::whereHas('advisedClassSections', function ($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })->orWhereHas('classSectionSubjects.classSection', function ($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })->distinct()->count();
+
+            $totalStudents = Student::whereHas('enrollments', function ($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })->distinct()->count();
+
+            $totalSections = ClassSection::where('school_year_id', $activeSchoolYear->id)->count();
+
+            $totalSubjects = Subject::whereHas('classSectionSubjects.classSection', function ($q) use ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            })->distinct()->count();
+        } else {
+            $totalFaculty = Teacher::count();
+            $totalStudents = Student::count();
+            $totalSubjects = Subject::count();
+            $totalSections = ClassSection::count();
+        }
 
         return view('superadmins.subject_list.index', compact(
             'subjects',
@@ -29,7 +70,9 @@ class SuperAdminSubjectListController extends Controller
             'totalFaculty',
             'totalStudents',
             'totalSubjects',
-            'totalSections'
+            'totalSections',
+            'selectedLevel',
+            'educationLevelsList'
         ));
     }
 }

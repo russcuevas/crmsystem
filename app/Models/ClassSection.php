@@ -14,6 +14,7 @@ class ClassSection extends Model
         'grade_level_id',
         'course_id',
         'section_name',
+        'semester',
         'class_adviser_id',
     ];
 
