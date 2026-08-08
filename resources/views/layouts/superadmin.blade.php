@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@yield('title', 'GNHS - Super Admin Dashboard')</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ asset('assets/images/home/logo-school.png') }}" type="image/x-icon">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Custom Super Admin CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/superadmin-dashboard.css') }}">
+    @stack('styles')
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="{{ asset('assets/images/home/logo-school.png') }}" alt="GNHS Logo" class="sidebar-logo">
+                <div class="brand-info">
+                    <span class="brand-title">GNHS</span>
+                    <span class="brand-subtitle">Class Record System</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main Navigation</div>
+
+                @php
+                    $routeName = Route::currentRouteName();
+                @endphp
+
+                <!-- Dashboard -->
+                <a href="{{ route('superadmin.dashboard.page') }}" class="nav-link {{ $routeName == 'superadmin.dashboard.page' ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+
+                <!-- Accounts -->
+                <a href="{{ route('superadmin.accounts.page') }}" class="nav-link {{ $routeName == 'superadmin.accounts.page' ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    <span>Accounts</span>
+                </a>
+
+                <!-- Subject List -->
+                <a href="{{ route('superadmin.subjects.page') }}" class="nav-link {{ $routeName == 'superadmin.subjects.page' ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    <span>Subject List</span>
+                </a>
+
+                <!-- Faculty Information -->
+                <a href="{{ route('superadmin.faculty.page') }}" class="nav-link {{ $routeName == 'superadmin.faculty.page' ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                    </svg>
+                    <span>Faculty Information</span>
+                </a>
+
+                <!-- Students -->
+                <a href="{{ route('superadmin.students.page') }}" class="nav-link {{ $routeName == 'superadmin.students.page' ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                    </svg>
+                    <span>Students</span>
+                </a>
+
+                <!-- Manage Section -->
+                <a href="{{ route('superadmin.sections.page') }}" class="nav-link {{ $routeName == 'superadmin.sections.page' ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12"/>
+                    </svg>
+                    <span>Manage Section</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-card">
+                    <div class="user-avatar">
+                        {{ strtoupper(substr(Auth::user()->name ?? 'SA', 0, 2)) }}
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name">{{ Auth::user()->name ?? 'Super Admin' }}</div>
+                        <div class="user-role">Super Admin</div>
+                    </div>
+                    <form action="{{ route('superadmin.logout') }}" method="POST" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="btn-logout-icon" title="Logout">
+                            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Top Navbar -->
+            <header class="top-navbar">
+                <div class="navbar-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                    <div class="search-box">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" placeholder="Search accounts, subjects, faculty...">
+                    </div>
+                </div>
+
+                <div class="navbar-right">
+                    <div class="school-year-badge">
+                        <span class="status-dot"></span>
+                        <span>S.Y. {{ $activeSchoolYear->school_year ?? '2024-2025' }} (Active)</span>
+                    </div>
+
+                    <button class="nav-icon-btn" title="Notifications">
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+                        <span class="notification-dot"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Body -->
+            <div class="page-container">
+                <!-- Welcome Hero Banner -->
+                <div class="welcome-banner">
+                    <div class="welcome-text">
+                        <h1>Welcome back, <span>{{ Auth::user()->name ?? 'Super Admin' }}</span>!</h1>
+                        <p>General Nakar National High School (GNHS) - Class Record Management System Overview</p>
+                    </div>
+
+                    <div class="banner-quick-stats">
+                        <div class="quick-stat-item">
+                            <div class="quick-stat-value">{{ $totalAccounts ?? 0 }}</div>
+                            <div class="quick-stat-label">Users</div>
+                        </div>
+                        <div class="quick-stat-item">
+                            <div class="quick-stat-value">{{ $totalStudents ?? 0 }}</div>
+                            <div class="quick-stat-label">Students</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards Grid -->
+                <div class="stats-grid">
+                    <!-- Total Accounts -->
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper gold">
+                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number">{{ $totalAccounts ?? 0 }}</span>
+                            <span class="stat-title">Total Accounts</span>
+                        </div>
+                    </div>
+
+                    <!-- Faculty Info -->
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper blue">
+                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number">{{ $totalFaculty ?? 0 }}</span>
+                            <span class="stat-title">Faculty Information</span>
+                        </div>
+                    </div>
+
+                    <!-- Students -->
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper emerald">
+                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number">{{ $totalStudents ?? 0 }}</span>
+                            <span class="stat-title">Enrolled Students</span>
+                        </div>
+                    </div>
+
+                    <!-- Subject List -->
+                    <div class="stat-card">
+                        <div class="stat-icon-wrapper purple">
+                            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number">{{ $totalSubjects ?? 0 }}</span>
+                            <span class="stat-title">Subject List</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Yield -->
+                @yield('content')
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript for Mobile Sidebar Toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('open');
+                });
+            }
+        });
+    </script>
+    @stack('scripts')
+</body>
+
+</html>

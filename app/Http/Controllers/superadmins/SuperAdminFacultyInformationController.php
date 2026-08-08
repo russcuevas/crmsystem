@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\superadmins;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Teacher;
+use App\Models\User;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\ClassSection;
 use App\Models\SchoolYear;
-use App\Models\EducationLevel;
 
-class SuperAdminDashboardController extends Controller
+class SuperAdminFacultyInformationController extends Controller
 {
-    public function SuperAdminDashboardPage()
+    public function SuperAdminFacultyInformationPage()
     {
+        $teachers = Teacher::with(['user', 'educationLevel'])->latest()->paginate(10);
         $activeSchoolYear = SchoolYear::where('is_active', true)->first();
         $totalAccounts = User::count();
         $totalFaculty = Teacher::count();
@@ -22,22 +22,14 @@ class SuperAdminDashboardController extends Controller
         $totalSubjects = Subject::count();
         $totalSections = ClassSection::count();
 
-        $recentUsers = User::latest()->take(6)->get();
-        $recentStudents = Student::latest()->take(6)->get();
-        $recentTeachers = Teacher::with('educationLevel')->latest()->take(6)->get();
-        $educationLevels = EducationLevel::withCount(['gradeLevels', 'subjects'])->get();
-
-        return view('superadmins.dashboard.index', compact(
+        return view('superadmins.faculty_information.index', compact(
+            'teachers',
             'activeSchoolYear',
             'totalAccounts',
             'totalFaculty',
             'totalStudents',
             'totalSubjects',
-            'totalSections',
-            'recentUsers',
-            'recentStudents',
-            'recentTeachers',
-            'educationLevels'
+            'totalSections'
         ));
     }
 }
