@@ -38,9 +38,7 @@ class SuperAdminDashboardController extends Controller
 
             $sectionsQuery = ClassSection::where('school_year_id', $activeSchoolYear->id);
 
-            $subjectsQuery = Subject::whereHas('classSectionSubjects.classSection', function ($q) use ($activeSchoolYear) {
-                $q->where('school_year_id', $activeSchoolYear->id);
-            });
+            $subjectsQuery = Subject::query();
 
             $usersQuery = User::where(function ($q) use ($activeSchoolYear) {
                 $q->whereHas('student.enrollments', fn($eq) => $eq->where('school_year_id', $activeSchoolYear->id))
@@ -64,20 +62,13 @@ class SuperAdminDashboardController extends Controller
             $totalFaculty = $facultyQuery->distinct()->count();
             $totalStudents = $studentsQuery->distinct()->count();
             $totalSections = $sectionsQuery->count();
-            $totalSubjects = $subjectsQuery->distinct()->count();
+            $totalSubjects = $subjectsQuery->count();
 
             $recentStudents = $studentsQuery->latest()->take(6)->get();
             $recentTeachers = $facultyQuery->with('educationLevel')->latest()->take(6)->get();
             $recentUsers = $usersQuery->latest()->take(6)->get();
 
-            $educationLevels = EducationLevel::withCount([
-                'gradeLevels',
-                'subjects' => function ($query) use ($activeSchoolYear) {
-                    $query->whereHas('classSectionSubjects.classSection', function ($sq) use ($activeSchoolYear) {
-                        $sq->where('school_year_id', $activeSchoolYear->id);
-                    });
-                }
-            ])->get();
+            $educationLevels = EducationLevel::withCount(['gradeLevels', 'subjects'])->get();
         } else {
             $totalFaculty = Teacher::count();
             $totalStudents = Student::count();

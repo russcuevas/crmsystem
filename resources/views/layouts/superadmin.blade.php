@@ -50,6 +50,16 @@
                     <span>Dashboard</span>
                 </a>
 
+                <!-- School Year Management -->
+                <a href="{{ route('superadmin.school_years.page') }}"
+                    class="nav-link {{ $routeName == 'superadmin.school_years.page' ? 'active' : '' }}">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>School Year</span>
+                </a>
+
                 <div class="nav-section-label" style="margin-top: 0.75rem;">Education Levels</div>
 
                 @php
@@ -185,6 +195,16 @@
                                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
                                 </svg>
                                 <span>Manage Section</span>
+                            </a>
+
+                            <!-- Assigned Subjects -->
+                            <a href="{{ route('superadmin.assigned_subjects.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
+                                class="sub-nav-link {{ $routeName == 'superadmin.assigned_subjects.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                </svg>
+                                <span>Assigned Subjects</span>
                             </a>
 
                             <!-- Class Record & Grades -->

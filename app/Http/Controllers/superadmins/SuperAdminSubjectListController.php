@@ -121,6 +121,7 @@ class SuperAdminSubjectListController extends Controller
             if (!in_array($validated['semester'], $quarterOptions)) {
                 $validated['semester'] = 'All Quarters';
             }
+            $validated['units'] = null;
         }
 
         Subject::create($validated);
@@ -147,6 +148,7 @@ class SuperAdminSubjectListController extends Controller
             if (!in_array($validated['semester'], $quarterOptions)) {
                 $validated['semester'] = 'All Quarters';
             }
+            $validated['units'] = null;
         }
 
         $subject->update($validated);

@@ -400,11 +400,11 @@
                                     </span>
                                 </td>
                                 <td>{{ $subject->course->course_code ?? 'General' }}</td>
-                                <td>{{ $subject->units ?? '3' }}</td>
+                                <td>{{ $isJhsOrBed ? '-' : $subject->units ?? '3' }}</td>
                                 <td>
                                     @if ($isJhsOrBed || str_contains(strtolower($subject->semester ?? ''), 'quarter'))
                                         <span class="badge-quarter" title="Applies to 1st, 2nd, 3rd, and 4th Quarters">
-                                            All Quarters (Full Year)
+                                            1st - 4th Quarter
                                         </span>
                                     @else
                                         <span class="badge-sem">
@@ -470,7 +470,7 @@
                         @else
                             <select name="education_level_id" id="add_education_level_id" class="form-control-custom"
                                 required
-                                onchange="handleLevelChange(this, 'add_semester', 'add_course_group', 'add_level_info')">
+                                onchange="handleLevelChange(this, 'add_semester', 'add_course_group', 'add_level_info', null, 'add_units')">
                                 <option value="" disabled selected>-- Select Education Level --</option>
                                 @foreach ($educationLevelsList as $lvl)
                                     <option value="{{ $lvl->id }}" data-code="{{ strtoupper($lvl->code) }}">
@@ -498,8 +498,8 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div class="form-group">
                             <label>Units</label>
-                            <input type="number" name="units" class="form-control-custom" value="3"
-                                min="0">
+                            <input type="number" name="units" id="add_units" class="form-control-custom"
+                                value="3" min="0">
                         </div>
 
                         <div class="form-group">
@@ -512,11 +512,12 @@
 
                     <div class="form-group" id="add_course_group" style="display: block;">
                         <label>Course (College / Strand Optional)</label>
-                        <select name="course_id" class="form-control-custom">
+                        <select name="course_id" id="add_course_id" class="form-control-custom">
                             <option value="">-- None / General Subject --</option>
                             @foreach ($coursesList as $course)
-                                <option value="{{ $course->id }}">{{ $course->course_code }} -
-                                    {{ $course->course_name }}</option>
+                                <option value="{{ $course->id }}" data-level="{{ strtoupper($course->level) }}">
+                                    {{ $course->course_code }} - {{ $course->course_name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -544,7 +545,7 @@
                         <label>Education Level <span style="color: #ef4444;">*</span></label>
                         <select name="education_level_id" id="edit_education_level_id" class="form-control-custom"
                             required
-                            onchange="handleLevelChange(this, 'edit_semester', 'edit_course_group', 'edit_level_info')">
+                            onchange="handleLevelChange(this, 'edit_semester', 'edit_course_group', 'edit_level_info', null, 'edit_units', 'edit_course_id')">
                             @foreach ($educationLevelsList as $lvl)
                                 <option value="{{ $lvl->id }}" data-code="{{ strtoupper($lvl->code) }}">
                                     {{ $lvl->code }} - {{ $lvl->name }}
@@ -587,8 +588,9 @@
                         <select name="course_id" id="edit_course_id" class="form-control-custom">
                             <option value="">-- None / General Subject --</option>
                             @foreach ($coursesList as $course)
-                                <option value="{{ $course->id }}">{{ $course->course_code }} -
-                                    {{ $course->course_name }}</option>
+                                <option value="{{ $course->id }}" data-level="{{ strtoupper($course->level) }}">
+                                    {{ $course->course_code }} - {{ $course->course_name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -626,6 +628,12 @@
                     }
                 });
             }
+
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal-overlay')) {
+                    e.target.style.display = 'none';
+                }
+            });
         });
 
         function updateSemesterOptions(semSelect, code, selectedValue) {
@@ -636,7 +644,7 @@
             if (code === 'BED' || code === 'JHS') {
                 const options = [{
                     value: 'All Quarters',
-                    text: 'All Quarters (Full Year)'
+                    text: '1st - 4th Quarter'
                 }];
 
                 options.forEach(optData => {
@@ -676,7 +684,7 @@
             document.getElementById('addSubjectModal').style.display = 'flex';
             const levelEl = document.getElementById('add_education_level_id');
             if (levelEl) {
-                handleLevelChange(levelEl, 'add_semester', 'add_course_group', 'add_level_info');
+                handleLevelChange(levelEl, 'add_semester', 'add_course_group', 'add_level_info', null, 'add_units', 'add_course_id');
             }
         }
 
@@ -691,11 +699,11 @@
             document.getElementById('edit_education_level_id').value = subject.education_level_id;
             document.getElementById('edit_subject_code').value = subject.subject_code;
             document.getElementById('edit_subject_name').value = subject.subject_name;
-            document.getElementById('edit_units').value = subject.units ?? 3;
-            document.getElementById('edit_course_id').value = subject.course_id ?? '';
+            document.getElementById('edit_units').value = subject.units ?? '';
 
             const levelSelect = document.getElementById('edit_education_level_id');
-            handleLevelChange(levelSelect, 'edit_semester', 'edit_course_group', 'edit_level_info', subject.semester);
+            handleLevelChange(levelSelect, 'edit_semester', 'edit_course_group', 'edit_level_info', subject.semester,
+                'edit_units', 'edit_course_id', subject.course_id);
 
             document.getElementById('editSubjectModal').style.display = 'flex';
         }
@@ -704,7 +712,7 @@
             document.getElementById('editSubjectModal').style.display = 'none';
         }
 
-        function handleLevelChange(selectEl, semSelectId, courseGroupId, infoBoxId, initialSemValue) {
+        function handleLevelChange(selectEl, semSelectId, courseGroupId, infoBoxId, initialSemValue, unitsInputId, courseSelectId = null, targetCourseId = null) {
             if (!selectEl) return;
             let code = '';
             if (selectEl.tagName === 'SELECT') {
@@ -719,12 +727,40 @@
             const semSelect = document.getElementById(semSelectId);
             const courseGroup = document.getElementById(courseGroupId);
             const infoBox = document.getElementById(infoBoxId);
+            const unitsInput = unitsInputId ? document.getElementById(unitsInputId) : null;
+            const courseSelect = courseSelectId ? document.getElementById(courseSelectId) : (courseGroup ? courseGroup.querySelector('select') : null);
 
             const currentVal = initialSemValue || (semSelect ? semSelect.value : '');
 
             updateSemesterOptions(semSelect, code, currentVal);
 
+            // Filter Course Options by Level (SHS or COLLEGE)
+            if (courseSelect) {
+                Array.from(courseSelect.options).forEach(opt => {
+                    if (!opt.value) return;
+                    const crsLevel = opt.getAttribute('data-level');
+                    if (code && crsLevel === code) {
+                        opt.style.display = 'block';
+                        opt.disabled = false;
+                    } else {
+                        opt.style.display = 'none';
+                        opt.disabled = true;
+                    }
+                });
+
+                if (targetCourseId) {
+                    courseSelect.value = targetCourseId;
+                } else if (courseSelect.options[courseSelect.selectedIndex] && courseSelect.options[courseSelect.selectedIndex].disabled) {
+                    courseSelect.value = '';
+                }
+            }
+
             if (code === 'BED' || code === 'JHS') {
+                if (unitsInput) {
+                    unitsInput.value = '';
+                    unitsInput.disabled = true;
+                    unitsInput.placeholder = 'N/A';
+                }
                 if (infoBox) {
                     infoBox.className = 'level-info-box jhs-bed';
                     infoBox.style.display = 'flex';
@@ -732,13 +768,20 @@
                         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <span>Basic Education / JHS subjects are automatically set to <strong>All Quarters (Full Year)</strong>.</span>
+                        <span>Basic Education / JHS subjects are automatically set to <strong>1st - 4th Quarter</strong> (No Units).</span>
                     `;
                 }
                 if (courseGroup) {
                     courseGroup.style.display = 'none';
                 }
             } else if (code === 'SHS' || code === 'COLLEGE') {
+                if (unitsInput) {
+                    unitsInput.disabled = false;
+                    unitsInput.placeholder = '';
+                    if (unitsInput.value === '') {
+                        unitsInput.value = '3';
+                    }
+                }
                 if (infoBox) {
                     infoBox.className = 'level-info-box shs-college';
                     infoBox.style.display = 'flex';
@@ -753,6 +796,10 @@
                     courseGroup.style.display = 'block';
                 }
             } else {
+                if (unitsInput) {
+                    unitsInput.disabled = false;
+                    unitsInput.placeholder = '';
+                }
                 if (infoBox) {
                     infoBox.style.display = 'none';
                 }

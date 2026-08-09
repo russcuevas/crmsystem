@@ -870,6 +870,12 @@
                     }
                 });
             }
+
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal-overlay')) {
+                    e.target.style.display = 'none';
+                }
+            });
         });
     </script>
     <script>
