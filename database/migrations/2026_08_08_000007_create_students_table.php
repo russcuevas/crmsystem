@@ -11,6 +11,9 @@ return new class extends Migration
         Schema::create('students', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('education_level_id')->nullable()->constrained('education_levels')->nullOnDelete();
+            $table->foreignId('grade_level_id')->nullable()->constrained('grade_levels')->nullOnDelete();
+            $table->foreignId('course_id')->nullable()->constrained('courses')->nullOnDelete();
             $table->string('lrn', 12)->nullable();
             $table->string('student_number')->unique();
             $table->string('first_name');

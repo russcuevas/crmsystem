@@ -11,6 +11,9 @@ class Student extends Model
 
     protected $fillable = [
         'user_id',
+        'education_level_id',
+        'grade_level_id',
+        'course_id',
         'lrn',
         'student_number',
         'first_name',
@@ -33,6 +36,21 @@ class Student extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function educationLevel()
+    {
+        return $this->belongsTo(EducationLevel::class);
+    }
+
+    public function gradeLevel()
+    {
+        return $this->belongsTo(GradeLevel::class);
+    }
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
     }
 
     public function enrollments()

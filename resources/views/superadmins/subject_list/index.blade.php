@@ -2,6 +2,140 @@
 
 @section('title', 'GNHS - Subject Catalog List')
 
+@push('styles')
+    <!-- jQuery & DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <style>
+        /* DataTables Custom Theme Styling */
+        .dataTables_wrapper {
+            padding: 0.5rem 0;
+            font-size: 0.85rem;
+        }
+
+        .dataTables_length {
+            margin-bottom: 1rem;
+            float: left;
+        }
+
+        .dataTables_length label {
+            font-weight: 600;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dataTables_length select {
+            padding: 0.35rem 0.6rem;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            outline: none;
+            background: #ffffff;
+        }
+
+        .dataTables_filter {
+            margin-bottom: 1rem;
+            float: right;
+        }
+
+        .dataTables_filter label {
+            font-weight: 600;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dataTables_filter input {
+            padding: 0.45rem 0.85rem;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s;
+            width: 260px;
+        }
+
+        .dataTables_filter input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .dataTables_info {
+            font-size: 0.82rem;
+            color: #64748b;
+            padding-top: 0.85rem;
+            font-weight: 600;
+        }
+
+        .dataTables_paginate {
+            padding-top: 0.85rem;
+            float: right;
+        }
+
+        .dataTables_paginate ul,
+        .dataTables_paginate ul.pagination {
+            list-style: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+        }
+
+        .dataTables_paginate ul li,
+        .dataTables_paginate ul.pagination li {
+            list-style: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: inline-block !important;
+        }
+
+        .dataTables_paginate ul.pagination li a.page-link,
+        .dataTables_paginate .paginate_button {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 32px !important;
+            height: 32px !important;
+            padding: 0 0.65rem !important;
+            border-radius: 8px !important;
+            border: 1px solid #cbd5e1 !important;
+            background: #ffffff !important;
+            color: #475569 !important;
+            font-size: 0.82rem !important;
+            font-weight: 700 !important;
+            text-decoration: none !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+        }
+
+        .dataTables_paginate ul.pagination li a.page-link:hover,
+        .dataTables_paginate .paginate_button:hover {
+            background: #eff6ff !important;
+            color: #2563eb !important;
+            border-color: #bfdbfe !important;
+        }
+
+        .dataTables_paginate ul.pagination li.active a.page-link,
+        .dataTables_paginate .paginate_button.current,
+        .dataTables_paginate .paginate_button.current:hover {
+            background: var(--primary-navy, #0f172a) !important;
+            color: #ffffff !important;
+            border-color: var(--primary-navy, #0f172a) !important;
+        }
+
+        .dataTables_paginate ul.pagination li.disabled a.page-link {
+            opacity: 0.4 !important;
+            cursor: not-allowed !important;
+            background: #f8fafc !important;
+            color: #94a3b8 !important;
+        }
+    </style>
+@endpush
+
 @section('content')
     <style>
         .modal-overlay {
@@ -33,6 +167,7 @@
                 opacity: 0;
                 transform: translateY(-10px) scale(0.98);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
@@ -194,14 +329,17 @@
     </style>
 
     @if (session('success'))
-        <div style="padding: 0.85rem 1.25rem; background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; border-radius: 10px; margin-bottom: 1.25rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+        <div
+            style="padding: 0.85rem 1.25rem; background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; border-radius: 10px; margin-bottom: 1.25rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
             <span>{{ session('success') }}</span>
-            <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #065f46;">&times;</button>
+            <button onclick="this.parentElement.remove()"
+                style="background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #065f46;">&times;</button>
         </div>
     @endif
 
     @if ($errors->any())
-        <div style="padding: 0.85rem 1.25rem; background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; border-radius: 10px; margin-bottom: 1.25rem; font-weight: 600;">
+        <div
+            style="padding: 0.85rem 1.25rem; background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; border-radius: 10px; margin-bottom: 1.25rem; font-weight: 600;">
             <ul style="margin: 0; padding-left: 1.2rem;">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -227,28 +365,15 @@
                     (S.Y. {{ $activeSchoolYear->school_year ?? '2024-2025' }})
                 </span>
             </div>
-            
+
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <form action="{{ route('superadmin.subjects.page') }}" method="GET" style="display: flex; gap: 0.5rem;">
-                    @if(request('level'))
-                        <input type="hidden" name="level" value="{{ request('level') }}">
-                    @endif
-                    @if(request('semester'))
-                        <input type="hidden" name="semester" value="{{ request('semester') }}">
-                    @endif
-                    @if(request('academic_period'))
-                        <input type="hidden" name="academic_period" value="{{ request('academic_period') }}">
-                    @endif
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search subject code/name..." class="form-control-custom" style="padding: 0.45rem 0.75rem; width: 220px; font-size: 0.82rem;">
-                    <button type="submit" class="btn-cancel" style="padding: 0.45rem 0.85rem; font-size: 0.82rem;">Search</button>
-                </form>
                 <button class="btn-primary" onclick="openAddSubjectModal()">+ Add New Subject</button>
             </div>
         </div>
 
         <div class="card-body">
             <div class="table-responsive">
-                <table class="custom-table">
+                <table class="custom-table" id="subjectsTable">
                     <thead>
                         <tr>
                             <th>Code</th>
@@ -261,7 +386,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($subjects as $subject)
+                        @foreach ($subjects as $subject)
                             @php
                                 $lvlCode = strtoupper($subject->educationLevel->code ?? '');
                                 $isJhsOrBed = in_array($lvlCode, ['JHS', 'BED']);
@@ -274,7 +399,7 @@
                                         {{ $subject->educationLevel->code ?? 'N/A' }}
                                     </span>
                                 </td>
-                                <td>{{ $subject->course->course_code ?? '-' }}</td>
+                                <td>{{ $subject->course->course_code ?? 'General' }}</td>
                                 <td>{{ $subject->units ?? '3' }}</td>
                                 <td>
                                     @if ($isJhsOrBed || str_contains(strtolower($subject->semester ?? ''), 'quarter'))
@@ -291,16 +416,20 @@
                                     <div class="action-btn-group" style="justify-content: center;">
                                         <button type="button" class="btn-action-icon" title="Edit Subject"
                                             onclick='openEditSubjectModal(@json($subject))'>
-                                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </button>
-                                        <form action="{{ route('superadmin.subjects.destroy', $subject->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this subject catalog entry?');">
+                                        <form action="{{ route('superadmin.subjects.destroy', $subject->id) }}"
+                                            method="POST" style="display: inline;"
+                                            onsubmit="return confirm('Are you sure you want to delete this subject catalog entry?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-action-icon danger" title="Delete Subject">
-                                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
@@ -309,18 +438,9 @@
                                     </div>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                                    No subjects found. Click "+ Add New Subject" to create one.
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
-            </div>
-            <div style="margin-top: 1rem;">
-                {{ $subjects->appends(request()->query())->links() }}
             </div>
         </div>
     </div>
@@ -330,7 +450,8 @@
         <div class="modal-card">
             <div class="modal-header">
                 <h3 style="font-size: 1.1rem; font-weight: 800;">Add New Subject</h3>
-                <button type="button" onclick="closeAddSubjectModal()" style="background: none; border: none; color: #ffffff; font-size: 1.4rem; cursor: pointer;">&times;</button>
+                <button type="button" onclick="closeAddSubjectModal()"
+                    style="background: none; border: none; color: #ffffff; font-size: 1.4rem; cursor: pointer;">&times;</button>
             </div>
             <form action="{{ route('superadmin.subjects.store') }}" method="POST">
                 @csrf
@@ -338,13 +459,18 @@
                     <div class="form-group">
                         <label>Education Level <span style="color: #ef4444;">*</span></label>
                         @if (isset($currentEducationLevel) && $currentEducationLevel)
-                            <input type="hidden" name="education_level_id" id="add_education_level_id" value="{{ $currentEducationLevel->id }}" data-code="{{ strtoupper($currentEducationLevel->code) }}">
-                            <div style="padding: 0.65rem 0.85rem; border: 1.5px solid #cbd5e1; border-radius: 8px; font-weight: 700; background: #f1f5f9; color: #0f172a; display: flex; align-items: center; justify-content: space-between;">
+                            <input type="hidden" name="education_level_id" id="add_education_level_id"
+                                value="{{ $currentEducationLevel->id }}"
+                                data-code="{{ strtoupper($currentEducationLevel->code) }}">
+                            <div
+                                style="padding: 0.65rem 0.85rem; border: 1.5px solid #cbd5e1; border-radius: 8px; font-weight: 700; background: #f1f5f9; color: #0f172a; display: flex; align-items: center; justify-content: space-between;">
                                 <span>{{ $currentEducationLevel->code }} - {{ $currentEducationLevel->name }}</span>
                                 <span class="badge badge-admin" style="font-size: 0.72rem;">Current Level</span>
                             </div>
                         @else
-                            <select name="education_level_id" id="add_education_level_id" class="form-control-custom" required onchange="handleLevelChange(this, 'add_semester', 'add_course_group', 'add_level_info')">
+                            <select name="education_level_id" id="add_education_level_id" class="form-control-custom"
+                                required
+                                onchange="handleLevelChange(this, 'add_semester', 'add_course_group', 'add_level_info')">
                                 <option value="" disabled selected>-- Select Education Level --</option>
                                 @foreach ($educationLevelsList as $lvl)
                                     <option value="{{ $lvl->id }}" data-code="{{ strtoupper($lvl->code) }}">
@@ -359,18 +485,21 @@
 
                     <div class="form-group" style="margin-top: 1rem;">
                         <label>Subject Code <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="subject_code" class="form-control-custom" placeholder="e.g. MATH101 or ENG7" required>
+                        <input type="text" name="subject_code" class="form-control-custom"
+                            placeholder="e.g. MATH101 or ENG7" required>
                     </div>
 
                     <div class="form-group">
                         <label>Subject Name <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="subject_name" class="form-control-custom" placeholder="e.g. General Mathematics" required>
+                        <input type="text" name="subject_name" class="form-control-custom"
+                            placeholder="e.g. General Mathematics" required>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div class="form-group">
                             <label>Units</label>
-                            <input type="number" name="units" class="form-control-custom" value="3" min="0">
+                            <input type="number" name="units" class="form-control-custom" value="3"
+                                min="0">
                         </div>
 
                         <div class="form-group">
@@ -386,7 +515,8 @@
                         <select name="course_id" class="form-control-custom">
                             <option value="">-- None / General Subject --</option>
                             @foreach ($coursesList as $course)
-                                <option value="{{ $course->id }}">{{ $course->course_code }} - {{ $course->course_name }}</option>
+                                <option value="{{ $course->id }}">{{ $course->course_code }} -
+                                    {{ $course->course_name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -404,14 +534,17 @@
         <div class="modal-card">
             <div class="modal-header">
                 <h3 style="font-size: 1.1rem; font-weight: 800;">Edit Subject</h3>
-                <button type="button" onclick="closeEditSubjectModal()" style="background: none; border: none; color: #ffffff; font-size: 1.4rem; cursor: pointer;">&times;</button>
+                <button type="button" onclick="closeEditSubjectModal()"
+                    style="background: none; border: none; color: #ffffff; font-size: 1.4rem; cursor: pointer;">&times;</button>
             </div>
             <form id="editSubjectForm" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Education Level <span style="color: #ef4444;">*</span></label>
-                        <select name="education_level_id" id="edit_education_level_id" class="form-control-custom" required onchange="handleLevelChange(this, 'edit_semester', 'edit_course_group', 'edit_level_info')">
+                        <select name="education_level_id" id="edit_education_level_id" class="form-control-custom"
+                            required
+                            onchange="handleLevelChange(this, 'edit_semester', 'edit_course_group', 'edit_level_info')">
                             @foreach ($educationLevelsList as $lvl)
                                 <option value="{{ $lvl->id }}" data-code="{{ strtoupper($lvl->code) }}">
                                     {{ $lvl->code }} - {{ $lvl->name }}
@@ -424,18 +557,21 @@
 
                     <div class="form-group" style="margin-top: 1rem;">
                         <label>Subject Code <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="subject_code" id="edit_subject_code" class="form-control-custom" required>
+                        <input type="text" name="subject_code" id="edit_subject_code" class="form-control-custom"
+                            required>
                     </div>
 
                     <div class="form-group">
                         <label>Subject Name <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="subject_name" id="edit_subject_name" class="form-control-custom" required>
+                        <input type="text" name="subject_name" id="edit_subject_name" class="form-control-custom"
+                            required>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div class="form-group">
                             <label>Units</label>
-                            <input type="number" name="units" id="edit_units" class="form-control-custom" min="0">
+                            <input type="number" name="units" id="edit_units" class="form-control-custom"
+                                min="0">
                         </div>
 
                         <div class="form-group">
@@ -451,7 +587,8 @@
                         <select name="course_id" id="edit_course_id" class="form-control-custom">
                             <option value="">-- None / General Subject --</option>
                             @foreach ($coursesList as $course)
-                                <option value="{{ $course->id }}">{{ $course->course_code }} - {{ $course->course_name }}</option>
+                                <option value="{{ $course->id }}">{{ $course->course_code }} -
+                                    {{ $course->course_name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -466,16 +603,41 @@
 @endsection
 
 @push('scripts')
+    <!-- jQuery & DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script>
+        $(document).ready(function() {
+            if ($('#subjectsTable').length) {
+                $('#subjectsTable').DataTable({
+                    "pageLength": 10,
+                    "ordering": true,
+                    "order": [],
+                    "responsive": true,
+                    "language": {
+                        "search": "",
+                        "searchPlaceholder": "Search subject code, name...",
+                        "lengthMenu": "Show _MENU_ entries",
+                        "info": "Showing _START_ to _END_ of _TOTAL_ subjects",
+                        "paginate": {
+                            "previous": "‹",
+                            "next": "›"
+                        }
+                    }
+                });
+            }
+        });
+
         function updateSemesterOptions(semSelect, code, selectedValue) {
             if (!semSelect) return;
 
             semSelect.innerHTML = '';
 
             if (code === 'BED' || code === 'JHS') {
-                const options = [
-                    { value: 'All Quarters', text: 'All Quarters (Full Year)' }
-                ];
+                const options = [{
+                    value: 'All Quarters',
+                    text: 'All Quarters (Full Year)'
+                }];
 
                 options.forEach(optData => {
                     const opt = document.createElement('option');
@@ -486,9 +648,14 @@
                 });
             } else {
                 // SHS, COLLEGE, or default semestral levels
-                const options = [
-                    { value: '1st Semester', text: '1st Semester' },
-                    { value: '2nd Semester', text: '2nd Semester' }
+                const options = [{
+                        value: '1st Semester',
+                        text: '1st Semester'
+                    },
+                    {
+                        value: '2nd Semester',
+                        text: '2nd Semester'
+                    }
                 ];
 
                 options.forEach(optData => {

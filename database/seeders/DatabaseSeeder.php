@@ -134,31 +134,60 @@ class DatabaseSeeder extends Seeder
         GradeLevel::create(['education_level_id' => $college->id, 'name' => 'Third Year', 'code' => 'III']);
         GradeLevel::create(['education_level_id' => $college->id, 'name' => 'Fourth Year', 'code' => 'IV']);
 
-        // 5. Courses
+        // 5. Courses / Tracks & Strands
+        // SHS Strands
+        $abm = Course::create([
+            'course_code' => 'ABM',
+            'course_name' => 'Accountancy, Business and Management Strand',
+            'level' => 'SHS',
+            'description' => 'Senior High School strand focusing on business, accounting, and management.'
+        ]);
+
+        $stem = Course::create([
+            'course_code' => 'STEM',
+            'course_name' => 'Science, Technology, Engineering, and Mathematics Strand',
+            'level' => 'SHS',
+            'description' => 'Senior High School strand focusing on advanced science and mathematics.'
+        ]);
+
+        $humss = Course::create([
+            'course_code' => 'HUMSS',
+            'course_name' => 'Humanities and Social Sciences Strand',
+            'level' => 'SHS',
+            'description' => 'Senior High School strand focusing on social sciences and communication.'
+        ]);
+
+        Course::create(['course_code' => 'TVL', 'course_name' => 'Technical-Vocational-Livelihood Track', 'level' => 'SHS', 'description' => 'Technical-Vocational skills track for SHS.']);
+        Course::create(['course_code' => 'GAS', 'course_name' => 'General Academic Strand', 'level' => 'SHS', 'description' => 'General academic strand for SHS.']);
+
+        // College Degree Programs
         $bsit = Course::create([
             'course_code' => 'BSIT',
             'course_name' => 'Bachelor of Science in Information Technology',
+            'level' => 'COLLEGE',
             'description' => 'Information Technology program focusing on software development and networks.'
         ]);
 
         $bscs = Course::create([
             'course_code' => 'BSCS',
             'course_name' => 'Bachelor of Science in Computer Science',
+            'level' => 'COLLEGE',
             'description' => 'Computer Science program focusing on algorithms and computational theory.'
         ]);
 
         $bshm = Course::create([
             'course_code' => 'BSHM',
             'course_name' => 'Bachelor of Science in Hospitality Management',
+            'level' => 'COLLEGE',
             'description' => 'Hospitality and hotel management program.'
         ]);
 
-        Course::create(['course_code' => 'BSTM', 'course_name' => 'Bachelor of Science in Tourism Management', 'description' => 'Tourism and hospitality program.']);
-        Course::create(['course_code' => 'BSED', 'course_name' => 'Bachelor of Secondary Education', 'description' => 'Secondary level teacher education.']);
-        Course::create(['course_code' => 'BEED', 'course_name' => 'Bachelor of Elementary Education', 'description' => 'Elementary level teacher education.']);
-        Course::create(['course_code' => 'BSBA', 'course_name' => 'Bachelor of Science in Business Administration', 'description' => 'Business management and administration.']);
-        Course::create(['course_code' => 'BSENTREP', 'course_name' => 'Bachelor of Science in Entrepreneurship', 'description' => 'Entrepreneurship and innovation.']);
-        Course::create(['course_code' => 'BSECE', 'course_name' => 'Bachelor of Science in Electronics Engineering', 'description' => 'Electronics and communications engineering.']);
+        Course::create(['course_code' => 'BSTM', 'course_name' => 'Bachelor of Science in Tourism Management', 'level' => 'COLLEGE', 'description' => 'Tourism and hospitality program.']);
+        Course::create(['course_code' => 'BSED', 'course_name' => 'Bachelor of Secondary Education', 'level' => 'COLLEGE', 'description' => 'Secondary level teacher education.']);
+        Course::create(['course_code' => 'BEED', 'course_name' => 'Bachelor of Elementary Education', 'level' => 'COLLEGE', 'description' => 'Elementary level teacher education.']);
+        Course::create(['course_code' => 'BSBA', 'course_name' => 'Bachelor of Science in Business Administration', 'level' => 'COLLEGE', 'description' => 'Business management and administration.']);
+        Course::create(['course_code' => 'BSENTREP', 'course_name' => 'Bachelor of Science in Entrepreneurship', 'level' => 'COLLEGE', 'description' => 'Entrepreneurship and innovation.']);
+        Course::create(['course_code' => 'BSECE', 'course_name' => 'Bachelor of Science in Electronics Engineering', 'level' => 'COLLEGE', 'description' => 'Electronics and communications engineering.']);
 
         // 6. Subjects
         $subjComp101 = Subject::create([
@@ -244,6 +273,9 @@ class DatabaseSeeder extends Seeder
         // 8. Students
         $student1 = Student::create([
             'user_id' => $studentUser1->id,
+            'education_level_id' => $college->id,
+            'grade_level_id' => $secondYear->id,
+            'course_id' => $bsit->id,
             'lrn' => '123456789012',
             'student_number' => 'STU-2024-0001',
             'first_name' => 'Jose',
@@ -261,6 +293,9 @@ class DatabaseSeeder extends Seeder
 
         $student2 = Student::create([
             'user_id' => $studentUser2->id,
+            'education_level_id' => $jhs->id,
+            'grade_level_id' => $g10->id,
+            'course_id' => null,
             'lrn' => '987654321098',
             'student_number' => 'STU-2024-0002',
             'first_name' => 'Andres',

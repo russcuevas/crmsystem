@@ -63,7 +63,7 @@ class SuperAdminSubjectListController extends Controller
             });
         }
 
-        $subjects = $subjectsQuery->latest()->paginate(10);
+        $subjects = $subjectsQuery->latest()->get();
         $totalAccounts = User::count();
 
         if ($activeSchoolYear) {

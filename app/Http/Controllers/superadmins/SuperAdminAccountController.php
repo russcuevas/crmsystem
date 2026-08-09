@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\superadmins;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Teacher;
 use App\Models\Student;
@@ -22,17 +24,10 @@ class SuperAdminAccountController extends Controller
         }
 
         $selectedLevel = request('level');
+        $search = request('search');
         $educationLevelsList = EducationLevel::all();
 
         $usersQuery = User::query();
-        if ($activeSchoolYear) {
-            $usersQuery->where(function ($q) use ($activeSchoolYear) {
-                $q->whereHas('student.enrollments', fn($eq) => $eq->where('school_year_id', $activeSchoolYear->id))
-                  ->orWhereHas('teacher.advisedClassSections', fn($sq) => $sq->where('school_year_id', $activeSchoolYear->id))
-                  ->orWhereHas('teacher.classSectionSubjects.classSection', fn($sq) => $sq->where('school_year_id', $activeSchoolYear->id))
-                  ->orWhere('role', 'superadmin');
-            });
-        }
 
         if ($selectedLevel) {
             $usersQuery->where(function ($q) use ($selectedLevel) {
@@ -42,7 +37,7 @@ class SuperAdminAccountController extends Controller
             });
         }
 
-        $users = $usersQuery->latest()->paginate(10);
+        $users = $usersQuery->latest()->get();
         $totalAccounts = User::count();
 
         if ($activeSchoolYear) {
@@ -79,5 +74,31 @@ class SuperAdminAccountController extends Controller
             'selectedLevel',
             'educationLevelsList'
         ));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $id,
+            'status' => 'required|in:active,inactive',
+            'password' => 'nullable|string|min:6',
+        ]);
+
+        $updateData = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'status' => $validated['status'],
+        ];
+
+        if (!empty($validated['password'])) {
+            $updateData['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($updateData);
+
+        return redirect()->back()->with('success', 'Account details updated successfully!');
     }
 }
