@@ -166,7 +166,7 @@ class DatabaseSeeder extends Seeder
             'subject_name' => 'Introduction to Computer Science',
             'education_level_id' => $college->id,
             'units' => 3,
-            'semester' => '1st sem',
+            'semester' => '1st Semester',
             'course_id' => $bsit->id,
         ]);
 
@@ -175,7 +175,7 @@ class DatabaseSeeder extends Seeder
             'subject_name' => 'Introduction to Filipino',
             'education_level_id' => $jhs->id,
             'units' => 3,
-            'semester' => '1st quarter',
+            'semester' => 'All Quarters',
             'course_id' => null,
         ]);
 
@@ -184,7 +184,7 @@ class DatabaseSeeder extends Seeder
             'subject_name' => 'Introduction to Mathematics',
             'education_level_id' => $college->id,
             'units' => 3,
-            'semester' => '1st sem',
+            'semester' => '1st Semester',
             'course_id' => $bsit->id,
         ]);
 
@@ -193,7 +193,7 @@ class DatabaseSeeder extends Seeder
             'subject_name' => 'Data Structures & Algorithms',
             'education_level_id' => $college->id,
             'units' => 3,
-            'semester' => '2nd sem',
+            'semester' => '2nd Semester',
             'course_id' => $bsit->id,
         ]);
 
@@ -202,7 +202,7 @@ class DatabaseSeeder extends Seeder
             'subject_name' => 'Introduction to General Education',
             'education_level_id' => $college->id,
             'units' => 3,
-            'semester' => '1st sem',
+            'semester' => '1st Semester',
             'course_id' => null,
         ]);
 

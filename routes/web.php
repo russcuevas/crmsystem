@@ -43,6 +43,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/superadmin/dashboard', [SuperAdminDashboardController::class, 'SuperAdminDashboardPage'])->name('superadmin.dashboard.page');
     Route::get('/superadmin/accounts', [SuperAdminAccountController::class, 'SuperAdminAccountPage'])->name('superadmin.accounts.page');
     Route::get('/superadmin/subjects', [SuperAdminSubjectListController::class, 'SuperAdminSubjectListPage'])->name('superadmin.subjects.page');
+    Route::post('/superadmin/subjects/store', [SuperAdminSubjectListController::class, 'store'])->name('superadmin.subjects.store');
+    Route::post('/superadmin/subjects/update/{id}', [SuperAdminSubjectListController::class, 'update'])->name('superadmin.subjects.update');
+    Route::delete('/superadmin/subjects/delete/{id}', [SuperAdminSubjectListController::class, 'destroy'])->name('superadmin.subjects.destroy');
     Route::get('/superadmin/faculty', [SuperAdminFacultyInformationController::class, 'SuperAdminFacultyInformationPage'])->name('superadmin.faculty.page');
     Route::get('/superadmin/students', [SuperAdminStudentController::class, 'SuperAdminStudentPage'])->name('superadmin.students.page');
     Route::get('/superadmin/students/{id}', [SuperAdminStudentController::class, 'SuperAdminStudentShowPage'])->name('superadmin.students.show');

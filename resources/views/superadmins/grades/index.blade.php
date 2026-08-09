@@ -121,43 +121,59 @@
         }
 
         .btn-icon-action {
-            background: none;
-            border: none;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
             cursor: pointer;
-            padding: 0.25rem;
-            color: #64748b;
-            border-radius: 6px;
+            padding: 0.35rem;
+            color: #475569;
+            border-radius: 8px;
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .btn-icon-action:hover {
-            color: #0f172a;
-            background: #f1f5f9;
+            color: #2563eb;
+            background: #eff6ff;
+            border-color: #93c5fd;
+            transform: translateY(-1px);
+        }
+
+        .btn-icon-action.danger {
+            color: #64748b;
         }
 
         .btn-icon-action.danger:hover {
-            color: #ef4444;
+            color: #dc2626;
             background: #fef2f2;
+            border-color: #fca5a5;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            color: #475569;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            color: #0f172a;
+            transform: translateY(-1px);
         }
     </style>
-
-    <!-- Education Level Filter Bar -->
-    <div class="level-filter-bar">
-        <a href="{{ route('superadmin.grades.page') }}" class="level-tab-item {{ empty($selectedLevel) ? 'active' : '' }}">
-            All Levels
-        </a>
-        @if (isset($educationLevelsList))
-            @foreach ($educationLevelsList as $lvl)
-                <a href="{{ route('superadmin.grades.page', ['level' => $lvl->code]) }}"
-                    class="level-tab-item {{ $selectedLevel == $lvl->code ? 'active' : '' }}">
-                    {{ $lvl->code }}
-                </a>
-            @endforeach
-        @endif
-    </div>
 
     <!-- Class Section Subject Selector -->
     <div class="card" style="margin-bottom: 1.5rem;">
@@ -307,10 +323,9 @@
                                 {{ $cat->name }}
                                 <button class="btn-icon-action" title="Edit Category"
                                     onclick="openModal('editCategoryModal_{{ $cat->id }}')">
-                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor">
+                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 210.3H3v-3.572L16.732 3.732z" />
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </button>
                                 <form action="{{ route('superadmin.grades.category.destroy', $cat->id) }}" method="POST"
@@ -319,8 +334,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn-icon-action danger" title="Delete Category">
-                                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
+                                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -345,10 +359,9 @@
                                         {{ $task->task_name }}
                                         <button class="btn-icon-action" title="Edit Task"
                                             onclick="openModal('editTaskModal_{{ $task->id }}')">
-                                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
+                                            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 210.3H3v-3.572L16.732 3.732z" />
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </button>
                                         <form action="{{ route('superadmin.grades.task.destroy', $task->id) }}"
@@ -357,8 +370,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-icon-action danger" title="Delete Task">
-                                                <svg width="12" height="12" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor">
+                                                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
@@ -381,7 +393,7 @@
                                 <div class="modal-card">
                                     <div class="modal-header">
                                         <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading Task</h3>
-                                        <button class="btn-icon-action" style="color: #ffffff;"
+                                        <button type="button" class="btn-icon-action" style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                                             onclick="closeModal('editTaskModal_{{ $task->id }}')">&times;</button>
                                     </div>
                                     <form action="{{ route('superadmin.grades.task.update', $task->id) }}"
@@ -419,7 +431,12 @@
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn-secondary"
-                                                onclick="closeModal('editTaskModal_{{ $task->id }}')">Cancel</button>
+                                                onclick="closeModal('editTaskModal_{{ $task->id }}')">
+                                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                                Cancel
+                                            </button>
                                             <button type="submit" class="btn-primary">Save Changes</button>
                                         </div>
                                     </form>
@@ -438,7 +455,7 @@
                     <div class="modal-card">
                         <div class="modal-header">
                             <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading Category</h3>
-                            <button class="btn-icon-action" style="color: #ffffff;"
+                            <button type="button" class="btn-icon-action" style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                                 onclick="closeModal('editCategoryModal_{{ $cat->id }}')">&times;</button>
                         </div>
                         <form action="{{ route('superadmin.grades.category.update', $cat->id) }}" method="POST">
@@ -468,7 +485,12 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn-secondary"
-                                    onclick="closeModal('editCategoryModal_{{ $cat->id }}')">Cancel</button>
+                                    onclick="closeModal('editCategoryModal_{{ $cat->id }}')">
+                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    Cancel
+                                </button>
                                 <button type="submit" class="btn-primary">Save Changes</button>
                             </div>
                         </form>
@@ -614,7 +636,7 @@
             <div class="modal-card">
                 <div class="modal-header">
                     <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Add Grading Category</h3>
-                    <button class="btn-icon-action" style="color: #ffffff;"
+                    <button type="button" class="btn-icon-action" style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                         onclick="closeModal('addCategoryModal')">&times;</button>
                 </div>
                 <form action="{{ route('superadmin.grades.category.store') }}" method="POST">
@@ -651,7 +673,12 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn-secondary"
-                            onclick="closeModal('addCategoryModal')">Cancel</button>
+                            onclick="closeModal('addCategoryModal')">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Cancel
+                        </button>
                         <button type="submit" class="btn-primary">+ Create Category</button>
                     </div>
                 </form>
@@ -663,7 +690,7 @@
             <div class="modal-card">
                 <div class="modal-header">
                     <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Add Grading Task</h3>
-                    <button class="btn-icon-action" style="color: #ffffff;"
+                    <button type="button" class="btn-icon-action" style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                         onclick="closeModal('addTaskModal')">&times;</button>
                 </div>
                 <form action="{{ route('superadmin.grades.task.store') }}" method="POST">
@@ -704,7 +731,12 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn-secondary" onclick="closeModal('addTaskModal')">Cancel</button>
+                        <button type="button" class="btn-secondary" onclick="closeModal('addTaskModal')">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Cancel
+                        </button>
                         <button type="submit" class="btn-primary">+ Create Task</button>
                     </div>
                 </form>

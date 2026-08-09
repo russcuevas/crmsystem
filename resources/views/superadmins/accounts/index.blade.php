@@ -16,7 +16,6 @@
                     style="font-size: 0.8rem; font-weight: 600; color: var(--accent-emerald); margin-left: 6px;">(S.Y.
                     {{ $activeSchoolYear->school_year ?? '2024-2025' }})</span>
             </div>
-            <button class="btn-primary">+ Add New Account</button>
         </div>
         <div class="card-body">
             <div class="table-responsive">
