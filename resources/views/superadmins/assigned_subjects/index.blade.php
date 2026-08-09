@@ -443,9 +443,10 @@
                             <option value="">-- Select Subject --</option>
                             @foreach ($subjects as $subj)
                                 <option value="{{ $subj->id }}"
-                                    data-ed-level-id="{{ $subj->education_level_id ?? '' }}">
+                                    data-ed-level-id="{{ $subj->education_level_id ?? '' }}"
+                                    data-semester="{{ $subj->semester ?? '' }}">
                                     {{ $subj->subject_code }} - {{ $subj->subject_name }}
-                                    ({{ $subj->educationLevel->code ?? 'N/A' }})
+                                    ({{ $subj->educationLevel->code ?? 'N/A' }}{{ $subj->semester ? ' • ' . $subj->semester : '' }})
                                 </option>
                             @endforeach
                         </select>
@@ -514,9 +515,10 @@
                             <option value="">-- Select Subject --</option>
                             @foreach ($subjects as $subj)
                                 <option value="{{ $subj->id }}"
-                                    data-ed-level-id="{{ $subj->education_level_id ?? '' }}">
+                                    data-ed-level-id="{{ $subj->education_level_id ?? '' }}"
+                                    data-semester="{{ $subj->semester ?? '' }}">
                                     {{ $subj->subject_code }} - {{ $subj->subject_name }}
-                                    ({{ $subj->educationLevel->code ?? 'N/A' }})
+                                    ({{ $subj->educationLevel->code ?? 'N/A' }}{{ $subj->semester ? ' • ' . $subj->semester : '' }})
                                 </option>
                             @endforeach
                         </select>
@@ -596,11 +598,25 @@
             const selectedOpt = secSelect.options[secSelect.selectedIndex];
             const secEdLevelId = selectedOpt ? selectedOpt.getAttribute('data-ed-level-id') : null;
 
-            // 1. Filter Subjects by Section Education Level
+            // 1. Filter Subjects by Section Education Level & Selected Semester
+            const activeSem = "{{ request('semester') }}";
             Array.from(subjSelect.options).forEach(opt => {
                 if (!opt.value) return;
                 const subjEdId = opt.getAttribute('data-ed-level-id');
-                if (secEdLevelId && subjEdId === secEdLevelId) {
+                const subjSem = opt.getAttribute('data-semester') || '';
+
+                let matchLevel = !secEdLevelId || subjEdId === secEdLevelId;
+                let matchSem = true;
+
+                if (activeSem && subjSem) {
+                    const activeKey = activeSem.toLowerCase().includes('2nd') ? '2nd' : '1st';
+                    const subjKey = subjSem.toLowerCase().includes('2nd') ? '2nd' : (subjSem.toLowerCase().includes('1st') ? '1st' : '');
+                    if (subjKey && subjKey !== activeKey && subjSem !== 'All Quarters') {
+                        matchSem = false;
+                    }
+                }
+
+                if (matchLevel && matchSem) {
                     opt.style.display = 'block';
                     opt.disabled = false;
                 } else {

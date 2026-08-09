@@ -474,30 +474,41 @@
                                     @endphp
                                     {{ !empty($loc) ? implode(', ', $loc) : 'N/A' }}
                                 </td>
-                                <td><span class="badge badge-active">{{ ucfirst($student->status ?? 'active') }}</span></td>
+                                <td><span class="badge badge-active">{{ ucfirst($student->status ?? 'active') }}</span>
+                                </td>
                                 <td style="text-align: center;">
                                     <div style="display: flex; gap: 0.35rem; justify-content: center; align-items: center;">
-                                        <a href="{{ route('superadmin.students.show', $student->id) }}" class="btn-action-view" title="View Profile Details">
-                                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        <a href="{{ route('superadmin.students.show', $student->id) }}"
+                                            class="btn-action-view" title="View Profile Details">
+                                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
                                             View
                                         </a>
 
                                         <button type="button" class="btn-action-icon" title="Edit Student Profile"
                                             onclick='openEditStudentModal(@json($student))'>
-                                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </button>
 
-                                        <form action="{{ route('superadmin.students.destroy', $student->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this student?');">
+                                        <form action="{{ route('superadmin.students.destroy', $student->id) }}"
+                                            method="POST" style="display: inline;"
+                                            onsubmit="return confirm('Are you sure you want to delete this student?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-action-icon danger" title="Delete Student">
-                                                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
                                             </button>
                                         </form>
@@ -562,7 +573,8 @@
                         <!-- COLUMN 2: PART 2 STUDENT PROFILE INFORMATION -->
                         <div class="modal-part-card">
                             <div class="form-section-title">
-                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 14l9-5-9-5-9 5 9 5z" />
                                 </svg>
@@ -576,20 +588,31 @@
                                     @php
                                         $autoLevelObj = null;
                                         if ($selectedLevel) {
-                                            $autoLevelObj = $educationLevelsList->first(function ($l) use ($selectedLevel) {
-                                                return strtoupper($l->code) == strtoupper($selectedLevel) || strtoupper($l->name) == strtoupper($selectedLevel);
+                                            $autoLevelObj = $educationLevelsList->first(function ($l) use (
+                                                $selectedLevel,
+                                            ) {
+                                                return strtoupper($l->code) == strtoupper($selectedLevel) ||
+                                                    strtoupper($l->name) == strtoupper($selectedLevel);
                                             });
                                         }
                                     @endphp
 
                                     @if ($autoLevelObj)
-                                        <input type="hidden" name="education_level_id" id="add_student_education_level_hidden" value="{{ $autoLevelObj->id }}" data-code="{{ strtoupper($autoLevelObj->code) }}">
-                                        <input type="text" value="{{ $autoLevelObj->name }} ({{ $autoLevelObj->code }})" class="form-control-custom" readonly style="background: #f1f5f9; font-weight: 700; color: var(--primary-navy, #0f172a); cursor: not-allowed;">
+                                        <input type="hidden" name="education_level_id"
+                                            id="add_student_education_level_hidden" value="{{ $autoLevelObj->id }}"
+                                            data-code="{{ strtoupper($autoLevelObj->code) }}">
+                                        <input type="text"
+                                            value="{{ $autoLevelObj->name }} ({{ $autoLevelObj->code }})"
+                                            class="form-control-custom" readonly
+                                            style="background: #f1f5f9; font-weight: 700; color: var(--primary-navy, #0f172a); cursor: not-allowed;">
                                     @else
-                                        <select name="education_level_id" id="add_student_education_level" class="form-control-custom" required onchange="handleStudentLevelCascade('add')">
+                                        <select name="education_level_id" id="add_student_education_level"
+                                            class="form-control-custom" required
+                                            onchange="handleStudentLevelCascade('add')">
                                             <option value="">-- Select Level --</option>
                                             @foreach ($educationLevelsList as $level)
-                                                <option value="{{ $level->id }}" data-code="{{ strtoupper($level->code) }}">
+                                                <option value="{{ $level->id }}"
+                                                    data-code="{{ strtoupper($level->code) }}">
                                                     {{ $level->name }} ({{ $level->code }})
                                                 </option>
                                             @endforeach
@@ -599,10 +622,12 @@
 
                                 <div class="form-group">
                                     <label>Grade Level</label>
-                                    <select name="grade_level_id" id="add_student_grade_level" class="form-control-custom">
+                                    <select name="grade_level_id" id="add_student_grade_level"
+                                        class="form-control-custom">
                                         <option value="">-- Select Grade Level --</option>
                                         @foreach ($allGradeLevels as $gl)
-                                            <option value="{{ $gl->id }}" data-ed-level-id="{{ $gl->education_level_id }}">
+                                            <option value="{{ $gl->id }}"
+                                                data-ed-level-id="{{ $gl->education_level_id }}">
                                                 {{ $gl->name }}
                                             </option>
                                         @endforeach
@@ -610,11 +635,14 @@
                                 </div>
 
                                 <div class="form-group" id="add_student_course_group" style="display: none;">
-                                    <label>Course / Strand <span style="font-size: 0.7rem; color: #64748b;">(SHS/College)</span></label>
-                                    <select name="course_id" id="add_student_course" class="form-control-custom" disabled>
+                                    <label>Course / Strand <span
+                                            style="font-size: 0.7rem; color: #64748b;">(SHS/College)</span></label>
+                                    <select name="course_id" id="add_student_course" class="form-control-custom"
+                                        disabled>
                                         <option value="">-- Select Course / Strand --</option>
                                         @foreach ($allCourses as $c)
-                                            <option value="{{ $c->id }}" data-level="{{ strtoupper($c->level) }}">
+                                            <option value="{{ $c->id }}"
+                                                data-level="{{ strtoupper($c->level) }}">
                                                 {{ $c->course_code }} - {{ $c->course_name }}
                                             </option>
                                         @endforeach
@@ -624,12 +652,14 @@
 
                             <div class="form-grid-2">
                                 <div class="form-group">
-                                    <label>Student No. <span style="font-size: 0.72rem; color: #64748b;">(Auto)</span></label>
+                                    <label>Student No. <span
+                                            style="font-size: 0.72rem; color: #64748b;">(Auto)</span></label>
                                     <input type="text" name="student_number" value="{{ $nextStudentId }}"
                                         class="form-control-custom" placeholder="e.g. STU-2026-0001">
                                 </div>
                                 <div class="form-group">
-                                    <label>LRN Number <span style="font-size: 0.72rem; color: #64748b;">(Learner Ref No.)</span></label>
+                                    <label>LRN Number <span style="font-size: 0.72rem; color: #64748b;">(Learner Ref
+                                            No.)</span></label>
                                     <input type="text" name="lrn" class="form-control-custom"
                                         placeholder="e.g. 109876543210">
                                 </div>
@@ -680,14 +710,17 @@
                             </div>
 
                             <!-- Dynamic Location Dropdowns (PSGC API) -->
-                            <div style="background: #f8fafc; padding: 0.85rem; border-radius: 10px; border: 1px solid #cbd5e1; margin-top: 0.5rem;">
-                                <label style="font-size: 0.78rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 0.6rem;">
-                                    📍 Address Location (PSGC Dynamic Dropdown)
+                            <div
+                                style="background: #f8fafc; padding: 0.85rem; border-radius: 10px; border: 1px solid #cbd5e1; margin-top: 0.5rem;">
+                                <label
+                                    style="font-size: 0.78rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 0.6rem;">
+                                    📍 Address Location
                                 </label>
                                 <div class="form-grid-3">
                                     <div class="form-group" style="margin-bottom: 0;">
                                         <label>Province</label>
-                                        <select name="province" id="add_student_province_select" class="form-control-custom">
+                                        <select name="province" id="add_student_province_select"
+                                            class="form-control-custom">
                                             <option value="">Loading Provinces...</option>
                                         </select>
                                     </div>
@@ -699,7 +732,8 @@
                                     </div>
                                     <div class="form-group" style="margin-bottom: 0;">
                                         <label>Barangay</label>
-                                        <select name="barangay" id="add_student_barangay_select" class="form-control-custom">
+                                        <select name="barangay" id="add_student_barangay_select"
+                                            class="form-control-custom">
                                             <option value="">-- Select City First --</option>
                                         </select>
                                     </div>
@@ -740,7 +774,8 @@
                         <!-- COLUMN 1: PART 1 ACCOUNT DETAILS FOR LMS -->
                         <div class="modal-part-card">
                             <div class="form-section-title">
-                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
@@ -749,11 +784,13 @@
 
                             <div class="form-group">
                                 <label>LMS Email Address <span style="color: #ef4444;">*</span></label>
-                                <input type="email" name="email" id="edit_student_email" class="form-control-custom" required>
+                                <input type="email" name="email" id="edit_student_email" class="form-control-custom"
+                                    required>
                             </div>
 
                             <div class="form-group">
-                                <label>LMS New Password <span style="font-size: 0.7rem; color: #64748b;">(Optional)</span></label>
+                                <label>LMS New Password <span
+                                        style="font-size: 0.7rem; color: #64748b;">(Optional)</span></label>
                                 <input type="password" name="password" class="form-control-custom"
                                     placeholder="Leave blank to keep existing">
                             </div>
@@ -774,7 +811,8 @@
                         <!-- COLUMN 2: PART 2 STUDENT PROFILE INFORMATION -->
                         <div class="modal-part-card">
                             <div class="form-section-title">
-                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 14l9-5-9-5-9 5 9 5z" />
                                 </svg>
@@ -785,10 +823,12 @@
                             <div class="form-grid-3">
                                 <div class="form-group">
                                     <label>Education Level <span style="color: #ef4444;">*</span></label>
-                                    <select name="education_level_id" id="edit_student_education_level" class="form-control-custom" required onchange="handleStudentLevelCascade('edit')">
+                                    <select name="education_level_id" id="edit_student_education_level"
+                                        class="form-control-custom" required onchange="handleStudentLevelCascade('edit')">
                                         <option value="">-- Select Level --</option>
                                         @foreach ($educationLevelsList as $level)
-                                            <option value="{{ $level->id }}" data-code="{{ strtoupper($level->code) }}">
+                                            <option value="{{ $level->id }}"
+                                                data-code="{{ strtoupper($level->code) }}">
                                                 {{ $level->name }} ({{ $level->code }})
                                             </option>
                                         @endforeach
@@ -797,10 +837,12 @@
 
                                 <div class="form-group">
                                     <label>Grade Level</label>
-                                    <select name="grade_level_id" id="edit_student_grade_level" class="form-control-custom">
+                                    <select name="grade_level_id" id="edit_student_grade_level"
+                                        class="form-control-custom">
                                         <option value="">-- Select Grade Level --</option>
                                         @foreach ($allGradeLevels as $gl)
-                                            <option value="{{ $gl->id }}" data-ed-level-id="{{ $gl->education_level_id }}">
+                                            <option value="{{ $gl->id }}"
+                                                data-ed-level-id="{{ $gl->education_level_id }}">
                                                 {{ $gl->name }}
                                             </option>
                                         @endforeach
@@ -808,11 +850,14 @@
                                 </div>
 
                                 <div class="form-group" id="edit_student_course_group" style="display: none;">
-                                    <label>Course / Strand <span style="font-size: 0.7rem; color: #64748b;">(SHS/College)</span></label>
-                                    <select name="course_id" id="edit_student_course" class="form-control-custom" disabled>
+                                    <label>Course / Strand <span
+                                            style="font-size: 0.7rem; color: #64748b;">(SHS/College)</span></label>
+                                    <select name="course_id" id="edit_student_course" class="form-control-custom"
+                                        disabled>
                                         <option value="">-- Select Course / Strand --</option>
                                         @foreach ($allCourses as $c)
-                                            <option value="{{ $c->id }}" data-level="{{ strtoupper($c->level) }}">
+                                            <option value="{{ $c->id }}"
+                                                data-level="{{ strtoupper($c->level) }}">
                                                 {{ $c->course_code }} - {{ $c->course_name }}
                                             </option>
                                         @endforeach
@@ -867,7 +912,8 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Birthday</label>
-                                    <input type="date" name="birthday" id="edit_student_birthday" class="form-control-custom">
+                                    <input type="date" name="birthday" id="edit_student_birthday"
+                                        class="form-control-custom">
                                 </div>
                             </div>
 
@@ -878,14 +924,17 @@
                             </div>
 
                             <!-- Dynamic Location Dropdowns (PSGC API) -->
-                            <div style="background: #f8fafc; padding: 0.85rem; border-radius: 10px; border: 1px solid #cbd5e1; margin-top: 0.5rem;">
-                                <label style="font-size: 0.78rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 0.6rem;">
-                                    📍 Address Location (PSGC Dynamic Dropdown)
+                            <div
+                                style="background: #f8fafc; padding: 0.85rem; border-radius: 10px; border: 1px solid #cbd5e1; margin-top: 0.5rem;">
+                                <label
+                                    style="font-size: 0.78rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 0.6rem;">
+                                    📍 Address Location
                                 </label>
                                 <div class="form-grid-3">
                                     <div class="form-group" style="margin-bottom: 0;">
                                         <label>Province</label>
-                                        <select name="province" id="edit_student_province_select" class="form-control-custom">
+                                        <select name="province" id="edit_student_province_select"
+                                            class="form-control-custom">
                                             <option value="">Loading Provinces...</option>
                                         </select>
                                     </div>
@@ -897,7 +946,8 @@
                                     </div>
                                     <div class="form-group" style="margin-bottom: 0;">
                                         <label>Barangay</label>
-                                        <select name="barangay" id="edit_student_barangay_select" class="form-control-custom">
+                                        <select name="barangay" id="edit_student_barangay_select"
+                                            class="form-control-custom">
                                             <option value="">-- Select City First --</option>
                                         </select>
                                     </div>
@@ -991,7 +1041,8 @@
 
                 if (targetCourseId) {
                     crsSelect.value = targetCourseId;
-                } else if (!crsSelect.options[crsSelect.selectedIndex] || crsSelect.options[crsSelect.selectedIndex].disabled) {
+                } else if (!crsSelect.options[crsSelect.selectedIndex] || crsSelect.options[crsSelect.selectedIndex]
+                    .disabled) {
                     crsSelect.value = '';
                 }
             } else {
@@ -1163,7 +1214,7 @@
             const addCity = document.getElementById('add_student_city_select');
             const addBrgy = document.getElementById('add_student_barangay_select');
             if (addProv && addCity && addBrgy) {
-                loadProvinces(addProv, 'Batangas', addCity, 'Mataasnakahoy', addBrgy);
+                loadProvinces(addProv, null, addCity, null, addBrgy, null);
                 bindLocationCascades(addProv, addCity, addBrgy);
             }
 
@@ -1197,7 +1248,8 @@
             form.action = "{{ url('/superadmin/students/update') }}/" + student.id;
 
             // Part 1: User Account
-            document.getElementById('edit_student_email').value = (student.user && student.user.email) ? student.user.email : '';
+            document.getElementById('edit_student_email').value = (student.user && student.user.email) ? student.user
+                .email : '';
 
             // Part 2: Academic Level Dropdowns
             const editEdLevelSelect = document.getElementById('edit_student_education_level');

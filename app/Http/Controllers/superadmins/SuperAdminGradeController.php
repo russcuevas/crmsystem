@@ -48,10 +48,12 @@ class SuperAdminGradeController extends Controller
         }
 
         // Strictly filter subjects by semester when viewing semestral level (SHS or COLLEGE)
-        if (in_array($selectedLevel, ['SHS', 'COLLEGE'])) {
+        if (in_array(strtoupper($selectedLevel), ['SHS', 'COLLEGE'])) {
             $semKey = ($selectedSemester == '2nd Semester') ? '2nd' : '1st';
-            $subjectQuery->whereHas('subject', function ($sq) use ($semKey) {
-                $sq->where('semester', 'LIKE', '%' . $semKey . '%');
+            $subjectQuery->whereHas('subject', function ($sq) use ($semKey, $selectedSemester) {
+                $sq->where('semester', 'LIKE', '%' . $semKey . '%')
+                  ->orWhere('semester', $selectedSemester)
+                  ->orWhereNull('semester');
             });
         }
 

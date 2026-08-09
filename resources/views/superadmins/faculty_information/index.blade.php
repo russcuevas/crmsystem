@@ -11,10 +11,12 @@
             padding: 0.5rem 0;
             font-size: 0.85rem;
         }
+
         .dataTables_length {
             margin-bottom: 1rem;
             float: left;
         }
+
         .dataTables_length label {
             font-weight: 600;
             color: #475569;
@@ -22,6 +24,7 @@
             align-items: center;
             gap: 0.5rem;
         }
+
         .dataTables_length select {
             padding: 0.35rem 0.6rem;
             border: 1.5px solid #cbd5e1;
@@ -30,10 +33,12 @@
             outline: none;
             background: #ffffff;
         }
+
         .dataTables_filter {
             margin-bottom: 1rem;
             float: right;
         }
+
         .dataTables_filter label {
             font-weight: 600;
             color: #475569;
@@ -41,6 +46,7 @@
             align-items: center;
             gap: 0.5rem;
         }
+
         .dataTables_filter input {
             padding: 0.45rem 0.85rem;
             border: 1.5px solid #cbd5e1;
@@ -50,20 +56,24 @@
             transition: all 0.2s;
             width: 260px;
         }
+
         .dataTables_filter input:focus {
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
+
         .dataTables_info {
             font-size: 0.82rem;
             color: #64748b;
             padding-top: 0.85rem;
             font-weight: 600;
         }
+
         .dataTables_paginate {
             padding-top: 0.85rem;
             float: right;
         }
+
         .dataTables_paginate ul,
         .dataTables_paginate ul.pagination {
             list-style: none !important;
@@ -73,6 +83,7 @@
             align-items: center !important;
             gap: 4px !important;
         }
+
         .dataTables_paginate ul li,
         .dataTables_paginate ul.pagination li {
             list-style: none !important;
@@ -80,6 +91,7 @@
             padding: 0 !important;
             display: inline-block !important;
         }
+
         .dataTables_paginate ul.pagination li a.page-link,
         .dataTables_paginate .paginate_button {
             display: inline-flex !important;
@@ -99,19 +111,22 @@
             cursor: pointer !important;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
         }
+
         .dataTables_paginate ul.pagination li a.page-link:hover,
         .dataTables_paginate .paginate_button:hover {
             background: #eff6ff !important;
             color: #2563eb !important;
             border-color: #bfdbfe !important;
         }
+
         .dataTables_paginate ul.pagination li.active a.page-link,
-        .dataTables_paginate .paginate_button.current, 
+        .dataTables_paginate .paginate_button.current,
         .dataTables_paginate .paginate_button.current:hover {
             background: var(--primary-navy, #0f172a) !important;
             color: #ffffff !important;
             border-color: var(--primary-navy, #0f172a) !important;
         }
+
         .dataTables_paginate ul.pagination li.disabled a.page-link {
             opacity: 0.4 !important;
             cursor: not-allowed !important;
@@ -623,7 +638,7 @@
                                 style="background: #f8fafc; padding: 0.85rem; border-radius: 10px; border: 1px solid #cbd5e1; margin-top: 0.5rem;">
                                 <label
                                     style="font-size: 0.78rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 0.6rem;">
-                                    📍 Address Location (PSGC Dynamic Dropdown)
+                                    📍 Address Location
                                 </label>
                                 <div class="form-grid-3">
                                     <div class="form-group" style="margin-bottom: 0;">
@@ -803,7 +818,7 @@
                                 style="background: #f8fafc; padding: 0.85rem; border-radius: 10px; border: 1px solid #cbd5e1; margin-top: 0.5rem;">
                                 <label
                                     style="font-size: 0.78rem; font-weight: 700; color: #1e293b; display: block; margin-bottom: 0.6rem;">
-                                    📍 Address Location (PSGC Dynamic Dropdown)
+                                    📍 Address Location
                                 </label>
                                 <div class="form-grid-3">
                                     <div class="form-group" style="margin-bottom: 0;">
@@ -1014,7 +1029,7 @@
             const addCity = document.getElementById('add_city_select');
             const addBrgy = document.getElementById('add_barangay_select');
             if (addProv && addCity && addBrgy) {
-                loadProvinces(addProv, 'Batangas', addCity, 'Mataasnakahoy', addBrgy);
+                loadProvinces(addProv, null, addCity, null, addBrgy, null);
                 bindLocationCascades(addProv, addCity, addBrgy);
             }
 

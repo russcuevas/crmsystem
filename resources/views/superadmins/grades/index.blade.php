@@ -190,7 +190,6 @@
                     @if (in_array($selectedLevel, ['SHS', 'COLLEGE']))
                         &bull; {{ request('semester', '1st Semester') }}
                     @else
-                        &bull; DepEd Quarters
                     @endif
                 </span>
             </div>
@@ -251,14 +250,6 @@
                     @endforeach
                 @endif
             </div>
-            <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-emerald);">
-                Active Term: S.Y. {{ $activeSchoolYear->school_year ?? '' }}
-                @if ($currIsSemestral)
-                    &bull; {{ request('semester', '1st Semester') }}
-                @else
-                    &bull; DepEd Quarters
-                @endif
-            </div>
         </div>
 
         <!-- Class Record Header Meta Banner -->
@@ -270,10 +261,6 @@
                     <div
                         style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-gold); font-weight: 700; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                         <span>{{ $currentSectionSubject->classSection->gradeLevel->educationLevel->name ?? 'Education Level' }}</span>
-                        <span>&bull;</span>
-                        <span style="color: #60a5fa;">{{ $currGradeLevelName }}</span>
-                        <span>&bull;</span>
-                        <span>S.Y. {{ $activeSchoolYear->school_year ?? '' }}</span>
                         @if ($currIsSemestral)
                             <span>&bull;</span>
                             <span
@@ -291,15 +278,18 @@
                         ({{ $currentSectionSubject->subject->subject_code ?? 'CODE' }})
                     </h2>
                     <div style="font-size: 0.85rem; color: #94a3b8;">
-                        Section: <strong>{{ $currentSectionSubject->classSection->section_name ?? 'N/A' }}</strong> |
-                        Grade Level: <strong style="color: #60a5fa;">{{ $currGradeLevelName }}</strong> |
+                        Grade Level: <strong style="color: #60a5fa;">{{ $currGradeLevelName }}</strong> <br>
+                        Section: <strong
+                            style="color: #60a5fa">{{ $currentSectionSubject->classSection->section_name ?? 'N/A' }}</strong>
+                        <br>
                         @if ($currIsSemestral)
                             Subject Semester: <strong
                                 style="color: #cbd5e1;">{{ $currentSectionSubject->subject->semester ?? request('semester', '1st Semester') }}</strong>
-                            |
+                            <br>
                         @endif
                         Assigned Teacher:
-                        <strong>{{ $currentSectionSubject->teacher ? $currentSectionSubject->teacher->first_name . ' ' . $currentSectionSubject->teacher->last_name : 'Unassigned' }}</strong>
+                        <strong
+                            style="color: #60a5fa">{{ $currentSectionSubject->teacher ? $currentSectionSubject->teacher->first_name . ' ' . $currentSectionSubject->teacher->last_name : 'Unassigned' }}</strong>
                     </div>
                 </div>
                 <div style="display: flex; gap: 0.75rem;">
@@ -323,7 +313,8 @@
                                 {{ $cat->name }}
                                 <button class="btn-icon-action" title="Edit Category"
                                     onclick="openModal('editCategoryModal_{{ $cat->id }}')">
-                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
@@ -334,7 +325,8 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn-icon-action danger" title="Delete Category">
-                                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -359,7 +351,8 @@
                                         {{ $task->task_name }}
                                         <button class="btn-icon-action" title="Edit Task"
                                             onclick="openModal('editTaskModal_{{ $task->id }}')">
-                                            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg width="13" height="13" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
@@ -370,7 +363,8 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-icon-action danger" title="Delete Task">
-                                                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg width="13" height="13" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
@@ -393,7 +387,8 @@
                                 <div class="modal-card">
                                     <div class="modal-header">
                                         <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading Task</h3>
-                                        <button type="button" class="btn-icon-action" style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                                        <button type="button" class="btn-icon-action"
+                                            style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                                             onclick="closeModal('editTaskModal_{{ $task->id }}')">&times;</button>
                                     </div>
                                     <form action="{{ route('superadmin.grades.task.update', $task->id) }}"
@@ -432,8 +427,10 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn-secondary"
                                                 onclick="closeModal('editTaskModal_{{ $task->id }}')">
-                                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M6 18L18 6M6 6l12 12" />
                                                 </svg>
                                                 Cancel
                                             </button>
@@ -455,7 +452,8 @@
                     <div class="modal-card">
                         <div class="modal-header">
                             <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading Category</h3>
-                            <button type="button" class="btn-icon-action" style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                            <button type="button" class="btn-icon-action"
+                                style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                                 onclick="closeModal('editCategoryModal_{{ $cat->id }}')">&times;</button>
                         </div>
                         <form action="{{ route('superadmin.grades.category.update', $cat->id) }}" method="POST">
@@ -486,8 +484,10 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn-secondary"
                                     onclick="closeModal('editCategoryModal_{{ $cat->id }}')">
-                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                     Cancel
                                 </button>
@@ -520,10 +520,6 @@
                             &bull; {{ $selectedPeriod }} Period
                         @endif
                     </div>
-                    <span
-                        style="font-size: 0.75rem; font-weight: 600; color: #10b981; background: #ecfdf5; padding: 0.25rem 0.75rem; border-radius: 12px; border: 1px solid #a7f3d0;">
-                        ✓ Live Auto-Save Enabled
-                    </span>
                 </div>
             </div>
             <div class="card-body">
@@ -636,7 +632,8 @@
             <div class="modal-card">
                 <div class="modal-header">
                     <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Add Grading Category</h3>
-                    <button type="button" class="btn-icon-action" style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                    <button type="button" class="btn-icon-action"
+                        style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                         onclick="closeModal('addCategoryModal')">&times;</button>
                 </div>
                 <form action="{{ route('superadmin.grades.category.store') }}" method="POST">
@@ -672,10 +669,11 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn-secondary"
-                            onclick="closeModal('addCategoryModal')">
-                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        <button type="button" class="btn-secondary" onclick="closeModal('addCategoryModal')">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
                             </svg>
                             Cancel
                         </button>
@@ -690,7 +688,8 @@
             <div class="modal-card">
                 <div class="modal-header">
                     <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Add Grading Task</h3>
-                    <button type="button" class="btn-icon-action" style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                    <button type="button" class="btn-icon-action"
+                        style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                         onclick="closeModal('addTaskModal')">&times;</button>
                 </div>
                 <form action="{{ route('superadmin.grades.task.store') }}" method="POST">
@@ -732,8 +731,10 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn-secondary" onclick="closeModal('addTaskModal')">
-                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
                             </svg>
                             Cancel
                         </button>

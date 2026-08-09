@@ -228,6 +228,9 @@ class SuperAdminStudentController extends Controller
 
         $student = Student::with([
             'user',
+            'educationLevel',
+            'gradeLevel.educationLevel',
+            'course',
             'enrollments.schoolYear',
             'enrollments.gradeLevel',
             'enrollments.classSection.adviser',

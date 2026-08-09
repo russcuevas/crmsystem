@@ -9,6 +9,7 @@ use App\Http\Controllers\superadmins\SuperAdminStudentController;
 use App\Http\Controllers\superadmins\SuperAdminManageSectionController;
 use App\Http\Controllers\superadmins\SuperAdminAssignedSubjectController;
 use App\Http\Controllers\superadmins\SuperAdminSchoolYearController;
+use App\Http\Controllers\superadmins\SuperAdminEnrollmentController;
 use App\Http\Controllers\superadmins\SuperAdminGradeController;
 use Illuminate\Support\Facades\Route;
 
@@ -72,6 +73,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/superadmin/assigned-subjects/store', [SuperAdminAssignedSubjectController::class, 'store'])->name('superadmin.assigned_subjects.store');
     Route::post('/superadmin/assigned-subjects/update/{id}', [SuperAdminAssignedSubjectController::class, 'update'])->name('superadmin.assigned_subjects.update');
     Route::delete('/superadmin/assigned-subjects/delete/{id}', [SuperAdminAssignedSubjectController::class, 'destroy'])->name('superadmin.assigned_subjects.destroy');
+    Route::get('/superadmin/enrollment', [SuperAdminEnrollmentController::class, 'SuperAdminEnrollmentPage'])->name('superadmin.enrollment.page');
+    Route::post('/superadmin/enrollment/store', [SuperAdminEnrollmentController::class, 'store'])->name('superadmin.enrollment.store');
+    Route::post('/superadmin/enrollment/update/{id}', [SuperAdminEnrollmentController::class, 'update'])->name('superadmin.enrollment.update');
+    Route::delete('/superadmin/enrollment/delete/{id}', [SuperAdminEnrollmentController::class, 'destroy'])->name('superadmin.enrollment.destroy');
     Route::get('/superadmin/grades', [SuperAdminGradeController::class, 'SuperAdminGradePage'])->name('superadmin.grades.page');
     Route::post('/superadmin/grades/update-score', [SuperAdminGradeController::class, 'updateTaskScore'])->name('superadmin.grades.update_score');
     Route::post('/superadmin/grades/category/store', [SuperAdminGradeController::class, 'storeCategory'])->name('superadmin.grades.category.store');

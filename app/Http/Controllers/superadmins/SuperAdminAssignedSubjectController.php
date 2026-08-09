@@ -59,11 +59,21 @@ class SuperAdminAssignedSubjectController extends Controller
         $classSections = $sectionsQuery->get();
 
         // Get Available Subjects
+        $selectedSem = request('semester');
         $subjectsQuery = Subject::with('educationLevel');
         if ($selectedLevel) {
             $subjectsQuery->whereHas('educationLevel', function ($q) use ($selectedLevel) {
                 $q->where('code', $selectedLevel);
             });
+
+            if (in_array(strtoupper($selectedLevel), ['SHS', 'COLLEGE']) && $selectedSem) {
+                $semKey = ($selectedSem == '2nd Semester') ? '2nd' : '1st';
+                $subjectsQuery->where(function ($q) use ($semKey, $selectedSem) {
+                    $q->where('semester', 'LIKE', '%' . $semKey . '%')
+                      ->orWhere('semester', $selectedSem)
+                      ->orWhereNull('semester');
+                });
+            }
         }
         $subjects = $subjectsQuery->get();
 
