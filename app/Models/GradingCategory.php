@@ -30,4 +30,9 @@ class GradingCategory extends Model
     {
         return $this->hasMany(GradingTask::class);
     }
+
+    public function tasks()
+    {
+        return $this->gradingTasks();
+    }
 }

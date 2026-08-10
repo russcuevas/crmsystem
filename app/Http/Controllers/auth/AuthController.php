@@ -74,7 +74,69 @@ class AuthController extends Controller
 
     public function JuniorHighSchoolLoginPage()
     {
+        if (Auth::check()) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            if ($user->role === 'teacher' && $user->teacher && $user->teacher->educationLevel && strtoupper($user->teacher->educationLevel->code) === 'JHS') {
+                return redirect()->route('junior_high_school.dashboard.page');
+            }
+        }
+
         return view('auth.junior_high_school.login');
+    }
+
+    public function JuniorHighSchoolLogin(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            $isJhsTeacher = $user->role === 'teacher' 
+                && $user->teacher 
+                && $user->teacher->educationLevel 
+                && strtoupper($user->teacher->educationLevel->code) === 'JHS';
+
+            if ($isJhsTeacher) {
+                $user->last_login_at = now();
+                $user->save();
+
+                $request->session()->regenerate();
+
+                $teacherName = $user->teacher ? ($user->teacher->first_name . ' ' . $user->teacher->last_name) : $user->name;
+
+                return redirect()->intended(route('junior_high_school.dashboard.page'))
+                    ->with('success', 'Welcome back, Teacher ' . $teacherName . '!');
+            }
+
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('junior_high_school.login.page')
+                ->with('error', 'Unauthorized access. Only designated Junior High School (JHS) teachers are permitted to log in here.');
+        }
+
+        return redirect()->back()
+            ->withInput($request->only('email'))
+            ->with('error', 'Invalid email address or password.');
+    }
+
+    public function JuniorHighSchoolLogout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('junior_high_school.login.page')
+            ->with('success', 'You have been logged out successfully.');
     }
 
     public function SeniorHighSchoolLoginPage()

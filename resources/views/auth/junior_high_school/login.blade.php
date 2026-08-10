@@ -52,7 +52,29 @@
                 <h2 class="form-title">Login</h2>
                 <p class="form-subtitle">Junior High School Portal (Grade 7 - Grade 10)</p>
 
-                <form action="#" method="POST">
+                @if (session('error'))
+                    <div style="background-color: #fee2e2; border: 1px solid #f87171; color: #991b1b; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 500;">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @if (session('success'))
+                    <div style="background-color: #d1fae5; border: 1px solid #34d399; color: #065f46; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 500;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div style="background-color: #fee2e2; border: 1px solid #f87171; color: #991b1b; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; font-size: 0.875rem;">
+                        <ul style="margin: 0; padding-left: 1.25rem;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form action="{{ route('junior_high_school.login.submit') }}" method="POST">
                     @csrf
 
                     <div class="form-group">
@@ -60,8 +82,8 @@
                             Email Address <span class="required">*</span>
                         </label>
                         <input type="email" id="email" name="email" class="form-control"
-                            placeholder="Email Address" required autofocus>
-                        <span class="form-help">Please enter your email address.</span>
+                            placeholder="Email Address" value="{{ old('email') }}" required autofocus>
+                        <span class="form-help">Please enter your registered JHS teacher email.</span>
                     </div>
 
                     <div class="form-group">

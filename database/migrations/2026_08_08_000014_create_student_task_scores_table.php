@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('grading_task_id')->constrained('grading_tasks')->cascadeOnDelete();
             $table->foreignId('enrollment_id')->constrained('enrollments')->cascadeOnDelete();
-            $table->decimal('score', 8, 2);
+            $table->decimal('score', 8, 2)->nullable();
             $table->string('remarks')->nullable();
             $table->timestamps();
         });

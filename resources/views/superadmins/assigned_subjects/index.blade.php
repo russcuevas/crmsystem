@@ -335,7 +335,7 @@
                 <table class="custom-table" id="assignedSubjectsTable">
                     <thead>
                         <tr>
-                            <th>Class Section</th>
+                            <th>Grade - Year Level / Class Section</th>
                             <th>Education Level</th>
                             <th>Subject Code & Title</th>
                             <th>Assigned Teacher</th>
@@ -345,6 +345,7 @@
                     <tbody>
                         @foreach ($assignedSubjects as $assigned)
                             @php
+                                $secGradeName = $assigned->classSection->gradeLevel->name ?? null;
                                 $secLevelCode = $assigned->classSection->gradeLevel->educationLevel->code ?? 'N/A';
                                 $secCourseCode = $assigned->classSection->course->course_code ?? null;
                                 $teacherName =
@@ -353,6 +354,10 @@
                             @endphp
                             <tr>
                                 <td>
+                                    @if ($secGradeName)
+                                        <span
+                                            style="font-size: 0.8rem; font-weight: 700; color: #1e1b4b; background: #e0e7ff; padding: 2px 7px; border-radius: 6px; margin-right: 6px;">{{ $secGradeName }}</span>
+                                    @endif
                                     <strong>{{ $assigned->classSection->section_name ?? 'N/A' }}</strong>
                                     @if ($secCourseCode)
                                         <span
@@ -423,15 +428,19 @@
                 <div class="modal-body">
 
                     <div class="form-group">
-                        <label>Select Class Section <span style="color: #ef4444;">*</span></label>
+                        <label>Select Grade / Year Level & Class Section <span style="color: #ef4444;">*</span></label>
                         <select name="class_section_id" id="add_class_section_id" class="form-control-custom" required
                             onchange="handleAssignedSectionCascade('add')">
-                            <option value="">-- Select Class Section --</option>
+                            <option value="">-- Select Grade / Year Level & Class Section --</option>
                             @foreach ($classSections as $sec)
+                                @php
+                                    $gName = $sec->gradeLevel->name ?? 'N/A';
+                                    $eCode = $sec->gradeLevel->educationLevel->code ?? 'N/A';
+                                    $cCode = $sec->course ? ' - ' . $sec->course->course_code : '';
+                                @endphp
                                 <option value="{{ $sec->id }}"
                                     data-ed-level-id="{{ $sec->gradeLevel->education_level_id ?? '' }}">
-                                    {{ $sec->section_name }}
-                                    ({{ $sec->gradeLevel->educationLevel->code ?? 'N/A' }}{{ $sec->course ? ' - ' . $sec->course->course_code : '' }})
+                                    {{ $gName }} - {{ $sec->section_name }} ({{ $eCode }}{{ $cCode }})
                                 </option>
                             @endforeach
                         </select>
@@ -495,15 +504,19 @@
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Select Class Section <span style="color: #ef4444;">*</span></label>
+                        <label>Select Grade / Year Level & Class Section <span style="color: #ef4444;">*</span></label>
                         <select name="class_section_id" id="edit_class_section_id" class="form-control-custom" required
                             onchange="handleAssignedSectionCascade('edit')">
-                            <option value="">-- Select Class Section --</option>
+                            <option value="">-- Select Grade / Year Level & Class Section --</option>
                             @foreach ($classSections as $sec)
+                                @php
+                                    $gName = $sec->gradeLevel->name ?? 'N/A';
+                                    $eCode = $sec->gradeLevel->educationLevel->code ?? 'N/A';
+                                    $cCode = $sec->course ? ' - ' . $sec->course->course_code : '';
+                                @endphp
                                 <option value="{{ $sec->id }}"
                                     data-ed-level-id="{{ $sec->gradeLevel->education_level_id ?? '' }}">
-                                    {{ $sec->section_name }}
-                                    ({{ $sec->gradeLevel->educationLevel->code ?? 'N/A' }}{{ $sec->course ? ' - ' . $sec->course->course_code : '' }})
+                                    {{ $gName }} - {{ $sec->section_name }} ({{ $eCode }}{{ $cCode }})
                                 </option>
                             @endforeach
                         </select>

@@ -11,6 +11,10 @@ use App\Http\Controllers\superadmins\SuperAdminAssignedSubjectController;
 use App\Http\Controllers\superadmins\SuperAdminSchoolYearController;
 use App\Http\Controllers\superadmins\SuperAdminEnrollmentController;
 use App\Http\Controllers\superadmins\SuperAdminGradeController;
+use App\Http\Controllers\junior_high_school\JuniorHighSchoolTeacherController;
+use App\Http\Controllers\junior_high_school\JuniorHighSchoolStudentController;
+use App\Http\Controllers\junior_high_school\JuniorHighSchoolEnrollmentController;
+use App\Http\Controllers\junior_high_school\JuniorHighSchoolGradeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,9 +35,43 @@ Route::get('/', function () {
 // Authentication Routes for School Levels & Admins
 Route::get('/auth/elementary', [AuthController::class, 'ElementaryLoginPage'])->name('elementary.login.page');
 Route::get('/auth/junior-high-school', [AuthController::class, 'JuniorHighSchoolLoginPage'])->name('junior_high_school.login.page');
+Route::post('/auth/junior-high-school', [AuthController::class, 'JuniorHighSchoolLogin'])->name('junior_high_school.login.submit');
 Route::get('/auth/senior-high-school', [AuthController::class, 'SeniorHighSchoolLoginPage'])->name('senior_high_school.login.page');
 Route::get('/auth/college', [AuthController::class, 'CollegeLoginPage'])->name('college.login.page');
 Route::get('/auth/admin', [AuthController::class, 'AdminLoginPage'])->name('admin.login.page');
+
+// Junior High School Teacher Protected Routes
+Route::middleware(['auth', 'jhs.teacher'])->prefix('junior-high-school')->as('junior_high_school.')->group(function () {
+    Route::get('/dashboard', [JuniorHighSchoolTeacherController::class, 'JuniorHighSchoolDashboardPage'])->name('dashboard.page');
+    Route::post('/logout', [AuthController::class, 'JuniorHighSchoolLogout'])->name('logout');
+
+    // Students Module (Handled Students Only)
+    Route::get('/students', [JuniorHighSchoolStudentController::class, 'JuniorHighSchoolStudentPage'])->name('students.page');
+    Route::post('/students/store', [JuniorHighSchoolStudentController::class, 'store'])->name('students.store');
+    Route::post('/students/update/{id}', [JuniorHighSchoolStudentController::class, 'update'])->name('students.update');
+    Route::delete('/students/delete/{id}', [JuniorHighSchoolStudentController::class, 'destroy'])->name('students.destroy');
+    Route::get('/students/{id}', [JuniorHighSchoolStudentController::class, 'show'])->name('students.show');
+
+    // Enrollment Module (All JHS Students)
+    Route::get('/enrollment', [JuniorHighSchoolEnrollmentController::class, 'JuniorHighSchoolEnrollmentPage'])->name('enrollment.page');
+    Route::post('/enrollment/store', [JuniorHighSchoolEnrollmentController::class, 'store'])->name('enrollment.store');
+    Route::post('/enrollment/update/{id}', [JuniorHighSchoolEnrollmentController::class, 'update'])->name('enrollment.update');
+    Route::delete('/enrollment/delete/{id}', [JuniorHighSchoolEnrollmentController::class, 'destroy'])->name('enrollment.destroy');
+
+    // Grades Module (Handled Subjects Only)
+    Route::get('/grades', [JuniorHighSchoolGradeController::class, 'JuniorHighSchoolGradePage'])->name('grades.page');
+    Route::post('/grades/update-score', [JuniorHighSchoolGradeController::class, 'updateTaskScore'])->name('grades.update_score');
+    Route::post('/grades/category/store', [JuniorHighSchoolGradeController::class, 'storeCategory'])->name('grades.category.store');
+    Route::match(['post', 'put'], '/grades/category/update/{id}', [JuniorHighSchoolGradeController::class, 'updateCategory'])->name('grades.category.update');
+    Route::delete('/grades/category/delete/{id}', [JuniorHighSchoolGradeController::class, 'destroyCategory'])->name('grades.category.destroy');
+    Route::post('/grades/task/store', [JuniorHighSchoolGradeController::class, 'storeTask'])->name('grades.task.store');
+    Route::match(['post', 'put'], '/grades/task/update/{id}', [JuniorHighSchoolGradeController::class, 'updateTask'])->name('grades.task.update');
+    Route::delete('/grades/task/delete/{id}', [JuniorHighSchoolGradeController::class, 'destroyTask'])->name('grades.task.destroy');
+    Route::post('/grades/attendance/date/store', [JuniorHighSchoolGradeController::class, 'storeAttendanceDate'])->name('grades.attendance.date.store');
+    Route::post('/grades/attendance/update-status', [JuniorHighSchoolGradeController::class, 'updateAttendanceStatus'])->name('grades.attendance.update_status');
+    Route::delete('/grades/attendance/date/delete', [JuniorHighSchoolGradeController::class, 'destroyAttendanceDate'])->name('grades.attendance.date.destroy');
+    Route::post('/grades/compute-total', [JuniorHighSchoolGradeController::class, 'computeTotalGrades'])->name('grades.compute.total');
+});
 
 // Super Admin Auth Routes
 Route::get('/auth/superadmin', [AuthController::class, 'SuperAdminLoginPage'])->name('superadmin.login.page');
@@ -80,10 +118,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/superadmin/grades', [SuperAdminGradeController::class, 'SuperAdminGradePage'])->name('superadmin.grades.page');
     Route::post('/superadmin/grades/update-score', [SuperAdminGradeController::class, 'updateTaskScore'])->name('superadmin.grades.update_score');
     Route::post('/superadmin/grades/category/store', [SuperAdminGradeController::class, 'storeCategory'])->name('superadmin.grades.category.store');
-    Route::post('/superadmin/grades/category/update/{id}', [SuperAdminGradeController::class, 'updateCategory'])->name('superadmin.grades.category.update');
+    Route::match(['post', 'put'], '/superadmin/grades/category/update/{id}', [SuperAdminGradeController::class, 'updateCategory'])->name('superadmin.grades.category.update');
     Route::delete('/superadmin/grades/category/delete/{id}', [SuperAdminGradeController::class, 'destroyCategory'])->name('superadmin.grades.category.destroy');
     Route::post('/superadmin/grades/task/store', [SuperAdminGradeController::class, 'storeTask'])->name('superadmin.grades.task.store');
-    Route::post('/superadmin/grades/task/update/{id}', [SuperAdminGradeController::class, 'updateTask'])->name('superadmin.grades.task.update');
+    Route::match(['post', 'put'], '/superadmin/grades/task/update/{id}', [SuperAdminGradeController::class, 'updateTask'])->name('superadmin.grades.task.update');
     Route::delete('/superadmin/grades/task/delete/{id}', [SuperAdminGradeController::class, 'destroyTask'])->name('superadmin.grades.task.destroy');
     Route::post('/superadmin/grades/attendance/date/store', [SuperAdminGradeController::class, 'storeAttendanceDate'])->name('superadmin.grades.attendance.date.store');
     Route::post('/superadmin/grades/attendance/update-status', [SuperAdminGradeController::class, 'updateAttendanceStatus'])->name('superadmin.grades.attendance.update_status');
