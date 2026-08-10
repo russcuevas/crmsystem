@@ -17,6 +17,8 @@
 
     <!-- Custom Super Admin CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/superadmin-dashboard.css') }}">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @stack('styles')
 </head>
 
@@ -417,7 +419,56 @@
                 });
             }
         });
+
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+
+        function showToast(icon, title) {
+            Toast.fire({
+                icon: icon,
+                title: title
+            });
+        }
     </script>
+
+    @if (session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('success', @json(session('success')));
+            });
+        </script>
+    @endif
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('error', @json(session('error')));
+            });
+        </script>
+    @endif
+    @if (session('warning'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('warning', @json(session('warning')));
+            });
+        </script>
+    @endif
+    @if (session('info'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('info', @json(session('info')));
+            });
+        </script>
+    @endif
+
     @stack('scripts')
 </body>
 

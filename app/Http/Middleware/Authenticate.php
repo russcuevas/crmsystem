@@ -12,6 +12,37 @@ class Authenticate extends Middleware
      */
     protected function redirectTo(Request $request): ?string
     {
-        return $request->expectsJson() ? null : route('login');
+        if ($request->expectsJson()) {
+            return null;
+        }
+
+        session()->flash('error', 'Please log in first.');
+
+        if ($request->is('superadmin*')) {
+            return route('superadmin.login.page');
+        }
+
+        if ($request->is('admin*')) {
+            return route('admin.login.page');
+        }
+
+        if ($request->is('elementary*')) {
+            return route('elementary.login.page');
+        }
+
+        if ($request->is('junior-high-school*')) {
+            return route('junior_high_school.login.page');
+        }
+
+        if ($request->is('senior-high-school*')) {
+            return route('senior_high_school.login.page');
+        }
+
+        if ($request->is('college*')) {
+            return route('college.login.page');
+        }
+
+        return route('superadmin.login.page');
     }
 }
+

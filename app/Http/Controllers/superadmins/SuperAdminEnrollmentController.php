@@ -45,8 +45,10 @@ class SuperAdminEnrollmentController extends Controller
         }
 
         if ($selectedLevel) {
-            $enrollmentsQuery->whereHas('gradeLevel.educationLevel', function ($q) use ($selectedLevel) {
-                $q->where('code', $selectedLevel);
+            $enrollmentsQuery->where(function ($query) use ($selectedLevel) {
+                $query->whereHas('gradeLevel.educationLevel', fn($q) => $q->where('code', $selectedLevel))
+                      ->orWhereHas('student.educationLevel', fn($q) => $q->where('code', $selectedLevel))
+                      ->orWhereHas('classSection.gradeLevel.educationLevel', fn($q) => $q->where('code', $selectedLevel));
             });
         }
 
@@ -64,8 +66,15 @@ class SuperAdminEnrollmentController extends Controller
         }
         $classSections = $sectionsQuery->get();
 
-        // Get All Students with User & Levels
-        $students = Student::with(['user', 'educationLevel', 'gradeLevel', 'course'])->get();
+        // Get Students with User & Levels matching current selected level
+        $studentsQuery = Student::with(['user', 'educationLevel', 'gradeLevel', 'course']);
+        if ($selectedLevel) {
+            $studentsQuery->where(function ($q) use ($selectedLevel) {
+                $q->whereHas('educationLevel', fn($el) => $el->where('code', $selectedLevel))
+                  ->orWhereDoesntHave('educationLevel');
+            });
+        }
+        $students = $studentsQuery->get();
 
         // System overview statistics
         $totalAccounts = User::count();

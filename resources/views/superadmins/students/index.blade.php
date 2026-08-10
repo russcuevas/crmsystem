@@ -437,6 +437,16 @@
 
         <div class="card-body">
             <div class="table-responsive">
+                @php
+                    $selectedLevelCode = strtoupper($selectedLevel ?? '');
+                    $isJhsOrBedFilter = in_array($selectedLevelCode, ['JHS', 'BED']);
+                    if (!$isJhsOrBedFilter && isset($students) && $students->isNotEmpty()) {
+                        $isJhsOrBedFilter = $students->every(function ($st) {
+                            $code = strtoupper($st->educationLevel->code ?? '');
+                            return in_array($code, ['JHS', 'BED']);
+                        });
+                    }
+                @endphp
                 <table class="custom-table" id="studentsTable">
                     <thead>
                         <tr>
@@ -445,7 +455,9 @@
                             <th>Full Name</th>
                             <th>Level</th>
                             <th>Grade Level</th>
-                            <th>Course / Strand</th>
+                            @if (!$isJhsOrBedFilter)
+                                <th>Course / Strand</th>
+                            @endif
                             <th>Gender</th>
                             <th>Location / Address</th>
                             <th>Status</th>
@@ -454,6 +466,10 @@
                     </thead>
                     <tbody>
                         @foreach ($students as $student)
+                            @php
+                                $stLvlCode = strtoupper($student->educationLevel->code ?? '');
+                                $stIsJhsOrBed = in_array($stLvlCode, ['JHS', 'BED']);
+                            @endphp
                             <tr>
                                 <td><strong>{{ $student->student_number }}</strong></td>
                                 <td>{{ $student->lrn ?? 'N/A' }}</td>
@@ -466,7 +482,9 @@
                                     <span class="badge badge-teacher">{{ $student->educationLevel->code ?? 'N/A' }}</span>
                                 </td>
                                 <td>{{ $student->gradeLevel->name ?? 'N/A' }}</td>
-                                <td>{{ $student->course->course_code ?? 'N/A' }}</td>
+                                @if (!$isJhsOrBedFilter)
+                                    <td>{{ $stIsJhsOrBed ? '-' : ($student->course->course_code ?? 'N/A') }}</td>
+                                @endif
                                 <td>{{ $student->gender ?? 'N/A' }}</td>
                                 <td style="font-size: 0.8rem; color: #475569;">
                                     @php

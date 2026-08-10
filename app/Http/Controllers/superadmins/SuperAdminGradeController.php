@@ -15,6 +15,7 @@ use App\Models\Teacher;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\ClassSection;
+use App\Models\Attendance;
 use Illuminate\Http\Request;
 
 class SuperAdminGradeController extends Controller
@@ -71,6 +72,8 @@ class SuperAdminGradeController extends Controller
         $categories = collect();
         $enrolledStudents = collect();
         $availablePeriods = collect();
+        $attendanceDates = collect();
+        $attendances = collect();
 
         if ($currentSectionSubject) {
             $levelCode = $currentSectionSubject->classSection->gradeLevel->educationLevel->code ?? '';
@@ -108,6 +111,15 @@ class SuperAdminGradeController extends Controller
             }
 
             $enrolledStudents = $enrolledQuery->with(['student.user', 'taskScores'])->get();
+
+            // Fetch Distinct Attendance Dates and Records
+            $attendanceDates = Attendance::where('class_section_subject_id', $currentSectionSubject->id)
+                ->select('attendance_date')
+                ->distinct()
+                ->orderBy('attendance_date', 'asc')
+                ->pluck('attendance_date');
+
+            $attendances = Attendance::where('class_section_subject_id', $currentSectionSubject->id)->get();
         }
 
         $totalAccounts = User::count();
@@ -133,6 +145,8 @@ class SuperAdminGradeController extends Controller
             'availablePeriods',
             'selectedPeriod',
             'selectedSemester',
+            'attendanceDates',
+            'attendances',
             'activeSchoolYear',
             'selectedLevel',
             'educationLevelsList',
@@ -264,5 +278,80 @@ class SuperAdminGradeController extends Controller
         $task->delete();
 
         return back()->with('success', 'Grading Task deleted successfully.');
+    }
+
+    public function storeAttendanceDate(Request $request)
+    {
+        $request->validate([
+            'class_section_subject_id' => 'required|exists:class_section_subjects,id',
+            'attendance_date' => 'required|date',
+        ]);
+
+        $css = ClassSectionSubject::findOrFail($request->class_section_subject_id);
+
+        $enrolledStudents = Enrollment::where('class_section_id', $css->class_section_id)->get();
+
+        foreach ($enrolledStudents as $enr) {
+            Attendance::firstOrCreate(
+                [
+                    'class_section_subject_id' => $css->id,
+                    'enrollment_id' => $enr->id,
+                    'attendance_date' => $request->attendance_date,
+                ],
+                [
+                    'status' => 'P',
+                    'remarks' => null,
+                ]
+            );
+        }
+
+        return back()->with('success', 'Attendance date ' . $request->attendance_date . ' added successfully.');
+    }
+
+    public function updateAttendanceStatus(Request $request)
+    {
+        $request->validate([
+            'class_section_subject_id' => 'required|exists:class_section_subjects,id',
+            'enrollment_id' => 'required|exists:enrollments,id',
+            'attendance_date' => 'required|date',
+            'status' => 'required|string',
+        ]);
+
+        $status = strtoupper(trim($request->status));
+        $validStatuses = ['P', 'L', 'A', 'AEL', 'E', 'C'];
+        if (!in_array($status, $validStatuses)) {
+            $status = 'P';
+        }
+
+        $att = Attendance::updateOrCreate(
+            [
+                'class_section_subject_id' => $request->class_section_subject_id,
+                'enrollment_id' => $request->enrollment_id,
+                'attendance_date' => $request->attendance_date,
+            ],
+            [
+                'status' => $status,
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Attendance status updated successfully.',
+            'status' => $att->status,
+        ]);
+    }
+
+    public function destroyAttendanceDate(Request $request)
+    {
+        $request->validate([
+            'class_section_subject_id' => 'required|exists:class_section_subjects,id',
+            'attendance_date' => 'required|date',
+        ]);
+
+        Attendance::where('class_section_subject_id', $request->class_section_subject_id)
+            ->where('attendance_date', $request->attendance_date)
+            ->delete();
+
+        return back()->with('success', 'Attendance column deleted successfully.');
     }
 }

@@ -173,6 +173,90 @@
             color: #0f172a;
             transform: translateY(-1px);
         }
+
+        .sheet-tabs-nav {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+            border-bottom: 2px solid #cbd5e1;
+            padding-bottom: 0.5rem;
+        }
+
+        .sheet-tab-btn {
+            padding: 0.65rem 1.35rem;
+            border-radius: 10px;
+            border: 1.5px solid transparent;
+            background: #ffffff;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .sheet-tab-btn:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .sheet-tab-btn.active {
+            background: var(--primary-navy, #0f172a);
+            color: #ffffff;
+            border-color: var(--primary-navy, #0f172a);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .att-status-select {
+            padding: 0.35rem 0.55rem;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 0.82rem;
+            outline: none;
+            border: 1.5px solid #cbd5e1;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s ease;
+        }
+
+        .att-status-select.P {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: #a7f3d0;
+        }
+
+        .att-status-select.L {
+            background: #fff7ed;
+            color: #c2410c;
+            border-color: #ffedd5;
+        }
+
+        .att-status-select.A {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fca5a5;
+        }
+
+        .att-status-select.AEL {
+            background: #f3e8ff;
+            color: #6b21a8;
+            border-color: #d8b4fe;
+        }
+
+        .att-status-select.E {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+
+        .att-status-select.C {
+            background: #450a0a;
+            color: #ffffff;
+            border-color: #7f1d1d;
+        }
     </style>
 
     <!-- Class Section Subject Selector -->
@@ -505,124 +589,288 @@
             @endforelse
         </div>
 
-        <!-- Student Scores Matrix Class Record Table (Editable Table) -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title"
-                    style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Class Record Sheet
-                        @if ($selectedPeriod)
-                            &bull; {{ $selectedPeriod }} Period
-                        @endif
+        <!-- Sheet Tabs Navigation -->
+        <div class="sheet-tabs-nav">
+            <button type="button" id="tab-btn-grades" class="sheet-tab-btn active" onclick="switchSheetTab('grades')">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Class Record & Grades
+            </button>
+            <button type="button" id="tab-btn-attendance" class="sheet-tab-btn" onclick="switchSheetTab('attendance')">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Class Attendance Sheet
+            </button>
+        </div>
+
+        <!-- Panel 1: Student Scores Matrix Class Record Table (Editable Table) -->
+        <div id="sheet-grades-panel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"
+                        style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Class Record Sheet
+                            @if ($selectedPeriod)
+                                &bull; {{ $selectedPeriod }} Period
+                            @endif
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="card-body">
+                <div class="card-body">
 
-                <div class="table-responsive">
-                    <table class="custom-table" id="classRecordTable">
-                        <thead>
-                            <tr>
-                                <th>Student ID</th>
-                                <th>Student Name</th>
-                                @foreach ($categories as $cat)
-                                    @foreach ($cat->gradingTasks as $task)
-                                        <th style="text-align: center;"
-                                            title="{{ $cat->academic_period }} - {{ $cat->name }} - {{ $task->task_name }}">
-                                            <div style="font-size: 0.68rem; color: var(--accent-gold); font-weight: 700;">
-                                                [{{ $cat->academic_period }}]</div>
-                                            {{ $task->task_name }}
-                                            <div style="font-size: 0.65rem; font-weight: 500; color: var(--text-muted);">
-                                                (Max: {{ number_format($task->max_score, 0) }})
+                    <div class="table-responsive">
+                        <table class="custom-table" id="classRecordTable">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    @foreach ($categories as $cat)
+                                        @foreach ($cat->gradingTasks as $task)
+                                            <th style="text-align: center;"
+                                                title="{{ $cat->academic_period }} - {{ $cat->name }} - {{ $task->task_name }}">
+                                                <div
+                                                    style="font-size: 0.68rem; color: var(--accent-gold); font-weight: 700;">
+                                                    [{{ $cat->academic_period }}]</div>
+                                                {{ $task->task_name }}
+                                                <div
+                                                    style="font-size: 0.65rem; font-weight: 500; color: var(--text-muted);">
+                                                    (Max: {{ number_format($task->max_score, 0) }})
+                                                </div>
+                                            </th>
+                                        @endforeach
+                                        <th style="text-align: center; background: rgba(30, 41, 59, 0.04);">
+                                            {{ $cat->name }}
+                                            <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-gold);">
+                                                ({{ number_format($cat->weight, 0) }}%)
                                             </div>
                                         </th>
                                     @endforeach
-                                    <th style="text-align: center; background: rgba(30, 41, 59, 0.04);">
-                                        {{ $cat->name }}
-                                        <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-gold);">
-                                            ({{ number_format($cat->weight, 0) }}%)
-                                        </div>
+                                    <th style="text-align: center; background: rgba(16, 185, 129, 0.1);">Computed Grade
                                     </th>
-                                @endforeach
-                                <th style="text-align: center; background: rgba(16, 185, 129, 0.1);">Computed Grade</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($enrolledStudents as $enrollment)
-                                @php
-                                    $totalFinalGrade = 0;
-                                @endphp
-                                <tr data-student-row="{{ $enrollment->id }}">
-                                    <td><strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong></td>
-                                    <td>
-                                        <strong>{{ $enrollment->student->first_name ?? '' }}
-                                            {{ $enrollment->student->last_name ?? '' }}</strong>
-                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($enrolledStudents as $enrollment)
+                                    @php
+                                        $totalFinalGrade = 0;
+                                    @endphp
+                                    <tr data-student-row="{{ $enrollment->id }}">
+                                        <td><strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong></td>
+                                        <td>
+                                            <strong>{{ $enrollment->student->first_name ?? '' }}
+                                                {{ $enrollment->student->last_name ?? '' }}</strong>
+                                        </td>
 
-                                    @foreach ($categories as $cat)
-                                        @php
-                                            $catEarned = 0;
-                                            $catMax = 0;
-                                        @endphp
-
-                                        @foreach ($cat->gradingTasks as $task)
+                                        @foreach ($categories as $cat)
                                             @php
-                                                $taskScoreModel = $enrollment->taskScores
-                                                    ->where('grading_task_id', $task->id)
-                                                    ->first();
-                                                $scoreValue = $taskScoreModel ? $taskScoreModel->score : null;
-                                                if ($scoreValue !== null) {
-                                                    $catEarned += $scoreValue;
-                                                }
-                                                $catMax += $task->max_score;
+                                                $catEarned = 0;
+                                                $catMax = 0;
                                             @endphp
-                                            <td style="text-align: center;">
-                                                <input type="number" step="0.1" min="0"
-                                                    max="{{ $task->max_score }}"
-                                                    value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
-                                                    class="score-input-cell" data-task-id="{{ $task->id }}"
-                                                    data-enrollment-id="{{ $enrollment->id }}"
-                                                    data-max-score="{{ $task->max_score }}"
-                                                    data-cat-id="{{ $cat->id }}"
-                                                    data-cat-weight="{{ $cat->weight }}" placeholder="-">
+
+                                            @foreach ($cat->gradingTasks as $task)
+                                                @php
+                                                    $taskScoreModel = $enrollment->taskScores
+                                                        ->where('grading_task_id', $task->id)
+                                                        ->first();
+                                                    $scoreValue = $taskScoreModel ? $taskScoreModel->score : null;
+                                                    if ($scoreValue !== null) {
+                                                        $catEarned += $scoreValue;
+                                                    }
+                                                    $catMax += $task->max_score;
+                                                @endphp
+                                                <td style="text-align: center;">
+                                                    <input type="number" step="0.1" min="0"
+                                                        max="{{ $task->max_score }}"
+                                                        value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
+                                                        class="score-input-cell" data-task-id="{{ $task->id }}"
+                                                        data-enrollment-id="{{ $enrollment->id }}"
+                                                        data-max-score="{{ $task->max_score }}"
+                                                        data-cat-id="{{ $cat->id }}"
+                                                        data-cat-weight="{{ $cat->weight }}" placeholder="-">
+                                                </td>
+                                            @endforeach
+
+                                            @php
+                                                $catPercentage =
+                                                    $catMax > 0 ? ($catEarned / $catMax) * $cat->weight : 0;
+                                                $totalFinalGrade += $catPercentage;
+                                            @endphp
+
+                                            <td style="text-align: center; background: rgba(30, 41, 59, 0.03); font-weight: 700; color: var(--primary-navy);"
+                                                data-cat-summary="{{ $enrollment->id }}-{{ $cat->id }}">
+                                                <span class="cat-pct-val">{{ number_format($catPercentage, 2) }}</span>%
                                             </td>
                                         @endforeach
 
-                                        @php
-                                            $catPercentage = $catMax > 0 ? ($catEarned / $catMax) * $cat->weight : 0;
-                                            $totalFinalGrade += $catPercentage;
-                                        @endphp
-
-                                        <td style="text-align: center; background: rgba(30, 41, 59, 0.03); font-weight: 700; color: var(--primary-navy);"
-                                            data-cat-summary="{{ $enrollment->id }}-{{ $cat->id }}">
-                                            <span class="cat-pct-val">{{ number_format($catPercentage, 2) }}</span>%
+                                        <td style="text-align: center; background: rgba(16, 185, 129, 0.08);"
+                                            data-final-summary="{{ $enrollment->id }}">
+                                            <span class="badge badge-active final-grade-badge"
+                                                style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">
+                                                <span
+                                                    class="final-grade-val">{{ number_format($totalFinalGrade, 2) }}</span>%
+                                            </span>
                                         </td>
-                                    @endforeach
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="20"
+                                            style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                                            No students enrolled in this section for S.Y.
+                                            {{ $activeSchoolYear->school_year ?? '' }}.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                                    <td style="text-align: center; background: rgba(16, 185, 129, 0.08);"
-                                        data-final-summary="{{ $enrollment->id }}">
-                                        <span class="badge badge-active final-grade-badge"
-                                            style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">
-                                            <span class="final-grade-val">{{ number_format($totalFinalGrade, 2) }}</span>%
-                                        </span>
-                                    </td>
-                                </tr>
-                            @empty
+        <!-- Panel 2: Class Attendance Sheet -->
+        <div id="sheet-attendance-panel" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"
+                        style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Class Attendance Sheet
+                        </div>
+                        @if ($currentSectionSubject)
+                            <button class="btn-primary" style="padding: 0.45rem 0.85rem; font-size: 0.82rem;"
+                                onclick="openModal('addAttendanceDateModal')">
+                                + Add Attendance Date
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Legend Bar -->
+                    <div
+                        style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 0.78rem; font-weight: 700; align-items: center;">
+                        <span style="color: #475569;">Attendance Codes:</span>
+                        <span class="status-badge"
+                            style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;">P - Present</span>
+                        <span class="status-badge"
+                            style="background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5;">L - Late</span>
+                        <span class="status-badge"
+                            style="background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5;">A - Absent</span>
+                        <span class="status-badge"
+                            style="background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe;">AEL - Excuse
+                            Letter</span>
+                        <span class="status-badge"
+                            style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;">E - Excuse</span>
+                        <span class="status-badge"
+                            style="background: #450a0a; color: #ffffff; border: 1px solid #7f1d1d;">C - Cutting
+                            Class</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table" id="attendanceRecordTable">
+                            <thead>
                                 <tr>
-                                    <td colspan="20"
-                                        style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
-                                        No students enrolled in this section for S.Y.
-                                        {{ $activeSchoolYear->school_year ?? '' }}.
-                                    </td>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    @foreach ($attendanceDates as $attDate)
+                                        @php
+                                            $formattedDate = \Carbon\Carbon::parse($attDate)->format('Y-m-d');
+                                            $displayDate = \Carbon\Carbon::parse($attDate)->format('M d, Y');
+                                        @endphp
+                                        <th style="text-align: center; min-width: 140px;">
+                                            <div
+                                                style="display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                                                <span>{{ $displayDate }}</span>
+                                                @if ($currentSectionSubject)
+                                                    <form
+                                                        action="{{ route('superadmin.grades.attendance.date.destroy') }}"
+                                                        method="POST" style="display: inline;"
+                                                        onsubmit="return confirm('Are you sure you want to delete attendance column for {{ $displayDate }}?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <input type="hidden" name="class_section_subject_id"
+                                                            value="{{ $currentSectionSubject->id }}">
+                                                        <input type="hidden" name="attendance_date"
+                                                            value="{{ $formattedDate }}">
+                                                        <button type="submit"
+                                                            style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem; font-weight: 800; padding: 0 0 0 4px; line-height: 1;"
+                                                            title="Delete Column">&times;</button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        </th>
+                                    @endforeach
                                 </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse($enrolledStudents as $enrollment)
+                                    <tr>
+                                        <td><strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong></td>
+                                        <td>
+                                            <strong>{{ $enrollment->student->first_name ?? '' }}
+                                                {{ $enrollment->student->last_name ?? '' }}</strong>
+                                        </td>
+                                        @foreach ($attendanceDates as $attDate)
+                                            @php
+                                                $formattedDate = \Carbon\Carbon::parse($attDate)->format('Y-m-d');
+                                                $attRec = $attendances
+                                                    ->where('enrollment_id', $enrollment->id)
+                                                    ->where('attendance_date', $formattedDate)
+                                                    ->first();
+                                                $statusVal = strtoupper($attRec->status ?? 'P');
+                                                if (!in_array($statusVal, ['P', 'L', 'A', 'AEL', 'E', 'C'])) {
+                                                    $statusVal = 'P';
+                                                }
+                                            @endphp
+                                            <td style="text-align: center;">
+                                                <select class="att-status-select {{ $statusVal }}"
+                                                    data-css-id="{{ $currentSectionSubject->id }}"
+                                                    data-enrollment-id="{{ $enrollment->id }}"
+                                                    data-date="{{ $formattedDate }}"
+                                                    onchange="updateAttendanceStatusCell(this)">
+                                                    <option value="P" {{ $statusVal === 'P' ? 'selected' : '' }}>P -
+                                                        Present</option>
+                                                    <option value="L" {{ $statusVal === 'L' ? 'selected' : '' }}>L -
+                                                        Late</option>
+                                                    <option value="A" {{ $statusVal === 'A' ? 'selected' : '' }}>A -
+                                                        Absent</option>
+                                                    <option value="AEL" {{ $statusVal === 'AEL' ? 'selected' : '' }}>
+                                                        AEL - Excuse Letter</option>
+                                                    <option value="E" {{ $statusVal === 'E' ? 'selected' : '' }}>E -
+                                                        Excuse</option>
+                                                    <option value="C" {{ $statusVal === 'C' ? 'selected' : '' }}>C -
+                                                        Cutting</option>
+                                                </select>
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="20"
+                                            style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                                            No students enrolled in this section for S.Y.
+                                            {{ $activeSchoolYear->school_year ?? '' }}.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -743,10 +991,41 @@
                 </form>
             </div>
         </div>
+        <!-- Add Attendance Date Modal -->
+        <div class="modal-overlay" id="addAttendanceDateModal">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Add Attendance Date Column</h3>
+                    <button type="button" class="btn-icon-action"
+                        style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                        onclick="closeModal('addAttendanceDateModal')">&times;</button>
+                </div>
+                <form action="{{ route('superadmin.grades.attendance.date.store') }}" method="POST">
+                    @csrf
+                    @if ($currentSectionSubject)
+                        <input type="hidden" name="class_section_subject_id" value="{{ $currentSectionSubject->id }}">
+                    @endif
+                    <div class="modal-body">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>Select Attendance Date <span style="color: #ef4444;">*</span></label>
+                            <input type="date" name="attendance_date" class="form-control"
+                                value="{{ date('Y-m-d') }}" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary"
+                            onclick="closeModal('addAttendanceDateModal')">Cancel</button>
+                        <button type="submit" class="btn-primary">+ Add Date Column</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     @endif
 @endsection
 
 @push('scripts')
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script>
         function openModal(id) {
             const el = document.getElementById(id);
@@ -758,7 +1037,67 @@
             if (el) el.style.display = 'none';
         }
 
+        function switchSheetTab(tabName) {
+            const gradesPanel = document.getElementById('sheet-grades-panel');
+            const attPanel = document.getElementById('sheet-attendance-panel');
+            const btnGrades = document.getElementById('tab-btn-grades');
+            const btnAtt = document.getElementById('tab-btn-attendance');
+
+            if (tabName === 'attendance') {
+                if (gradesPanel) gradesPanel.style.display = 'none';
+                if (attPanel) attPanel.style.display = 'block';
+                if (btnGrades) btnGrades.classList.remove('active');
+                if (btnAtt) btnAtt.classList.add('active');
+                localStorage.setItem('active_sheet_tab', 'attendance');
+            } else {
+                if (gradesPanel) gradesPanel.style.display = 'block';
+                if (attPanel) attPanel.style.display = 'none';
+                if (btnGrades) btnGrades.classList.add('active');
+                if (btnAtt) btnAtt.classList.remove('active');
+                localStorage.setItem('active_sheet_tab', 'grades');
+            }
+        }
+
+        function updateAttendanceStatusCell(selectEl) {
+            const cssId = selectEl.getAttribute('data-css-id');
+            const enrollmentId = selectEl.getAttribute('data-enrollment-id');
+            const attDate = selectEl.getAttribute('data-date');
+            const statusVal = selectEl.value;
+
+            // Update badge color class dynamically
+            selectEl.className = 'att-status-select ' + statusVal;
+
+            $.ajax({
+                url: "{{ route('superadmin.grades.attendance.update_status') }}",
+                method: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    class_section_subject_id: cssId,
+                    enrollment_id: enrollmentId,
+                    attendance_date: attDate,
+                    status: statusVal
+                },
+                success: function(res) {
+                    if (typeof showToast === 'function') {
+                        showToast('success', 'Attendance updated to ' + statusVal);
+                    }
+                },
+                error: function(err) {
+                    console.error("Failed to update attendance status:", err);
+                    if (typeof showToast === 'function') {
+                        showToast('error', 'Failed to update attendance status.');
+                    }
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Restore active tab after form submit or refresh
+            const urlParams = new URLSearchParams(window.location.search);
+            const reqTab = urlParams.get('tab');
+            const savedTab = reqTab || localStorage.getItem('active_sheet_tab') || 'grades';
+            switchSheetTab(savedTab);
+
             const csrfToken = '{{ csrf_token() }}';
             const updateScoreUrl = '{{ route('superadmin.grades.update_score') }}';
 
@@ -808,6 +1147,9 @@
                         inputElement.classList.remove('saving');
                         if (data.success) {
                             inputElement.classList.add('saved-success');
+                            if (typeof showToast === 'function') {
+                                showToast('success', 'Task score saved successfully!');
+                            }
                             setTimeout(() => {
                                 inputElement.classList.remove('saved-success');
                             }, 2000);
@@ -816,6 +1158,9 @@
                     .catch(err => {
                         console.error('Error saving score:', err);
                         inputElement.classList.remove('saving');
+                        if (typeof showToast === 'function') {
+                            showToast('error', 'Error saving score.');
+                        }
                     });
             }
 

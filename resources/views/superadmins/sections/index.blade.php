@@ -341,13 +341,25 @@
 
         <div class="card-body">
             <div class="table-responsive">
+                @php
+                    $selectedLevelCode = strtoupper($selectedLevel ?? '');
+                    $isJhsOrBedFilter = in_array($selectedLevelCode, ['JHS', 'BED']);
+                    if (!$isJhsOrBedFilter && isset($sections) && $sections->isNotEmpty()) {
+                        $isJhsOrBedFilter = $sections->every(function ($sec) {
+                            $edCode = strtoupper($sec->gradeLevel->educationLevel->code ?? '');
+                            return in_array($edCode, ['JHS', 'BED']);
+                        });
+                    }
+                @endphp
                 <table class="custom-table" id="sectionsTable">
                     <thead>
                         <tr>
                             <th>Section Name</th>
                             <th>Education Level</th>
                             <th>Grade Level</th>
-                            <th>Course / Strand</th>
+                            @if (!$isJhsOrBedFilter)
+                                <th>Course / Strand</th>
+                            @endif
                             <th>School Year</th>
                             <th>Class Adviser</th>
                             <th style="text-align: center;">Actions</th>
@@ -357,6 +369,7 @@
                         @foreach ($sections as $section)
                             @php
                                 $edCode = strtoupper($section->gradeLevel->educationLevel->code ?? '');
+                                $isJhsOrBed = in_array($edCode, ['JHS', 'BED']);
                                 $adviserName =
                                     $section->adviser->user->name ??
                                     ($section->adviser
@@ -369,14 +382,18 @@
                                     <span class="badge badge-admin">{{ $edCode ?: 'N/A' }}</span>
                                 </td>
                                 <td>{{ $section->gradeLevel->name ?? 'N/A' }}</td>
-                                <td>
-                                    @if ($section->course)
-                                        <strong>{{ $section->course->course_code }}</strong> -
-                                        {{ $section->course->course_name }}
-                                    @else
-                                        <span style="color: #94a3b8;">-</span>
-                                    @endif
-                                </td>
+                                @if (!$isJhsOrBedFilter)
+                                    <td>
+                                        @if ($isJhsOrBed)
+                                            <span style="color: #94a3b8;">-</span>
+                                        @elseif ($section->course)
+                                            <strong>{{ $section->course->course_code }}</strong> -
+                                            {{ $section->course->course_name }}
+                                        @else
+                                            <span style="color: #94a3b8;">-</span>
+                                        @endif
+                                    </td>
+                                @endif
                                 <td>S.Y. {{ $section->schoolYear->school_year ?? 'N/A' }}</td>
                                 <td>
                                     @if ($edCode === 'COLLEGE')

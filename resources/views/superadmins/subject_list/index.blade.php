@@ -373,14 +373,25 @@
 
         <div class="card-body">
             <div class="table-responsive">
+                @php
+                    $selectedLevelCode = strtoupper($selectedLevel ?? ($currentEducationLevel->code ?? ''));
+                    $isJhsOrBedFilter = in_array($selectedLevelCode, ['JHS', 'BED']);
+                    if (!$isJhsOrBedFilter && isset($subjects) && $subjects->isNotEmpty()) {
+                        $isJhsOrBedFilter = $subjects->every(function ($s) {
+                            return in_array(strtoupper($s->educationLevel->code ?? ''), ['JHS', 'BED']);
+                        });
+                    }
+                @endphp
                 <table class="custom-table" id="subjectsTable">
                     <thead>
                         <tr>
                             <th>Code</th>
                             <th>Subject Name</th>
                             <th>Education Level</th>
-                            <th>Course</th>
-                            <th>Units</th>
+                            @if (!$isJhsOrBedFilter)
+                                <th>Course</th>
+                                <th>Units</th>
+                            @endif
                             <th>Semester / Academic Period</th>
                             <th style="text-align: center;">Actions</th>
                         </tr>
@@ -399,8 +410,10 @@
                                         {{ $subject->educationLevel->code ?? 'N/A' }}
                                     </span>
                                 </td>
-                                <td>{{ $subject->course->course_code ?? 'General' }}</td>
-                                <td>{{ $isJhsOrBed ? '-' : $subject->units ?? '3' }}</td>
+                                @if (!$isJhsOrBedFilter)
+                                    <td>{{ $isJhsOrBed ? '-' : $subject->course->course_code ?? 'General' }}</td>
+                                    <td>{{ $isJhsOrBed ? '-' : $subject->units ?? '3' }}</td>
+                                @endif
                                 <td>
                                     @if ($isJhsOrBed || str_contains(strtolower($subject->semester ?? ''), 'quarter'))
                                         <span class="badge-quarter" title="Applies to 1st, 2nd, 3rd, and 4th Quarters">
@@ -496,7 +509,7 @@
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="form-group">
+                        <div class="form-group" id="add_units_group">
                             <label>Units</label>
                             <input type="number" name="units" id="add_units" class="form-control-custom"
                                 value="3" min="0">
@@ -511,9 +524,9 @@
                     </div>
 
                     <div class="form-group" id="add_course_group" style="display: block;">
-                        <label>Course (College / Strand Optional)</label>
+                        <label>Course (College / Strand )</label>
                         <select name="course_id" id="add_course_id" class="form-control-custom">
-                            <option value="">-- None / General Subject --</option>
+                            <option value="">GE - General Subject</option>
                             @foreach ($coursesList as $course)
                                 <option value="{{ $course->id }}" data-level="{{ strtoupper($course->level) }}">
                                     {{ $course->course_code }} - {{ $course->course_name }}
@@ -569,7 +582,7 @@
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div class="form-group">
+                        <div class="form-group" id="edit_units_group">
                             <label>Units</label>
                             <input type="number" name="units" id="edit_units" class="form-control-custom"
                                 min="0">
@@ -584,9 +597,9 @@
                     </div>
 
                     <div class="form-group" id="edit_course_group">
-                        <label>Course (College / Strand Optional)</label>
+                        <label>Course (College / Strand )</label>
                         <select name="course_id" id="edit_course_id" class="form-control-custom">
-                            <option value="">-- None / General Subject --</option>
+                            <option value="">GE - General Subject</option>
                             @foreach ($coursesList as $course)
                                 <option value="{{ $course->id }}" data-level="{{ strtoupper($course->level) }}">
                                     {{ $course->course_code }} - {{ $course->course_name }}
@@ -684,7 +697,8 @@
             document.getElementById('addSubjectModal').style.display = 'flex';
             const levelEl = document.getElementById('add_education_level_id');
             if (levelEl) {
-                handleLevelChange(levelEl, 'add_semester', 'add_course_group', 'add_level_info', null, 'add_units', 'add_course_id');
+                handleLevelChange(levelEl, 'add_semester', 'add_course_group', 'add_level_info', null, 'add_units',
+                    'add_course_id');
             }
         }
 
@@ -712,7 +726,8 @@
             document.getElementById('editSubjectModal').style.display = 'none';
         }
 
-        function handleLevelChange(selectEl, semSelectId, courseGroupId, infoBoxId, initialSemValue, unitsInputId, courseSelectId = null, targetCourseId = null) {
+        function handleLevelChange(selectEl, semSelectId, courseGroupId, infoBoxId, initialSemValue, unitsInputId,
+            courseSelectId = null, targetCourseId = null) {
             if (!selectEl) return;
             let code = '';
             if (selectEl.tagName === 'SELECT') {
@@ -728,7 +743,8 @@
             const courseGroup = document.getElementById(courseGroupId);
             const infoBox = document.getElementById(infoBoxId);
             const unitsInput = unitsInputId ? document.getElementById(unitsInputId) : null;
-            const courseSelect = courseSelectId ? document.getElementById(courseSelectId) : (courseGroup ? courseGroup.querySelector('select') : null);
+            const courseSelect = courseSelectId ? document.getElementById(courseSelectId) : (courseGroup ? courseGroup
+                .querySelector('select') : null);
 
             const currentVal = initialSemValue || (semSelect ? semSelect.value : '');
 
@@ -750,7 +766,8 @@
 
                 if (targetCourseId) {
                     courseSelect.value = targetCourseId;
-                } else if (courseSelect.options[courseSelect.selectedIndex] && courseSelect.options[courseSelect.selectedIndex].disabled) {
+                } else if (courseSelect.options[courseSelect.selectedIndex] && courseSelect.options[courseSelect
+                        .selectedIndex].disabled) {
                     courseSelect.value = '';
                 }
             }
@@ -760,6 +777,13 @@
                     unitsInput.value = '';
                     unitsInput.disabled = true;
                     unitsInput.placeholder = 'N/A';
+                    const unitsGroup = unitsInput.closest('.form-group');
+                    if (unitsGroup) {
+                        unitsGroup.style.display = 'none';
+                        if (unitsGroup.parentElement) {
+                            unitsGroup.parentElement.style.gridTemplateColumns = '1fr';
+                        }
+                    }
                 }
                 if (infoBox) {
                     infoBox.className = 'level-info-box jhs-bed';
@@ -781,6 +805,13 @@
                     if (unitsInput.value === '') {
                         unitsInput.value = '3';
                     }
+                    const unitsGroup = unitsInput.closest('.form-group');
+                    if (unitsGroup) {
+                        unitsGroup.style.display = 'block';
+                        if (unitsGroup.parentElement) {
+                            unitsGroup.parentElement.style.gridTemplateColumns = '1fr 1fr';
+                        }
+                    }
                 }
                 if (infoBox) {
                     infoBox.className = 'level-info-box shs-college';
@@ -799,6 +830,13 @@
                 if (unitsInput) {
                     unitsInput.disabled = false;
                     unitsInput.placeholder = '';
+                    const unitsGroup = unitsInput.closest('.form-group');
+                    if (unitsGroup) {
+                        unitsGroup.style.display = 'block';
+                        if (unitsGroup.parentElement) {
+                            unitsGroup.parentElement.style.gridTemplateColumns = '1fr 1fr';
+                        }
+                    }
                 }
                 if (infoBox) {
                     infoBox.style.display = 'none';
