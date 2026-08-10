@@ -88,5 +88,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/superadmin/grades/attendance/date/store', [SuperAdminGradeController::class, 'storeAttendanceDate'])->name('superadmin.grades.attendance.date.store');
     Route::post('/superadmin/grades/attendance/update-status', [SuperAdminGradeController::class, 'updateAttendanceStatus'])->name('superadmin.grades.attendance.update_status');
     Route::delete('/superadmin/grades/attendance/date/delete', [SuperAdminGradeController::class, 'destroyAttendanceDate'])->name('superadmin.grades.attendance.date.destroy');
+    Route::post('/superadmin/grades/subject/weights/update', [SuperAdminGradeController::class, 'updateSubjectWeights'])->name('superadmin.grades.subject.weights.update');
     Route::post('/superadmin/school-year/switch', [SuperAdminSchoolYearController::class, 'switch'])->name('superadmin.school_year.switch');
 });

@@ -78,7 +78,7 @@ class SuperAdminGradeController extends Controller
         if ($currentSectionSubject) {
             $levelCode = $currentSectionSubject->classSection->gradeLevel->educationLevel->code ?? '';
 
-            if (in_array($levelCode, ['BED', 'JHS'])) {
+            if (in_array(strtoupper($levelCode), ['BED', 'JHS', 'ELEM', 'ELEMENTARY'])) {
                 $defaultPeriods = collect(['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter']);
             } else {
                 $defaultPeriods = collect(['Prelim', 'Midterm', 'Finals']);
@@ -89,6 +89,10 @@ class SuperAdminGradeController extends Controller
                 ->pluck('academic_period');
 
             $availablePeriods = $defaultPeriods->merge($dbPeriods)->unique()->values();
+
+            if (!$selectedPeriod || !$availablePeriods->contains($selectedPeriod)) {
+                $selectedPeriod = $availablePeriods->first();
+            }
 
             $categoriesQuery = GradingCategory::where('class_section_subject_id', $currentSectionSubject->id)
                 ->with(['gradingTasks.studentTaskScores']);
@@ -189,6 +193,7 @@ class SuperAdminGradeController extends Controller
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
             'academic_period' => 'required|string',
             'name' => 'required|string|max:255',
+            'component_type' => 'nullable|in:lecture,laboratory,general',
             'weight' => 'required|numeric|min:0|max:100',
         ]);
 
@@ -196,6 +201,7 @@ class SuperAdminGradeController extends Controller
             'class_section_subject_id' => $request->class_section_subject_id,
             'academic_period' => $request->academic_period,
             'name' => $request->name,
+            'component_type' => $request->component_type ?? 'general',
             'weight' => $request->weight,
         ]);
 
@@ -207,6 +213,7 @@ class SuperAdminGradeController extends Controller
         $request->validate([
             'academic_period' => 'required|string',
             'name' => 'required|string|max:255',
+            'component_type' => 'nullable|in:lecture,laboratory,general',
             'weight' => 'required|numeric|min:0|max:100',
         ]);
 
@@ -214,6 +221,7 @@ class SuperAdminGradeController extends Controller
         $category->update([
             'academic_period' => $request->academic_period,
             'name' => $request->name,
+            'component_type' => $request->component_type ?? 'general',
             'weight' => $request->weight,
         ]);
 
@@ -353,5 +361,22 @@ class SuperAdminGradeController extends Controller
             ->delete();
 
         return back()->with('success', 'Attendance column deleted successfully.');
+    }
+
+    public function updateSubjectWeights(Request $request)
+    {
+        $request->validate([
+            'subject_id' => 'required|exists:subjects,id',
+            'lecture_weight' => 'required|numeric|min:0|max:100',
+            'lab_weight' => 'required|numeric|min:0|max:100',
+        ]);
+
+        $subject = Subject::findOrFail($request->subject_id);
+        $subject->update([
+            'lecture_weight' => $request->lecture_weight,
+            'lab_weight' => $request->lab_weight,
+        ]);
+
+        return back()->with('success', 'Subject Lec/Lab weights updated successfully to ' . number_format($request->lecture_weight, 0) . '% / ' . number_format($request->lab_weight, 0) . '%.');
     }
 }

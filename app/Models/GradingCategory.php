@@ -13,6 +13,7 @@ class GradingCategory extends Model
         'class_section_subject_id',
         'academic_period',
         'name',
+        'component_type',
         'weight',
     ];
 

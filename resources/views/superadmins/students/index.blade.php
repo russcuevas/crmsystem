@@ -483,7 +483,7 @@
                                 </td>
                                 <td>{{ $student->gradeLevel->name ?? 'N/A' }}</td>
                                 @if (!$isJhsOrBedFilter)
-                                    <td>{{ $stIsJhsOrBed ? '-' : ($student->course->course_code ?? 'N/A') }}</td>
+                                    <td>{{ $stIsJhsOrBed ? '-' : $student->course->course_code ?? 'N/A' }}</td>
                                 @endif
                                 <td>{{ $student->gender ?? 'N/A' }}</td>
                                 <td style="font-size: 0.8rem; color: #475569;">

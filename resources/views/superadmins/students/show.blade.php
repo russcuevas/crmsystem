@@ -4,12 +4,6 @@
 
 @section('content')
     <div style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
-        <a href="{{ route('superadmin.students.page') }}" class="btn-back">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Student Registry
-        </a>
 
         <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
             Active S.Y.: <span style="color: var(--accent-emerald);">{{ $activeSchoolYear->school_year ?? 'N/A' }}</span>
@@ -36,10 +30,11 @@
         </div>
     </div>
 
-    <!-- Information Cards Grid -->
-    <div class="profile-grid">
+    <!-- Information Cards 2-Column Grid -->
+    <div class="profile-grid"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
         <!-- Personal Information Card -->
-        <div class="card">
+        <div class="card" style="margin-bottom: 0;">
             <div class="card-header">
                 <div class="card-title">
                     <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -84,7 +79,7 @@
         </div>
 
         <!-- Account Details Card -->
-        <div class="card">
+        <div class="card" style="margin-bottom: 0;">
             <div class="card-header">
                 <div class="card-title">
                     <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -119,58 +114,20 @@
                 </div>
             </div>
         </div>
-
-        <!-- Current Enrollment Status Card -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">
-                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
-                    </svg>
-                    Current Academic Enrollment
-                </div>
-            </div>
-            <div class="card-body">
-                @if ($currentEnrollment)
-                    <div class="info-item-group">
-                        <span class="info-label">Active School Year</span>
-                        <span class="info-value" style="color: var(--accent-emerald); font-weight: 700;">S.Y.
-                            {{ $currentEnrollment->schoolYear->school_year ?? 'N/A' }}</span>
-                    </div>
-                    <div class="info-item-group">
-                        <span class="info-label">Grade Level</span>
-                        <span class="info-value">{{ $currentEnrollment->gradeLevel->name ?? 'N/A' }}</span>
-                    </div>
-                    <div class="info-item-group">
-                        <span class="info-label">Class Section</span>
-                        <span
-                            class="info-value"><strong>{{ $currentEnrollment->classSection->section_name ?? 'N/A' }}</strong></span>
-                    </div>
-                    <div class="info-item-group">
-                        <span class="info-label">Class Adviser</span>
-                        <span class="info-value">
-                            @if (isset($currentEnrollment->classSection->adviser))
-                                {{ $currentEnrollment->classSection->adviser->first_name }}
-                                {{ $currentEnrollment->classSection->adviser->last_name }}
-                            @else
-                                Unassigned
-                            @endif
-                        </span>
-                    </div>
-                    <div class="info-item-group">
-                        <span class="info-label">Enrollment Date</span>
-                        <span
-                            class="info-value">{{ $currentEnrollment->enrolled_at ? $currentEnrollment->enrolled_at->format('F d, Y') : 'N/A' }}</span>
-                    </div>
-                @else
-                    <div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
-                        No active enrollment record for S.Y. {{ $activeSchoolYear->school_year ?? '' }}.
-                    </div>
-                @endif
-            </div>
-        </div>
     </div>
+
+    @php
+        $isCollegeStudent = false;
+        if (isset($student->enrollments)) {
+            foreach ($student->enrollments as $e) {
+                $code = strtoupper($e->gradeLevel->educationLevel->code ?? '');
+                if ($code === 'COLLEGE') {
+                    $isCollegeStudent = true;
+                    break;
+                }
+            }
+        }
+    @endphp
 
     <!-- Academic History & Enrollment Records Timeline -->
     <div class="card">
@@ -191,9 +148,10 @@
                             <th>School Year</th>
                             <th>Grade Level</th>
                             <th>Class Section</th>
-                            <th>Class Adviser</th>
+                            @if (!$isCollegeStudent)
+                                <th>Class Adviser</th>
+                            @endif
                             <th>Enrolled Date</th>
-                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -203,22 +161,23 @@
                                 <td><span class="badge badge-admin">{{ $enrollment->gradeLevel->name ?? 'N/A' }}</span>
                                 </td>
                                 <td><strong>{{ $enrollment->classSection->section_name ?? 'N/A' }}</strong></td>
-                                <td>
-                                    @if (isset($enrollment->classSection->adviser))
-                                        {{ $enrollment->classSection->adviser->first_name }}
-                                        {{ $enrollment->classSection->adviser->last_name }}
-                                    @else
-                                        <span style="color: var(--text-muted);">Unassigned</span>
-                                    @endif
-                                </td>
+                                @if (!$isCollegeStudent)
+                                    <td>
+                                        @if (isset($enrollment->classSection->adviser))
+                                            {{ $enrollment->classSection->adviser->first_name }}
+                                            {{ $enrollment->classSection->adviser->last_name }}
+                                        @else
+                                            <span style="color: var(--text-muted);">Unassigned</span>
+                                        @endif
+                                    </td>
+                                @endif
                                 <td>{{ $enrollment->enrolled_at ? $enrollment->enrolled_at->format('M d, Y') : 'N/A' }}
-                                </td>
-                                <td><span class="badge badge-active">{{ ucfirst($enrollment->status ?? 'active') }}</span>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" style="text-align: center; color: var(--text-muted);">No enrollment
+                                <td colspan="{{ $isCollegeStudent ? 4 : 5 }}"
+                                    style="text-align: center; color: var(--text-muted);">No enrollment
                                     history found for this student.</td>
                             </tr>
                         @endforelse

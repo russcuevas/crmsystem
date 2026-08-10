@@ -15,7 +15,16 @@ class Subject extends Model
         'education_level_id',
         'units',
         'semester',
+        'has_lab',
+        'lecture_weight',
+        'lab_weight',
         'course_id',
+    ];
+
+    protected $casts = [
+        'has_lab' => 'boolean',
+        'lecture_weight' => 'decimal:2',
+        'lab_weight' => 'decimal:2',
     ];
 
     public function educationLevel()

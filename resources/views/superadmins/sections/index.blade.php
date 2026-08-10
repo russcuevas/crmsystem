@@ -350,6 +350,13 @@
                             return in_array($edCode, ['JHS', 'BED']);
                         });
                     }
+
+                    $isCollegeFilter = ($selectedLevelCode === 'COLLEGE');
+                    if (!$isCollegeFilter && isset($sections) && $sections->isNotEmpty()) {
+                        $isCollegeFilter = $sections->every(function ($sec) {
+                            return strtoupper($sec->gradeLevel->educationLevel->code ?? '') === 'COLLEGE';
+                        });
+                    }
                 @endphp
                 <table class="custom-table" id="sectionsTable">
                     <thead>
@@ -361,7 +368,9 @@
                                 <th>Course / Strand</th>
                             @endif
                             <th>School Year</th>
-                            <th>Class Adviser</th>
+                            @if (!$isCollegeFilter)
+                                <th>Class Adviser</th>
+                            @endif
                             <th style="text-align: center;">Actions</th>
                         </tr>
                     </thead>
@@ -395,23 +404,25 @@
                                     </td>
                                 @endif
                                 <td>S.Y. {{ $section->schoolYear->school_year ?? 'N/A' }}</td>
-                                <td>
-                                    @if ($edCode === 'COLLEGE')
-                                        <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">N/A
-                                            (College)</span>
-                                    @elseif ($adviserName)
-                                        <div style="display: flex; align-items: center; gap: 0.35rem;">
-                                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor" style="color: #2563eb;">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                            </svg>
-                                            <span>{{ $adviserName }}</span>
-                                        </div>
-                                    @else
-                                        <span style="color: #ef4444; font-size: 0.8rem;">Unassigned</span>
-                                    @endif
-                                </td>
+                                @if (!$isCollegeFilter)
+                                    <td>
+                                        @if ($edCode === 'COLLEGE')
+                                            <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">N/A
+                                                (College)</span>
+                                        @elseif ($adviserName)
+                                            <div style="display: flex; align-items: center; gap: 0.35rem;">
+                                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" style="color: #2563eb;">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
+                                                <span>{{ $adviserName }}</span>
+                                            </div>
+                                        @else
+                                            <span style="color: #ef4444; font-size: 0.8rem;">Unassigned</span>
+                                        @endif
+                                    </td>
+                                @endif
                                 <td style="text-align: center;">
                                     <div style="display: flex; gap: 0.35rem; justify-content: center;">
                                         <button type="button" class="btn-action-icon" title="Edit Section"

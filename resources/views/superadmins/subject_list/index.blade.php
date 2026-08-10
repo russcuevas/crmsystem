@@ -534,6 +534,29 @@
                             @endforeach
                         </select>
                     </div>
+
+                    <div class="form-group" id="add_lab_component_group"
+                        style="display: none; background: #f8fafc; padding: 0.85rem; border-radius: 8px; border: 1.5px dashed #cbd5e1; margin-top: 0.75rem;">
+                        <label
+                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; text-transform: none; font-size: 0.85rem;">
+                            <input type="checkbox" name="has_lab" id="add_has_lab" value="1"
+                                onchange="toggleLabWeights('add')">
+                            <strong>Subject Has Laboratory Component?</strong>
+                        </label>
+                        <div id="add_lab_weights_wrapper"
+                            style="display: none; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem;">
+                            <div>
+                                <label style="font-size: 0.75rem;">Lecture Weight (%)</label>
+                                <input type="number" name="lecture_weight" id="add_lecture_weight"
+                                    class="form-control-custom" value="70" min="0" max="100">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem;">Lab Weight (%)</label>
+                                <input type="number" name="lab_weight" id="add_lab_weight" class="form-control-custom"
+                                    value="30" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeAddSubjectModal()">Cancel</button>
@@ -606,6 +629,29 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div class="form-group" id="edit_lab_component_group"
+                        style="display: none; background: #f8fafc; padding: 0.85rem; border-radius: 8px; border: 1.5px dashed #cbd5e1; margin-top: 0.75rem;">
+                        <label
+                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; text-transform: none; font-size: 0.85rem;">
+                            <input type="checkbox" name="has_lab" id="edit_has_lab" value="1"
+                                onchange="toggleLabWeights('edit')">
+                            <strong>Subject Has Laboratory Component?</strong>
+                        </label>
+                        <div id="edit_lab_weights_wrapper"
+                            style="display: none; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem;">
+                            <div>
+                                <label style="font-size: 0.75rem;">Lecture Weight (%)</label>
+                                <input type="number" name="lecture_weight" id="edit_lecture_weight"
+                                    class="form-control-custom" min="0" max="100">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem;">Lab Weight (%)</label>
+                                <input type="number" name="lab_weight" id="edit_lab_weight" class="form-control-custom"
+                                    min="0" max="100">
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -693,6 +739,14 @@
             }
         }
 
+        function toggleLabWeights(prefix) {
+            const chk = document.getElementById(prefix + '_has_lab');
+            const wrapper = document.getElementById(prefix + '_lab_weights_wrapper');
+            if (chk && wrapper) {
+                wrapper.style.display = chk.checked ? 'grid' : 'none';
+            }
+        }
+
         function openAddSubjectModal() {
             document.getElementById('addSubjectModal').style.display = 'flex';
             const levelEl = document.getElementById('add_education_level_id');
@@ -700,6 +754,7 @@
                 handleLevelChange(levelEl, 'add_semester', 'add_course_group', 'add_level_info', null, 'add_units',
                     'add_course_id');
             }
+            toggleLabWeights('add');
         }
 
         function closeAddSubjectModal() {
@@ -714,6 +769,15 @@
             document.getElementById('edit_subject_code').value = subject.subject_code;
             document.getElementById('edit_subject_name').value = subject.subject_name;
             document.getElementById('edit_units').value = subject.units ?? '';
+
+            const hasLabChk = document.getElementById('edit_has_lab');
+            if (hasLabChk) {
+                hasLabChk.checked = !!subject.has_lab;
+                document.getElementById('edit_lecture_weight').value = subject.lecture_weight ? parseFloat(subject
+                    .lecture_weight) : 70;
+                document.getElementById('edit_lab_weight').value = subject.lab_weight ? parseFloat(subject.lab_weight) : 30;
+                toggleLabWeights('edit');
+            }
 
             const levelSelect = document.getElementById('edit_education_level_id');
             handleLevelChange(levelSelect, 'edit_semester', 'edit_course_group', 'edit_level_info', subject.semester,
@@ -738,6 +802,9 @@
             } else {
                 code = selectEl.getAttribute('data-code');
             }
+
+            const prefix = (selectEl.id && selectEl.id.startsWith('add')) ? 'add' : 'edit';
+            const labGroup = document.getElementById(prefix + '_lab_component_group');
 
             const semSelect = document.getElementById(semSelectId);
             const courseGroup = document.getElementById(courseGroupId);
@@ -773,6 +840,7 @@
             }
 
             if (code === 'BED' || code === 'JHS') {
+                if (labGroup) labGroup.style.display = 'none';
                 if (unitsInput) {
                     unitsInput.value = '';
                     unitsInput.disabled = true;
@@ -799,6 +867,7 @@
                     courseGroup.style.display = 'none';
                 }
             } else if (code === 'SHS' || code === 'COLLEGE') {
+                if (labGroup) labGroup.style.display = 'block';
                 if (unitsInput) {
                     unitsInput.disabled = false;
                     unitsInput.placeholder = '';
@@ -827,6 +896,7 @@
                     courseGroup.style.display = 'block';
                 }
             } else {
+                if (labGroup) labGroup.style.display = 'block';
                 if (unitsInput) {
                     unitsInput.disabled = false;
                     unitsInput.placeholder = '';

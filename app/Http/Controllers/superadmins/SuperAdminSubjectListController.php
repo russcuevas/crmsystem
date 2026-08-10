@@ -113,6 +113,9 @@ class SuperAdminSubjectListController extends Controller
             'course_id' => 'nullable|exists:courses,id',
             'units' => 'nullable|integer|min:0',
             'semester' => 'required|string|max:50',
+            'has_lab' => 'nullable|boolean',
+            'lecture_weight' => 'nullable|numeric|min:0|max:100',
+            'lab_weight' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $educationLevel = EducationLevel::find($validated['education_level_id']);
@@ -122,6 +125,18 @@ class SuperAdminSubjectListController extends Controller
                 $validated['semester'] = 'All Quarters';
             }
             $validated['units'] = null;
+            $validated['has_lab'] = false;
+            $validated['lecture_weight'] = 100.00;
+            $validated['lab_weight'] = 0.00;
+        } else {
+            $validated['has_lab'] = $request->boolean('has_lab');
+            if ($validated['has_lab']) {
+                $validated['lecture_weight'] = $validated['lecture_weight'] ?? 70.00;
+                $validated['lab_weight'] = $validated['lab_weight'] ?? 30.00;
+            } else {
+                $validated['lecture_weight'] = 100.00;
+                $validated['lab_weight'] = 0.00;
+            }
         }
 
         Subject::create($validated);
@@ -140,6 +155,9 @@ class SuperAdminSubjectListController extends Controller
             'course_id' => 'nullable|exists:courses,id',
             'units' => 'nullable|integer|min:0',
             'semester' => 'required|string|max:50',
+            'has_lab' => 'nullable|boolean',
+            'lecture_weight' => 'nullable|numeric|min:0|max:100',
+            'lab_weight' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $educationLevel = EducationLevel::find($validated['education_level_id']);
@@ -149,6 +167,18 @@ class SuperAdminSubjectListController extends Controller
                 $validated['semester'] = 'All Quarters';
             }
             $validated['units'] = null;
+            $validated['has_lab'] = false;
+            $validated['lecture_weight'] = 100.00;
+            $validated['lab_weight'] = 0.00;
+        } else {
+            $validated['has_lab'] = $request->boolean('has_lab');
+            if ($validated['has_lab']) {
+                $validated['lecture_weight'] = $validated['lecture_weight'] ?? 70.00;
+                $validated['lab_weight'] = $validated['lab_weight'] ?? 30.00;
+            } else {
+                $validated['lecture_weight'] = 100.00;
+                $validated['lab_weight'] = 0.00;
+            }
         }
 
         $subject->update($validated);
