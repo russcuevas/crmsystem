@@ -16,6 +16,7 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\ClassSection;
 use App\Models\Attendance;
+use App\Models\Grade;
 use Illuminate\Http\Request;
 
 class SuperAdminGradeController extends Controller
@@ -124,6 +125,9 @@ class SuperAdminGradeController extends Controller
                 ->pluck('attendance_date');
 
             $attendances = Attendance::where('class_section_subject_id', $currentSectionSubject->id)->get();
+            $savedGrades = Grade::where('class_section_subject_id', $currentSectionSubject->id)->get();
+        } else {
+            $savedGrades = collect();
         }
 
         $totalAccounts = User::count();
@@ -151,6 +155,7 @@ class SuperAdminGradeController extends Controller
             'selectedSemester',
             'attendanceDates',
             'attendances',
+            'savedGrades',
             'activeSchoolYear',
             'selectedLevel',
             'educationLevelsList',
@@ -378,5 +383,154 @@ class SuperAdminGradeController extends Controller
         ]);
 
         return back()->with('success', 'Subject Lec/Lab weights updated successfully to ' . number_format($request->lecture_weight, 0) . '% / ' . number_format($request->lab_weight, 0) . '%.');
+    }
+
+    public function computeTotalGrades(Request $request)
+    {
+        $request->validate([
+            'class_section_subject_id' => 'required|exists:class_section_subjects,id',
+        ]);
+
+        $subjectId = $request->input('class_section_subject_id');
+        $currentSectionSubject = ClassSectionSubject::with(['classSection.gradeLevel.educationLevel', 'subject'])->findOrFail($subjectId);
+
+        $levelCode = strtoupper($currentSectionSubject->classSection->gradeLevel->educationLevel->code ?? '');
+        $hasLab = $currentSectionSubject->subject && $currentSectionSubject->subject->has_lab;
+        $lecWeightRatio = ($currentSectionSubject->subject->lecture_weight ?? 70) / 100;
+        $labWeightRatio = ($currentSectionSubject->subject->lab_weight ?? 30) / 100;
+
+        if (in_array($levelCode, ['BED', 'JHS', 'ELEM', 'ELEMENTARY'])) {
+            $periodsList = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'];
+        } else {
+            $periodsList = ['Prelim', 'Midterm', 'Finals'];
+        }
+
+        $allCategories = GradingCategory::where('class_section_subject_id', $subjectId)
+            ->with(['gradingTasks.studentTaskScores'])
+            ->get();
+
+        $enrolledStudents = Enrollment::where('class_section_id', $currentSectionSubject->class_section_id)
+            ->with(['student.user', 'taskScores'])
+            ->get();
+
+        $computedResults = [];
+
+        foreach ($enrolledStudents as $enrollment) {
+            $periodGrades = [];
+            $sumPeriodGrades = 0;
+
+            foreach ($periodsList as $period) {
+                $periodCats = $allCategories->where('academic_period', $period);
+
+                if ($hasLab) {
+                    $lecCats = $periodCats->where('component_type', '!=', 'laboratory');
+                    $labCats = $periodCats->where('component_type', 'laboratory');
+
+                    $lecTotalWeight = $lecCats->sum('weight');
+                    $labTotalWeight = $labCats->sum('weight');
+
+                    $lecCategoryPctSum = 0;
+                    foreach ($lecCats as $cat) {
+                        $catEarned = 0;
+                        $catMax = 0;
+                        foreach ($cat->gradingTasks as $task) {
+                            $ts = $enrollment->taskScores->where('grading_task_id', $task->id)->first();
+                            if ($ts && $ts->score !== null) {
+                                $catEarned += $ts->score;
+                            }
+                            $catMax += $task->max_score;
+                        }
+                        $lecCategoryPctSum += ($catMax > 0) ? ($catEarned / $catMax) * $cat->weight : 0;
+                    }
+
+                    $labCategoryPctSum = 0;
+                    foreach ($labCats as $cat) {
+                        $catEarned = 0;
+                        $catMax = 0;
+                        foreach ($cat->gradingTasks as $task) {
+                            $ts = $enrollment->taskScores->where('grading_task_id', $task->id)->first();
+                            if ($ts && $ts->score !== null) {
+                                $catEarned += $ts->score;
+                            }
+                            $catMax += $task->max_score;
+                        }
+                        $labCategoryPctSum += ($catMax > 0) ? ($catEarned / $catMax) * $cat->weight : 0;
+                    }
+
+                    $lecSubtotal = ($lecTotalWeight > 0) ? ($lecCategoryPctSum / $lecTotalWeight) * 100 : $lecCategoryPctSum;
+                    $labSubtotal = ($labTotalWeight > 0) ? ($labCategoryPctSum / $labTotalWeight) * 100 : $labCategoryPctSum;
+
+                    $lecShare = $lecSubtotal * $lecWeightRatio;
+                    $labShare = $labSubtotal * $labWeightRatio;
+
+                    $periodFinalGrade = ($lecTotalWeight > 0 && $labTotalWeight > 0)
+                        ? ($lecShare + $labShare)
+                        : ($lecCategoryPctSum + $labCategoryPctSum);
+                } else {
+                    $generalPctSum = 0;
+                    foreach ($periodCats as $cat) {
+                        $catEarned = 0;
+                        $catMax = 0;
+                        foreach ($cat->gradingTasks as $task) {
+                            $ts = $enrollment->taskScores->where('grading_task_id', $task->id)->first();
+                            if ($ts && $ts->score !== null) {
+                                $catEarned += $ts->score;
+                            }
+                            $catMax += $task->max_score;
+                        }
+                        $generalPctSum += ($catMax > 0) ? ($catEarned / $catMax) * $cat->weight : 0;
+                    }
+                    $periodFinalGrade = $generalPctSum;
+                }
+
+                $roundedPeriodGrade = round($periodFinalGrade, 2);
+                $periodGrades[$period] = $roundedPeriodGrade;
+                $sumPeriodGrades += $roundedPeriodGrade;
+
+                Grade::updateOrCreate(
+                    [
+                        'enrollment_id' => $enrollment->id,
+                        'class_section_subject_id' => $subjectId,
+                        'academic_period' => $period,
+                    ],
+                    [
+                        'final_grade' => $roundedPeriodGrade,
+                        'remarks' => $roundedPeriodGrade >= 75 ? 'Passed' : 'Failed',
+                    ]
+                );
+            }
+
+            $countPeriods = count($periodsList);
+            $subjectGrade = round($sumPeriodGrades / ($countPeriods > 0 ? $countPeriods : 1), 2);
+            $remarks = $subjectGrade >= 75 ? 'Passed' : 'Failed';
+
+            Grade::updateOrCreate(
+                [
+                    'enrollment_id' => $enrollment->id,
+                    'class_section_subject_id' => $subjectId,
+                    'academic_period' => 'Subject Grade',
+                ],
+                [
+                    'final_grade' => $subjectGrade,
+                    'remarks' => $remarks,
+                ]
+            );
+
+            $computedResults[] = [
+                'enrollment_id' => $enrollment->id,
+                'student_number' => $enrollment->student->student_number ?? 'N/A',
+                'student_name' => trim(($enrollment->student->first_name ?? '') . ' ' . ($enrollment->student->last_name ?? '')),
+                'period_grades' => $periodGrades,
+                'subject_grade' => number_format($subjectGrade, 2),
+                'remarks' => $remarks,
+            ];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Total grades for S.Y. & Semester computed and saved successfully!',
+            'periods' => $periodsList,
+            'results' => $computedResults,
+        ]);
     }
 }

@@ -24,6 +24,35 @@
             background: #eff6ff;
         }
 
+        .subject-header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.6rem;
+        }
+
+        @media (max-width: 768px) {
+            .subject-header-actions {
+                justify-content: flex-start;
+                width: 100%;
+                margin-top: 0.5rem;
+            }
+
+            .subject-header-actions button {
+                flex: 1 1 calc(50% - 0.6rem);
+                min-width: 140px;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .subject-header-actions button {
+                flex: 1 1 100%;
+            }
+        }
+
         .score-input-cell.saved-success {
             border-color: #10b981 !important;
             background: #ecfdf5 !important;
@@ -386,18 +415,25 @@
                             style="color: #60a5fa">{{ $currentSectionSubject->teacher ? $currentSectionSubject->teacher->first_name . ' ' . $currentSectionSubject->teacher->last_name : 'Unassigned' }}</strong>
                     </div>
                 </div>
-                <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                <div class="subject-header-actions">
                     @if ($currentSectionSubject && $currentSectionSubject->subject && $currentSectionSubject->subject->has_lab)
                         <button type="button" class="btn-secondary"
-                            style="background: #e0e7ff; color: #3730a3; border: 1.5px solid #c7d2fe; font-weight: 700; border-radius: 8px; padding: 0.5rem 0.9rem; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;"
+                            style="background: #e0e7ff; color: #3730a3; border: 1.5px solid #c7d2fe; font-weight: 700; border-radius: 8px; padding: 0.5rem 0.85rem; font-size: 0.82rem; cursor: pointer; transition: all 0.2s;"
                             onclick="openModal('editLecLabWeightModal')">
                             ⚙️ Edit Lec/Lab Ratio ({{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%
                             / {{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%)
                         </button>
                     @endif
-                    <button class="btn-primary" style="background: var(--accent-gold); color: #0f172a;"
+                    <button type="button" class="btn-secondary"
+                        style="background: #1e1b4b; color: #e0e7ff; border: 1.5px solid #4338ca; font-weight: 700; border-radius: 8px; padding: 0.5rem 0.85rem; font-size: 0.82rem; cursor: pointer; transition: all 0.2s;"
+                        onclick="openModal('gradeBreakdownModal')">
+                        📊 Grade Breakdown & Final SG
+                    </button>
+                    <button class="btn-primary"
+                        style="background: var(--accent-gold); color: #0f172a; padding: 0.5rem 0.95rem; font-size: 0.82rem;"
                         onclick="openModal('addCategoryModal')">+ Add Category</button>
-                    <button class="btn-primary" onclick="openModal('addTaskModal')">+ Add Task</button>
+                    <button class="btn-primary" style="padding: 0.5rem 0.95rem; font-size: 0.82rem;"
+                        onclick="openModal('addTaskModal')">+ Add Task</button>
                 </div>
             </div>
         </div>
@@ -1428,297 +1464,303 @@
                                                 Add Grades
                                             </button>
                                         </td>
-                                    </tr>
-
-                                    <!-- Student Grade Entry Modal -->
-                                    <div class="modal-overlay" id="studentGradeModal_{{ $enrollment->id }}">
-                                        <div class="modal-card"
-                                            style="max-width: {{ $hasLab ? '880px' : '520px' }}; width: 92%;">
-                                            <div class="modal-header"
-                                                style="background: linear-gradient(135deg, var(--primary-navy, #0f172a) 0%, #1e293b 100%); color: #ffffff; padding: 1.1rem 1.35rem;">
-                                                <div>
-                                                    <h3
-                                                        style="font-size: 1.05rem; font-weight: 800; margin: 0; color: #ffffff; display: flex; align-items: center; gap: 0.5rem;">
-                                                        📝 Grade Entry: {{ $enrollment->student->first_name ?? '' }}
-                                                        {{ $enrollment->student->last_name ?? '' }}
-                                                    </h3>
-                                                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
-                                                        Student ID:
-                                                        <strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong>
-                                                        &bull; {{ $currentSectionSubject->subject->subject_code ?? '' }} -
-                                                        {{ $currentSectionSubject->subject->subject_name ?? '' }}
+                                        <!-- Student Grade Entry Modal -->
+                                        <div class="modal-overlay" id="studentGradeModal_{{ $enrollment->id }}">
+                                            <div class="modal-card"
+                                                style="max-width: {{ $hasLab ? '1200px' : '750px' }}; width: 95%;">
+                                                <div class="modal-header"
+                                                    style="background: linear-gradient(135deg, var(--primary-navy, #0f172a) 0%, #1e293b 100%); color: #ffffff; padding: 1.15rem 1.5rem;">
+                                                    <div>
+                                                        <h3
+                                                            style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #ffffff; display: flex; align-items: center; gap: 0.5rem;">
+                                                            📝 Grade Entry: {{ $enrollment->student->first_name ?? '' }}
+                                                            {{ $enrollment->student->last_name ?? '' }}
+                                                        </h3>
+                                                        <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">
+                                                            Student ID:
+                                                            <strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong>
+                                                            &bull;
+                                                            {{ $currentSectionSubject->subject->subject_code ?? '' }} -
+                                                            {{ $currentSectionSubject->subject->subject_name ?? '' }}
+                                                        </div>
                                                     </div>
+                                                    <button type="button" class="btn-icon-action"
+                                                        style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                                                        onclick="closeModal('studentGradeModal_{{ $enrollment->id }}')">&times;</button>
                                                 </div>
-                                                <button type="button" class="btn-icon-action"
-                                                    style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
-                                                    onclick="closeModal('studentGradeModal_{{ $enrollment->id }}')">&times;</button>
-                                            </div>
 
-                                            <div class="modal-body"
-                                                style="max-height: 75vh; overflow-y: auto; padding: 1.25rem;">
-                                                @if ($hasLab)
-                                                    <!-- 2-COLUMN GRID: LECTURE LEFT, LABORATORY RIGHT -->
-                                                    <div
-                                                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.25rem; align-items: start;">
-                                                        <!-- LEFT COLUMN: LECTURE TASKS & SCORES -->
+                                                <div class="modal-body"
+                                                    style="max-height: 80vh; overflow-y: auto; padding: 1.5rem;">
+                                                    @if ($hasLab)
+                                                        <!-- 2-COLUMN GRID: LECTURE LEFT, LABORATORY RIGHT -->
                                                         <div
-                                                            style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; border-top: 3.5px solid #3b82f6;">
+                                                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 1.5rem; align-items: start;">
+                                                            <!-- LEFT COLUMN: LECTURE TASKS & SCORES -->
                                                             <div
-                                                                style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; margin-bottom: 0.85rem; border-bottom: 1.5px solid #cbd5e1;">
-                                                                <h4
-                                                                    style="font-size: 0.92rem; font-weight: 800; color: #1e40af; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
-                                                                    📘 Lecture Component
-                                                                </h4>
-                                                                <span class="badge"
-                                                                    style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.7rem; font-weight: 800; padding: 0.18rem 0.5rem; border-radius: 12px;">
-                                                                    Ratio:
-                                                                    {{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%
-                                                                </span>
-                                                            </div>
-
-                                                            @forelse($lecCategories as $cat)
+                                                                style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; border-top: 3.5px solid #3b82f6;">
                                                                 <div
-                                                                    style="margin-bottom: 1rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.75rem;">
-                                                                    <div
-                                                                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px dashed #e2e8f0; padding-bottom: 0.35rem;">
-                                                                        <span
-                                                                            style="font-size: 0.85rem; font-weight: 800; color: #0f172a;">
-                                                                            {{ $cat->name }}
-                                                                            <small
-                                                                                style="color: #64748b; font-weight: 600;">({{ number_format($cat->weight, 0) }}%)</small>
-                                                                        </span>
-                                                                        <span
-                                                                            style="font-size: 0.7rem; color: #64748b;">Period:
-                                                                            <strong>{{ $cat->academic_period }}</strong></span>
-                                                                    </div>
-
-                                                                    @forelse($cat->gradingTasks as $task)
-                                                                        @php
-                                                                            $taskScoreModel = $enrollment->taskScores
-                                                                                ->where('grading_task_id', $task->id)
-                                                                                ->first();
-                                                                            $scoreValue = $taskScoreModel
-                                                                                ? $taskScoreModel->score
-                                                                                : null;
-                                                                        @endphp
-                                                                        <div
-                                                                            style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9;">
-                                                                            <div>
-                                                                                <div
-                                                                                    style="font-size: 0.82rem; font-weight: 700; color: #334155;">
-                                                                                    📝 {{ $task->task_name }}</div>
-                                                                                <div
-                                                                                    style="font-size: 0.7rem; color: #94a3b8;">
-                                                                                    Max:
-                                                                                    {{ number_format($task->max_score, 0) }}
-                                                                                    pts</div>
-                                                                            </div>
-                                                                            <div>
-                                                                                <input type="number" step="0.1"
-                                                                                    min="0"
-                                                                                    max="{{ $task->max_score }}"
-                                                                                    value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
-                                                                                    class="score-input-cell"
-                                                                                    data-task-id="{{ $task->id }}"
-                                                                                    data-enrollment-id="{{ $enrollment->id }}"
-                                                                                    data-max-score="{{ $task->max_score }}"
-                                                                                    data-cat-id="{{ $cat->id }}"
-                                                                                    data-cat-weight="{{ $cat->weight }}"
-                                                                                    data-cat-type="lecture"
-                                                                                    placeholder="-">
-                                                                            </div>
-                                                                        </div>
-                                                                    @empty
-                                                                        <div
-                                                                            style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 0.4rem 0;">
-                                                                            No tasks configured</div>
-                                                                    @endforelse
-                                                                </div>
-                                                            @empty
-                                                                <div
-                                                                    style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1rem 0;">
-                                                                    No Lecture categories</div>
-                                                            @endforelse
-                                                        </div>
-
-                                                        <!-- RIGHT COLUMN: LABORATORY TASKS & SCORES -->
-                                                        <div
-                                                            style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; border-top: 3.5px solid #10b981;">
-                                                            <div
-                                                                style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; margin-bottom: 0.85rem; border-bottom: 1.5px solid #cbd5e1;">
-                                                                <h4
-                                                                    style="font-size: 0.92rem; font-weight: 800; color: #065f46; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
-                                                                    🔬 Laboratory Component
-                                                                </h4>
-                                                                <span class="badge"
-                                                                    style="background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.7rem; font-weight: 800; padding: 0.18rem 0.5rem; border-radius: 12px;">
-                                                                    Ratio:
-                                                                    {{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%
-                                                                </span>
-                                                            </div>
-
-                                                            @forelse($labCategories as $cat)
-                                                                <div
-                                                                    style="margin-bottom: 1rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.75rem;">
-                                                                    <div
-                                                                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px dashed #e2e8f0; padding-bottom: 0.35rem;">
-                                                                        <span
-                                                                            style="font-size: 0.85rem; font-weight: 800; color: #0f172a;">
-                                                                            {{ $cat->name }}
-                                                                            <small
-                                                                                style="color: #64748b; font-weight: 600;">({{ number_format($cat->weight, 0) }}%)</small>
-                                                                        </span>
-                                                                        <span
-                                                                            style="font-size: 0.7rem; color: #64748b;">Period:
-                                                                            <strong>{{ $cat->academic_period }}</strong></span>
-                                                                    </div>
-
-                                                                    @forelse($cat->gradingTasks as $task)
-                                                                        @php
-                                                                            $taskScoreModel = $enrollment->taskScores
-                                                                                ->where('grading_task_id', $task->id)
-                                                                                ->first();
-                                                                            $scoreValue = $taskScoreModel
-                                                                                ? $taskScoreModel->score
-                                                                                : null;
-                                                                        @endphp
-                                                                        <div
-                                                                            style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9;">
-                                                                            <div>
-                                                                                <div
-                                                                                    style="font-size: 0.82rem; font-weight: 700; color: #334155;">
-                                                                                    🔬 {{ $task->task_name }}</div>
-                                                                                <div
-                                                                                    style="font-size: 0.7rem; color: #94a3b8;">
-                                                                                    Max:
-                                                                                    {{ number_format($task->max_score, 0) }}
-                                                                                    pts</div>
-                                                                            </div>
-                                                                            <div>
-                                                                                <input type="number" step="0.1"
-                                                                                    min="0"
-                                                                                    max="{{ $task->max_score }}"
-                                                                                    value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
-                                                                                    class="score-input-cell"
-                                                                                    data-task-id="{{ $task->id }}"
-                                                                                    data-enrollment-id="{{ $enrollment->id }}"
-                                                                                    data-max-score="{{ $task->max_score }}"
-                                                                                    data-cat-id="{{ $cat->id }}"
-                                                                                    data-cat-weight="{{ $cat->weight }}"
-                                                                                    data-cat-type="laboratory"
-                                                                                    placeholder="-">
-                                                                            </div>
-                                                                        </div>
-                                                                    @empty
-                                                                        <div
-                                                                            style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 0.4rem 0;">
-                                                                            No tasks configured</div>
-                                                                    @endforelse
-                                                                </div>
-                                                            @empty
-                                                                <div
-                                                                    style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1rem 0;">
-                                                                    No Laboratory categories</div>
-                                                            @endforelse
-                                                        </div>
-                                                    </div>
-                                                @else
-                                                    <!-- NON-LAB SUBJECT TASKS MATRIX -->
-                                                    <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                                        @forelse($categories as $cat)
-                                                            <div
-                                                                style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 1rem;">
-                                                                <div
-                                                                    style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem;">
-                                                                    <span
-                                                                        style="font-size: 0.9rem; font-weight: 800; color: #0f172a;">
-                                                                        {{ $cat->name }}
-                                                                        ({{ number_format($cat->weight, 0) }}%)
+                                                                    style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; margin-bottom: 0.85rem; border-bottom: 1.5px solid #cbd5e1;">
+                                                                    <h4
+                                                                        style="font-size: 0.92rem; font-weight: 800; color: #1e40af; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                                                                        📘 Lecture Component
+                                                                    </h4>
+                                                                    <span class="badge"
+                                                                        style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.7rem; font-weight: 800; padding: 0.18rem 0.5rem; border-radius: 12px;">
+                                                                        Ratio:
+                                                                        {{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%
                                                                     </span>
-                                                                    <span
-                                                                        style="font-size: 0.75rem; color: #64748b;">Period:
-                                                                        <strong>{{ $cat->academic_period }}</strong></span>
                                                                 </div>
 
-                                                                @forelse($cat->gradingTasks as $task)
-                                                                    @php
-                                                                        $taskScoreModel = $enrollment->taskScores
-                                                                            ->where('grading_task_id', $task->id)
-                                                                            ->first();
-                                                                        $scoreValue = $taskScoreModel
-                                                                            ? $taskScoreModel->score
-                                                                            : null;
-                                                                    @endphp
+                                                                @forelse($lecCategories as $cat)
                                                                     <div
-                                                                        style="display: flex; align-items: center; justify-content: space-between; padding: 0.45rem 0; border-bottom: 1px dashed #e2e8f0;">
-                                                                        <div>
-                                                                            <div
-                                                                                style="font-size: 0.85rem; font-weight: 700; color: #334155;">
-                                                                                📝 {{ $task->task_name }}</div>
-                                                                            <div
-                                                                                style="font-size: 0.72rem; color: #94a3b8;">
-                                                                                Max:
-                                                                                {{ number_format($task->max_score, 0) }}
-                                                                                pts</div>
+                                                                        style="margin-bottom: 1rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.75rem;">
+                                                                        <div
+                                                                            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px dashed #e2e8f0; padding-bottom: 0.35rem;">
+                                                                            <span
+                                                                                style="font-size: 0.85rem; font-weight: 800; color: #0f172a;">
+                                                                                {{ $cat->name }}
+                                                                                <small
+                                                                                    style="color: #64748b; font-weight: 600;">({{ number_format($cat->weight, 0) }}%)</small>
+                                                                            </span>
+                                                                            <span
+                                                                                style="font-size: 0.7rem; color: #64748b;">Period:
+                                                                                <strong>{{ $cat->academic_period }}</strong></span>
                                                                         </div>
-                                                                        <div>
-                                                                            <input type="number" step="0.1"
-                                                                                min="0"
-                                                                                max="{{ $task->max_score }}"
-                                                                                value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
-                                                                                class="score-input-cell"
-                                                                                data-task-id="{{ $task->id }}"
-                                                                                data-enrollment-id="{{ $enrollment->id }}"
-                                                                                data-max-score="{{ $task->max_score }}"
-                                                                                data-cat-id="{{ $cat->id }}"
-                                                                                data-cat-weight="{{ $cat->weight }}"
-                                                                                data-cat-type="general" placeholder="-">
-                                                                        </div>
+
+                                                                        @forelse($cat->gradingTasks as $task)
+                                                                            @php
+                                                                                $taskScoreModel = $enrollment->taskScores
+                                                                                    ->where(
+                                                                                        'grading_task_id',
+                                                                                        $task->id,
+                                                                                    )
+                                                                                    ->first();
+                                                                                $scoreValue = $taskScoreModel
+                                                                                    ? $taskScoreModel->score
+                                                                                    : null;
+                                                                            @endphp
+                                                                            <div
+                                                                                style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9;">
+                                                                                <div>
+                                                                                    <div
+                                                                                        style="font-size: 0.82rem; font-weight: 700; color: #334155;">
+                                                                                        📝 {{ $task->task_name }}</div>
+                                                                                    <div
+                                                                                        style="font-size: 0.7rem; color: #94a3b8;">
+                                                                                        Max:
+                                                                                        {{ number_format($task->max_score, 0) }}
+                                                                                        pts</div>
+                                                                                </div>
+                                                                                <div>
+                                                                                    <input type="number" step="0.1"
+                                                                                        min="0"
+                                                                                        max="{{ $task->max_score }}"
+                                                                                        value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
+                                                                                        class="score-input-cell"
+                                                                                        data-task-id="{{ $task->id }}"
+                                                                                        data-enrollment-id="{{ $enrollment->id }}"
+                                                                                        data-max-score="{{ $task->max_score }}"
+                                                                                        data-cat-id="{{ $cat->id }}"
+                                                                                        data-cat-weight="{{ $cat->weight }}"
+                                                                                        data-cat-type="lecture"
+                                                                                        placeholder="-">
+                                                                                </div>
+                                                                            </div>
+                                                                        @empty
+                                                                            <div
+                                                                                style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 0.4rem 0;">
+                                                                                No tasks configured</div>
+                                                                        @endforelse
                                                                     </div>
                                                                 @empty
                                                                     <div
-                                                                        style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 0.5rem 0;">
-                                                                        No tasks configured</div>
+                                                                        style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1rem 0;">
+                                                                        No Lecture categories</div>
                                                                 @endforelse
                                                             </div>
-                                                        @empty
-                                                            <div
-                                                                style="font-size: 0.85rem; color: #94a3b8; text-align: center; padding: 1.5rem 0;">
-                                                                No categories configured</div>
-                                                        @endforelse
-                                                    </div>
-                                                @endif
-                                            </div>
 
-                                            <div class="modal-footer"
-                                                style="background: #f8fafc; padding: 0.85rem 1.35rem; display: flex; align-items: center; justify-content: space-between;">
-                                                <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b;"
-                                                    data-modal-summary="{{ $enrollment->id }}">
-                                                    @if ($hasLab)
-                                                        Lec: <span class="badge"
-                                                            style="background: #eff6ff; color: #1d4ed8; font-size: 0.82rem;"><span
-                                                                class="modal-lec-val">{{ number_format($lecSubtotal, 2) }}</span>%</span>
-                                                        &bull; Lab: <span class="badge"
-                                                            style="background: #ecfdf5; color: #047857; font-size: 0.82rem;"><span
-                                                                class="modal-lab-val">{{ number_format($labSubtotal, 2) }}</span>%</span>
-                                                        &bull; {{ $selectedPeriod ? $selectedPeriod : 'Final' }} Grade:
-                                                        <span class="badge"
-                                                            style="background: #059669; color: #ffffff; font-size: 0.85rem;"><span
-                                                                class="modal-final-val">{{ number_format($totalFinalGrade, 2) }}</span>%</span>
+                                                            <!-- RIGHT COLUMN: LABORATORY TASKS & SCORES -->
+                                                            <div
+                                                                style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; border-top: 3.5px solid #10b981;">
+                                                                <div
+                                                                    style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; margin-bottom: 0.85rem; border-bottom: 1.5px solid #cbd5e1;">
+                                                                    <h4
+                                                                        style="font-size: 0.92rem; font-weight: 800; color: #065f46; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                                                                        🔬 Laboratory Component
+                                                                    </h4>
+                                                                    <span class="badge"
+                                                                        style="background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.7rem; font-weight: 800; padding: 0.18rem 0.5rem; border-radius: 12px;">
+                                                                        Ratio:
+                                                                        {{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%
+                                                                    </span>
+                                                                </div>
+
+                                                                @forelse($labCategories as $cat)
+                                                                    <div
+                                                                        style="margin-bottom: 1rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.75rem;">
+                                                                        <div
+                                                                            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px dashed #e2e8f0; padding-bottom: 0.35rem;">
+                                                                            <span
+                                                                                style="font-size: 0.85rem; font-weight: 800; color: #0f172a;">
+                                                                                {{ $cat->name }}
+                                                                                <small
+                                                                                    style="color: #64748b; font-weight: 600;">({{ number_format($cat->weight, 0) }}%)</small>
+                                                                            </span>
+                                                                            <span
+                                                                                style="font-size: 0.7rem; color: #64748b;">Period:
+                                                                                <strong>{{ $cat->academic_period }}</strong></span>
+                                                                        </div>
+
+                                                                        @forelse($cat->gradingTasks as $task)
+                                                                            @php
+                                                                                $taskScoreModel = $enrollment->taskScores
+                                                                                    ->where(
+                                                                                        'grading_task_id',
+                                                                                        $task->id,
+                                                                                    )
+                                                                                    ->first();
+                                                                                $scoreValue = $taskScoreModel
+                                                                                    ? $taskScoreModel->score
+                                                                                    : null;
+                                                                            @endphp
+                                                                            <div
+                                                                                style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9;">
+                                                                                <div>
+                                                                                    <div
+                                                                                        style="font-size: 0.82rem; font-weight: 700; color: #334155;">
+                                                                                        🔬 {{ $task->task_name }}</div>
+                                                                                    <div
+                                                                                        style="font-size: 0.7rem; color: #94a3b8;">
+                                                                                        Max:
+                                                                                        {{ number_format($task->max_score, 0) }}
+                                                                                        pts</div>
+                                                                                </div>
+                                                                                <div>
+                                                                                    <input type="number" step="0.1"
+                                                                                        min="0"
+                                                                                        max="{{ $task->max_score }}"
+                                                                                        value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
+                                                                                        class="score-input-cell"
+                                                                                        data-task-id="{{ $task->id }}"
+                                                                                        data-enrollment-id="{{ $enrollment->id }}"
+                                                                                        data-max-score="{{ $task->max_score }}"
+                                                                                        data-cat-id="{{ $cat->id }}"
+                                                                                        data-cat-weight="{{ $cat->weight }}"
+                                                                                        data-cat-type="laboratory"
+                                                                                        placeholder="-">
+                                                                                </div>
+                                                                            </div>
+                                                                        @empty
+                                                                            <div
+                                                                                style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 0.4rem 0;">
+                                                                                No tasks configured</div>
+                                                                        @endforelse
+                                                                    </div>
+                                                                @empty
+                                                                    <div
+                                                                        style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1rem 0;">
+                                                                        No Laboratory categories</div>
+                                                                @endforelse
+                                                            </div>
+                                                        </div>
                                                     @else
-                                                        {{ $selectedPeriod ? $selectedPeriod : 'Final' }} Grade: <span
-                                                            class="badge"
-                                                            style="background: #059669; color: #ffffff; font-size: 0.85rem;"><span
-                                                                class="modal-final-val">{{ number_format($generalCategoryPctSum, 2) }}</span>%</span>
+                                                        <!-- NON-LAB SUBJECT TASKS MATRIX -->
+                                                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                                            @forelse($categories as $cat)
+                                                                <div
+                                                                    style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 1rem;">
+                                                                    <div
+                                                                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem;">
+                                                                        <span
+                                                                            style="font-size: 0.9rem; font-weight: 800; color: #0f172a;">
+                                                                            {{ $cat->name }}
+                                                                            ({{ number_format($cat->weight, 0) }}%)
+                                                                        </span>
+                                                                        <span
+                                                                            style="font-size: 0.75rem; color: #64748b;">Period:
+                                                                            <strong>{{ $cat->academic_period }}</strong></span>
+                                                                    </div>
+
+                                                                    @forelse($cat->gradingTasks as $task)
+                                                                        @php
+                                                                            $taskScoreModel = $enrollment->taskScores
+                                                                                ->where('grading_task_id', $task->id)
+                                                                                ->first();
+                                                                            $scoreValue = $taskScoreModel
+                                                                                ? $taskScoreModel->score
+                                                                                : null;
+                                                                        @endphp
+                                                                        <div
+                                                                            style="display: flex; align-items: center; justify-content: space-between; padding: 0.45rem 0; border-bottom: 1px dashed #e2e8f0;">
+                                                                            <div>
+                                                                                <div
+                                                                                    style="font-size: 0.85rem; font-weight: 700; color: #334155;">
+                                                                                    📝 {{ $task->task_name }}</div>
+                                                                                <div
+                                                                                    style="font-size: 0.72rem; color: #94a3b8;">
+                                                                                    Max:
+                                                                                    {{ number_format($task->max_score, 0) }}
+                                                                                    pts</div>
+                                                                            </div>
+                                                                            <div>
+                                                                                <input type="number" step="0.1"
+                                                                                    min="0"
+                                                                                    max="{{ $task->max_score }}"
+                                                                                    value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
+                                                                                    class="score-input-cell"
+                                                                                    data-task-id="{{ $task->id }}"
+                                                                                    data-enrollment-id="{{ $enrollment->id }}"
+                                                                                    data-max-score="{{ $task->max_score }}"
+                                                                                    data-cat-id="{{ $cat->id }}"
+                                                                                    data-cat-weight="{{ $cat->weight }}"
+                                                                                    data-cat-type="general"
+                                                                                    placeholder="-">
+                                                                            </div>
+                                                                        </div>
+                                                                    @empty
+                                                                        <div
+                                                                            style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 0.5rem 0;">
+                                                                            No tasks configured</div>
+                                                                    @endforelse
+                                                                </div>
+                                                            @empty
+                                                                <div
+                                                                    style="font-size: 0.85rem; color: #94a3b8; text-align: center; padding: 1.5rem 0;">
+                                                                    No categories configured</div>
+                                                            @endforelse
+                                                        </div>
                                                     @endif
                                                 </div>
-                                                <button type="button" class="btn-secondary"
-                                                    onclick="closeModal('studentGradeModal_{{ $enrollment->id }}')">Done
-                                                    & Close</button>
+
+                                                <div class="modal-footer"
+                                                    style="background: #f8fafc; padding: 0.85rem 1.35rem; display: flex; align-items: center; justify-content: space-between;">
+                                                    <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b;"
+                                                        data-modal-summary="{{ $enrollment->id }}">
+                                                        @if ($hasLab)
+                                                            Lec: <span class="badge"
+                                                                style="background: #eff6ff; color: #1d4ed8; font-size: 0.82rem;"><span
+                                                                    class="modal-lec-val">{{ number_format($lecSubtotal, 2) }}</span>%</span>
+                                                            &bull; Lab: <span class="badge"
+                                                                style="background: #ecfdf5; color: #047857; font-size: 0.82rem;"><span
+                                                                    class="modal-lab-val">{{ number_format($labSubtotal, 2) }}</span>%</span>
+                                                            &bull; {{ $selectedPeriod ? $selectedPeriod : 'Final' }}
+                                                            Grade:
+                                                            <span class="badge"
+                                                                style="background: #059669; color: #ffffff; font-size: 0.85rem;"><span
+                                                                    class="modal-final-val">{{ number_format($totalFinalGrade, 2) }}</span>%</span>
+                                                        @else
+                                                            {{ $selectedPeriod ? $selectedPeriod : 'Final' }} Grade: <span
+                                                                class="badge"
+                                                                style="background: #059669; color: #ffffff; font-size: 0.85rem;"><span
+                                                                    class="modal-final-val">{{ number_format($generalCategoryPctSum, 2) }}</span>%</span>
+                                                        @endif
+                                                    </div>
+                                                    <button type="button" class="btn-secondary"
+                                                        onclick="closeModal('studentGradeModal_{{ $enrollment->id }}')">Close</button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                @empty
+                                    @empty
                                     <tr>
                                         <td colspan="10"
                                             style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
@@ -2380,5 +2422,198 @@
                 }
             }
         });
+
+        function computeTotalGradesAjax() {
+            const btn = document.getElementById('btnComputeTotalGrades');
+            const spinner = document.getElementById('computeBtnSpinner');
+            const btnText = document.getElementById('computeBtnText');
+
+            if (btn) btn.disabled = true;
+            if (spinner) spinner.style.display = 'inline-block';
+            if (btnText) btnText.textContent = 'Computing & Saving to DB...';
+
+            fetch('{{ route('superadmin.grades.compute.total') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        class_section_subject_id: '{{ $currentSectionSubject->id ?? '' }}'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (btn) btn.disabled = false;
+                    if (spinner) spinner.style.display = 'none';
+                    if (btnText) btnText.textContent = '⚡ Compute Total Grade for this S.Y. and Sem';
+
+                    if (data.status === 'success') {
+                        data.results.forEach(res => {
+                            const row = document.querySelector(`tr[data-breakdown-row="${res.enrollment_id}"]`);
+                            if (row) {
+                                for (const [pName, val] of Object.entries(res.period_grades)) {
+                                    const cell = row.querySelector(`[data-period-cell="${pName}"] .period-val`);
+                                    if (cell) {
+                                        cell.textContent = parseFloat(val).toFixed(2) + '%';
+                                    }
+                                }
+                                const sgCell = row.querySelector('[data-sg-cell] .sg-val');
+                                if (sgCell) {
+                                    sgCell.textContent = res.subject_grade + '%';
+                                }
+                                const remCell = row.querySelector('[data-remarks-cell]');
+                                if (remCell) {
+                                    const isPassed = res.remarks === 'Passed';
+                                    remCell.innerHTML =
+                                        `<span class="badge ${isPassed ? 'badge-active' : 'badge-danger'}" style="font-size: 0.8rem; font-weight: 800;">${res.remarks}</span>`;
+                                }
+                            }
+                        });
+
+                        alert('✅ ' + data.message);
+                    } else {
+                        alert('⚠️ Error computing grades: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    if (btn) btn.disabled = false;
+                    if (spinner) spinner.style.display = 'none';
+                    if (btnText) btnText.textContent = '⚡ Compute Total Grade for this S.Y. and Sem';
+                    console.error('Computation error:', error);
+                    alert('⚠️ An error occurred while computing total grades.');
+                });
+        }
     </script>
+
+    <!-- Grade Breakdown & Final S.Y. Grade Modal -->
+    @if ($currentSectionSubject)
+        <div class="modal-overlay" id="gradeBreakdownModal">
+            <div class="modal-card" style="max-width: 1050px; width: 95%;">
+                <div class="modal-header"
+                    style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: #ffffff; padding: 1.15rem 1.5rem;">
+                    <div>
+                        <h3
+                            style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #ffffff; display: flex; align-items: center; gap: 0.5rem;">
+                            Grade Breakdown
+                        </h3>
+                        <div style="font-size: 0.78rem; color: #a5b4fc; margin-top: 2px;">
+                            Subject:
+                            <strong>{{ $currentSectionSubject->subject->subject_code ?? '' }} -
+                                {{ $currentSectionSubject->subject->subject_name ?? '' }}</strong>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-icon-action"
+                        style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                        onclick="closeModal('gradeBreakdownModal')">&times;</button>
+                </div>
+
+                <div class="modal-body" style="max-height: 78vh; overflow-y: auto; padding: 1.5rem;">
+                    <div
+                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; background: #f8fafc; padding: 0.85rem 1.15rem; border-radius: 12px; border: 1.5px solid #cbd5e1; flex-wrap: wrap; gap: 0.75rem;">
+                        <div>
+                            <div style="font-size: 0.88rem; font-weight: 800; color: #1e293b;">
+                            </div>
+                            <div style="font-size: 0.75rem; color: #64748b;">
+                            </div>
+                        </div>
+                        <button type="button" id="btnComputeTotalGrades" onclick="computeTotalGradesAjax()"
+                            class="btn-primary"
+                            style="background: #059669; color: #ffffff; font-weight: 800; padding: 0.6rem 1.2rem; border-radius: 10px; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.3); border: none; transition: all 0.2s ease;">
+                            <span id="computeBtnSpinner" style="display: none;">⌛</span>
+                            <span id="computeBtnText">⚡ Compute Total Grade for this S.Y. and Sem</span>
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table" id="breakdownTable">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    @if (isset($availablePeriods) && $availablePeriods->count() > 0)
+                                        @foreach ($availablePeriods as $pName)
+                                            <th style="text-align: center;">{{ strtoupper($pName) }} GRADE</th>
+                                        @endforeach
+                                    @else
+                                        <th style="text-align: center;">PRELIM</th>
+                                        <th style="text-align: center;">MIDTERM</th>
+                                        <th style="text-align: center;">FINALS</th>
+                                    @endif
+                                    <th
+                                        style="text-align: center; background: #059669; color: #ffffff; font-weight: 800;">
+                                        SUBJECT GRADE (SG)
+                                    </th>
+                                    <th style="text-align: center;">REMARKS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($enrolledStudents as $enrollment)
+                                    @php
+                                        $stGrades = isset($savedGrades)
+                                            ? $savedGrades->where('enrollment_id', $enrollment->id)
+                                            : collect();
+                                        $sgModel = $stGrades->where('academic_period', 'Subject Grade')->first();
+                                        $sgVal = $sgModel ? number_format($sgModel->final_grade, 2) : null;
+                                        $sgRemarks = $sgModel ? $sgModel->remarks : null;
+                                    @endphp
+                                    <tr data-breakdown-row="{{ $enrollment->id }}">
+                                        <td><strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong></td>
+                                        <td>
+                                            <strong>{{ $enrollment->student->first_name ?? '' }}
+                                                {{ $enrollment->student->last_name ?? '' }}</strong>
+                                        </td>
+                                        @if (isset($availablePeriods) && $availablePeriods->count() > 0)
+                                            @foreach ($availablePeriods as $pName)
+                                                @php
+                                                    $pModel = $stGrades->where('academic_period', $pName)->first();
+                                                    $pVal = $pModel ? number_format($pModel->final_grade, 2) : '-';
+                                                @endphp
+                                                <td style="text-align: center; font-weight: 700;"
+                                                    data-period-cell="{{ $pName }}">
+                                                    <span
+                                                        class="period-val">{{ $pVal != '-' ? $pVal . '%' : '-' }}</span>
+                                                </td>
+                                            @endforeach
+                                        @endif
+                                        <td style="text-align: center; background: rgba(16, 185, 129, 0.08);"
+                                            data-sg-cell>
+                                            <span class="badge"
+                                                style="font-size: 0.9rem; padding: 0.35rem 0.75rem; background: #059669; color: #ffffff; font-weight: 800; border-radius: 8px;">
+                                                <span class="sg-val">{{ $sgVal ? $sgVal . '%' : '-' }}</span>
+                                            </span>
+                                        </td>
+                                        <td style="text-align: center;" data-remarks-cell>
+                                            @if ($sgRemarks)
+                                                <span
+                                                    class="badge {{ $sgRemarks === 'Passed' ? 'badge-active' : 'badge-danger' }}"
+                                                    style="font-size: 0.8rem; font-weight: 800;">
+                                                    {{ $sgRemarks }}
+                                                </span>
+                                            @else
+                                                <span class="badge"
+                                                    style="background: #f1f5f9; color: #64748b; font-size: 0.8rem;">-</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7"
+                                            style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                                            No enrolled students found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="background: #f8fafc; padding: 0.85rem 1.35rem;">
+                    <button type="button" class="btn-secondary" onclick="closeModal('gradeBreakdownModal')">Close
+                        Breakdown</button>
+                </div>
+            </div>
+        </div>
+    @endif
 @endpush
