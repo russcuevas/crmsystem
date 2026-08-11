@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('enrollment_id')->constrained('enrollments')->cascadeOnDelete();
             $table->foreignId('class_section_subject_id')->constrained('class_section_subjects')->cascadeOnDelete();
+            $table->string('academic_period');
             $table->date('attendance_date');
             $table->string('status');
             $table->string('remarks')->nullable();

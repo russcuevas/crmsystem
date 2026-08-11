@@ -150,6 +150,17 @@
             </div>
         </div>
 
+        <!-- Attendance Codes Legend Bar -->
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.65rem 1rem; background: #ffffff; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 0.78rem; font-weight: 700; align-items: center; box-shadow: var(--shadow-sm);">
+            <span style="color: #475569;"><i class="fa-solid fa-clipboard-user" style="color: #4f46e5;"></i> Attendance Codes:</span>
+            <span style="background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; padding: 0.2rem 0.6rem; border-radius: 6px;">P - Present</span>
+            <span style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; padding: 0.2rem 0.6rem; border-radius: 6px;">L - Late</span>
+            <span style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 0.2rem 0.6rem; border-radius: 6px;">A - Absent</span>
+            <span style="background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; padding: 0.2rem 0.6rem; border-radius: 6px;">AEL - Excuse Letter</span>
+            <span style="background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; padding: 0.2rem 0.6rem; border-radius: 6px;">E - Excuse</span>
+            <span style="background: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; padding: 0.2rem 0.6rem; border-radius: 6px;">C - Cutting Class</span>
+        </div>
+
         <!-- Class Record Spreadsheet Table -->
         <div style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: var(--shadow-sm);"
             class="table-responsive">
@@ -241,6 +252,8 @@
                                                 @method('DELETE')
                                                 <input type="hidden" name="class_section_subject_id"
                                                     value="{{ $currentSectionSubject->id }}">
+                                                <input type="hidden" name="academic_period"
+                                                    value="{{ $selectedPeriod }}">
                                                 <input type="hidden" name="attendance_date"
                                                     value="{{ $adate }}">
                                                 <button type="submit"
@@ -290,22 +303,49 @@
                                         @php
                                             $formattedDate = \Carbon\Carbon::parse($adate)->format('Y-m-d');
                                             $attKey = $stu->id . '_' . $formattedDate;
-                                            $attStatus = isset($attendances[$attKey])
+                                            $rawStatus = isset($attendances[$attKey])
                                                 ? $attendances[$attKey]->status
-                                                : 'present';
+                                                : 'P';
+                                            $statusMap = [
+                                                'present' => 'P',
+                                                'late' => 'L',
+                                                'absent' => 'A',
+                                                'excused_letter' => 'AEL',
+                                                'excused' => 'E',
+                                                'cutting' => 'C',
+                                            ];
+                                            $attStatus = $statusMap[strtolower($rawStatus)] ?? strtoupper($rawStatus);
+                                            if (!in_array($attStatus, ['P', 'L', 'A', 'AEL', 'E', 'C'])) {
+                                                $attStatus = 'P';
+                                            }
+
+                                            $bgMap = [
+                                                'P' => '#d1fae5',
+                                                'L' => '#fef3c7',
+                                                'A' => '#fee2e2',
+                                                'AEL' => '#f3e8ff',
+                                                'E' => '#e0e7ff',
+                                                'C' => '#ffe4e6',
+                                            ];
+                                            $colorMap = [
+                                                'P' => '#065f46',
+                                                'L' => '#92400e',
+                                                'A' => '#991b1b',
+                                                'AEL' => '#6b21a8',
+                                                'E' => '#3730a3',
+                                                'C' => '#9f1239',
+                                            ];
                                         @endphp
                                         <td style="text-align: center; background: #fffdfb;">
                                             <select
                                                 onchange="saveAttendance({{ $stu->id }}, {{ $currentSectionSubject->id }}, '{{ $formattedDate }}', this.value, this)"
-                                                style="padding: 0.25rem 0.4rem; border-radius: 6px; font-size: 0.775rem; font-weight: 700; outline: none; border: 1px solid #fed7aa; background: {{ $attStatus == 'present' ? '#d1fae5' : ($attStatus == 'absent' ? '#fee2e2' : ($attStatus == 'late' ? '#fef3c7' : '#e0e7ff')) }}; color: {{ $attStatus == 'present' ? '#065f46' : ($attStatus == 'absent' ? '#991b1b' : ($attStatus == 'late' ? '#92400e' : '#3730a3')) }};">
-                                                <option value="present" {{ $attStatus == 'present' ? 'selected' : '' }}>P
-                                                </option>
-                                                <option value="absent" {{ $attStatus == 'absent' ? 'selected' : '' }}>A
-                                                </option>
-                                                <option value="late" {{ $attStatus == 'late' ? 'selected' : '' }}>L
-                                                </option>
-                                                <option value="excused" {{ $attStatus == 'excused' ? 'selected' : '' }}>E
-                                                </option>
+                                                style="padding: 0.25rem 0.35rem; border-radius: 6px; font-size: 0.775rem; font-weight: 700; outline: none; border: 1px solid #cbd5e1; width: 62px; text-align: center; background: {{ $bgMap[$attStatus] }}; color: {{ $colorMap[$attStatus] }};">
+                                                <option value="P" {{ $attStatus == 'P' ? 'selected' : '' }}>P</option>
+                                                <option value="L" {{ $attStatus == 'L' ? 'selected' : '' }}>L</option>
+                                                <option value="A" {{ $attStatus == 'A' ? 'selected' : '' }}>A</option>
+                                                <option value="AEL" {{ $attStatus == 'AEL' ? 'selected' : '' }}>AEL</option>
+                                                <option value="E" {{ $attStatus == 'E' ? 'selected' : '' }}>E</option>
+                                                <option value="C" {{ $attStatus == 'C' ? 'selected' : '' }}>C</option>
                                             </select>
                                         </td>
                                     @endforeach
@@ -463,6 +503,7 @@
                 @csrf
                 <input type="hidden" name="class_section_subject_id"
                     value="{{ $currentSectionSubject ? $currentSectionSubject->id : '' }}">
+                <input type="hidden" name="academic_period" value="{{ $selectedPeriod }}">
                 <div style="margin-bottom: 1.25rem;">
                     <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Select Attendance Date</label>
                     <input type="date" name="attendance_date" required value="{{ date('Y-m-d') }}"
@@ -643,7 +684,11 @@
                 },
                 error: function(xhr) {
                     let msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error updating score.';
-                    alert(msg);
+                    if (typeof showToast === 'function') {
+                        showToast('error', msg);
+                    } else {
+                        alert(msg);
+                    }
                 }
             });
         }
@@ -656,21 +701,35 @@
                     _token: "{{ csrf_token() }}",
                     student_id: studentId,
                     class_section_subject_id: sectionSubjId,
+                    academic_period: "{{ $selectedPeriod }}",
                     attendance_date: date,
                     status: status
                 },
                 success: function(response) {
-                    let bg = status === 'present' ? '#d1fae5' : (status === 'absent' ? '#fee2e2' : (status ===
-                        'late' ? '#fef3c7' : '#e0e7ff'));
-                    let color = status === 'present' ? '#065f46' : (status === 'absent' ? '#991b1b' : (
-                        status === 'late' ? '#92400e' : '#3730a3'));
+                    const styles = {
+                        'P': { bg: '#d1fae5', color: '#065f46' },
+                        'L': { bg: '#fef3c7', color: '#92400e' },
+                        'A': { bg: '#fee2e2', color: '#991b1b' },
+                        'AEL': { bg: '#f3e8ff', color: '#6b21a8' },
+                        'E': { bg: '#e0e7ff', color: '#3730a3' },
+                        'C': { bg: '#ffe4e6', color: '#9f1239' },
+                    };
+                    let st = styles[status] || { bg: '#f1f5f9', color: '#475569' };
                     $(selectElem).css({
-                        'background': bg,
-                        'color': color
+                        'background': st.bg,
+                        'color': st.color
                     });
+                    if (typeof showToast === 'function') {
+                        showToast('success', 'Attendance updated to ' + status);
+                    }
                 },
                 error: function(xhr) {
-                    alert('Error updating attendance status.');
+                    let msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error updating attendance status.';
+                    if (typeof showToast === 'function') {
+                        showToast('error', msg);
+                    } else {
+                        alert(msg);
+                    }
                 }
             });
         }

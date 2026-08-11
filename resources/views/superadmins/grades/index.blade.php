@@ -1831,7 +1831,7 @@
                                             $formattedDate = \Carbon\Carbon::parse($attDate)->format('Y-m-d');
                                             $displayDate = \Carbon\Carbon::parse($attDate)->format('M d, Y');
                                         @endphp
-                                        <th style="text-align: center; min-width: 140px;">
+                                        <th style="text-align: center; min-width: 90px;">
                                             <div
                                                 style="display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
                                                 <span>{{ $displayDate }}</span>
@@ -1844,6 +1844,10 @@
                                                         @method('DELETE')
                                                         <input type="hidden" name="class_section_subject_id"
                                                             value="{{ $currentSectionSubject->id }}">
+                                                        @if ($selectedPeriod)
+                                                            <input type="hidden" name="academic_period"
+                                                                value="{{ $selectedPeriod }}">
+                                                        @endif
                                                         <input type="hidden" name="attendance_date"
                                                             value="{{ $formattedDate }}">
                                                         <button type="submit"
@@ -1882,18 +1886,12 @@
                                                     data-enrollment-id="{{ $enrollment->id }}"
                                                     data-date="{{ $formattedDate }}"
                                                     onchange="updateAttendanceStatusCell(this)">
-                                                    <option value="P" {{ $statusVal === 'P' ? 'selected' : '' }}>P -
-                                                        Present</option>
-                                                    <option value="L" {{ $statusVal === 'L' ? 'selected' : '' }}>L -
-                                                        Late</option>
-                                                    <option value="A" {{ $statusVal === 'A' ? 'selected' : '' }}>A -
-                                                        Absent</option>
-                                                    <option value="AEL" {{ $statusVal === 'AEL' ? 'selected' : '' }}>
-                                                        AEL - Excuse Letter</option>
-                                                    <option value="E" {{ $statusVal === 'E' ? 'selected' : '' }}>E -
-                                                        Excuse</option>
-                                                    <option value="C" {{ $statusVal === 'C' ? 'selected' : '' }}>C -
-                                                        Cutting</option>
+                                                    <option value="P" {{ $statusVal === 'P' ? 'selected' : '' }}>P</option>
+                                                    <option value="L" {{ $statusVal === 'L' ? 'selected' : '' }}>L</option>
+                                                    <option value="A" {{ $statusVal === 'A' ? 'selected' : '' }}>A</option>
+                                                    <option value="AEL" {{ $statusVal === 'AEL' ? 'selected' : '' }}>AEL</option>
+                                                    <option value="E" {{ $statusVal === 'E' ? 'selected' : '' }}>E</option>
+                                                    <option value="C" {{ $statusVal === 'C' ? 'selected' : '' }}>C</option>
                                                 </select>
                                             </td>
                                         @endforeach
@@ -2057,6 +2055,9 @@
                     @if ($currentSectionSubject)
                         <input type="hidden" name="class_section_subject_id" value="{{ $currentSectionSubject->id }}">
                     @endif
+                    @if ($selectedPeriod)
+                        <input type="hidden" name="academic_period" value="{{ $selectedPeriod }}">
+                    @endif
                     <div class="modal-body">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label>Select Attendance Date <span style="color: #ef4444;">*</span></label>
@@ -2197,6 +2198,7 @@
                     _token: "{{ csrf_token() }}",
                     class_section_subject_id: cssId,
                     enrollment_id: enrollmentId,
+                    academic_period: "{{ $selectedPeriod }}",
                     attendance_date: attDate,
                     status: statusVal
                 },

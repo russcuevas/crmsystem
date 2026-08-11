@@ -98,10 +98,29 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <div>
             <h2 style="font-size: 1.35rem; font-weight: 800; color: #0f172a;">Handled Students Registry</h2>
-            <p style="font-size: 0.875rem; color: #64748b;">Showing students enrolled in your advisory & teaching class
-                sections (Grade 7 to Grade 10).</p>
+            <p style="font-size: 0.875rem; color: #64748b;">Manage and view your advisory students and subject students enrolled for S.Y. {{ $activeSchoolYear->school_year ?? '' }}.</p>
         </div>
+    </div>
 
+    <!-- Student Classification Tabs -->
+    <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.75rem; flex-wrap: wrap;">
+        <button type="button" class="student-tab-btn active" onclick="filterStudentTab('all', this)"
+            style="padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 800; font-size: 0.875rem; border: none; background: #1e1b4b; color: #ffffff; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <i class="fa-solid fa-users"></i> All Handled Students
+            <span style="background: rgba(255,255,255,0.25); padding: 0.15rem 0.55rem; border-radius: 12px; font-size: 0.75rem;">{{ $students->count() }}</span>
+        </button>
+
+        <button type="button" class="student-tab-btn" onclick="filterStudentTab('advisory', this)"
+            style="padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; font-size: 0.875rem; border: 1px solid #fed7aa; background: #fff7ed; color: #9a3412; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease;">
+            <i class="fa-solid fa-star" style="color: #d97706;"></i> ⭐ My Advisory Students
+            <span style="background: #fef3c7; color: #92400e; padding: 0.15rem 0.55rem; border-radius: 12px; font-size: 0.75rem; font-weight: 800; border: 1px solid #fde68a;">{{ count($advisoryStudentIds) }}</span>
+        </button>
+
+        <button type="button" class="student-tab-btn" onclick="filterStudentTab('subject', this)"
+            style="padding: 0.65rem 1.25rem; border-radius: 10px; font-weight: 700; font-size: 0.875rem; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease;">
+            <i class="fa-solid fa-book-open" style="color: #2563eb;"></i> 📘 Subject Students (Non-Advisory)
+            <span style="background: #dbeafe; color: #1e40af; padding: 0.15rem 0.55rem; border-radius: 12px; font-size: 0.75rem; font-weight: 800; border: 1px solid #bfdbfe;">{{ count($subjectStudentIds) }}</span>
+        </button>
     </div>
 
     <!-- Students Table Card -->
@@ -113,7 +132,7 @@
                     <th>Student No.</th>
                     <th>LRN</th>
                     <th>Full Name</th>
-                    <th>Email Address</th>
+                    <th>Classification</th>
                     <th>Grade Level</th>
                     <th>Section(s)</th>
                     <th>Actions</th>
@@ -121,14 +140,30 @@
             </thead>
             <tbody>
                 @foreach ($students as $stu)
-                    <tr>
+                    @php
+                        $isAdvisory = in_array($stu->id, $advisoryStudentIds);
+                        $rowType = $isAdvisory ? 'advisory' : 'subject';
+                    @endphp
+                    <tr data-type="{{ $rowType }}">
                         <td style="font-family: monospace; font-weight: 700; color: #3730a3;">{{ $stu->student_number }}
                         </td>
                         <td>{{ $stu->lrn ?? 'N/A' }}</td>
                         <td style="font-weight: 700; color: #0f172a;">
                             {{ trim(($stu->last_name ? $stu->last_name . ', ' : '') . $stu->first_name . ' ' . $stu->middle_name . ' ' . $stu->extension_name) ?: ($stu->user ? $stu->user->name : 'N/A') }}
                         </td>
-                        <td>{{ $stu->user ? $stu->user->email : 'N/A' }}</td>
+                        <td>
+                            @if ($isAdvisory)
+                                <span
+                                    style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 0.35rem;">
+                                    <i class="fa-solid fa-star" style="color: #d97706;"></i> Advisory Student
+                                </span>
+                            @else
+                                <span
+                                    style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem;">
+                                    <i class="fa-solid fa-book" style="color: #3b82f6;"></i> Subject Student
+                                </span>
+                            @endif
+                        </td>
                         <td>
                             <span
                                 style="background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.55rem; border-radius: 0.25rem; font-weight: 700; font-size: 0.775rem;">
@@ -274,8 +309,22 @@
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script>
+        let currentStudentTab = 'all';
+        let studentsTable = null;
+
+        $.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                if (settings.nTable.id !== 'studentsTable') return true;
+                if (currentStudentTab === 'all') return true;
+                let row = settings.aoData[dataIndex].nTr;
+                if (!row) return true;
+                let rowType = $(row).attr('data-type');
+                return rowType === currentStudentTab;
+            }
+        );
+
         $(document).ready(function() {
-            $('#studentsTable').DataTable({
+            studentsTable = $('#studentsTable').DataTable({
                 pageLength: 10,
                 ordering: true
             });
@@ -287,6 +336,39 @@
                 }
             });
         });
+
+        function filterStudentTab(type, btnEl) {
+            currentStudentTab = type;
+            $('.student-tab-btn').css({
+                'background': '#f1f5f9',
+                'color': '#475569',
+                'border': '1px solid #cbd5e1'
+            }).removeClass('active');
+
+            if (type === 'all') {
+                $(btnEl).css({
+                    'background': '#1e1b4b',
+                    'color': '#ffffff',
+                    'border': 'none'
+                }).addClass('active');
+            } else if (type === 'advisory') {
+                $(btnEl).css({
+                    'background': '#9a3412',
+                    'color': '#ffffff',
+                    'border': 'none'
+                }).addClass('active');
+            } else if (type === 'subject') {
+                $(btnEl).css({
+                    'background': '#1e40af',
+                    'color': '#ffffff',
+                    'border': 'none'
+                }).addClass('active');
+            }
+
+            if (studentsTable) {
+                studentsTable.draw();
+            }
+        }
 
         function openAddModal() {
             $('#studentForm').attr('action', "{{ route('junior_high_school.students.store') }}");

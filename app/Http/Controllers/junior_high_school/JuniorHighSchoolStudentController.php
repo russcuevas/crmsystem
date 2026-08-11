@@ -42,22 +42,35 @@ class JuniorHighSchoolStudentController extends Controller
         // Handled Sections for this JHS Teacher
         $advisorySectionIds = $teacher->advisedClassSections()
             ->when($activeSchoolYear, fn($q) => $q->where('school_year_id', $activeSchoolYear->id))
-            ->pluck('id');
+            ->pluck('id')
+            ->toArray();
 
         $teachingSectionIds = ClassSectionSubject::where('teacher_id', $teacher->id)
             ->whereHas('classSection', function ($q) use ($activeSchoolYear) {
                 if ($activeSchoolYear) {
                     $q->where('school_year_id', $activeSchoolYear->id);
                 }
-            })->pluck('class_section_id');
+            })->pluck('class_section_id')
+            ->toArray();
 
-        $handledSectionIds = $advisorySectionIds->merge($teachingSectionIds)->unique();
+        $handledSectionIds = array_unique(array_merge($advisorySectionIds, $teachingSectionIds));
 
-        // Students ONLY in teacher's handled sections for active school year
-        $handledStudentIds = Enrollment::whereIn('class_section_id', $handledSectionIds)
+        // Advisory Students
+        $advisoryStudentIds = Enrollment::whereIn('class_section_id', $advisorySectionIds)
             ->when($activeSchoolYear, fn($q) => $q->where('school_year_id', $activeSchoolYear->id))
             ->pluck('student_id')
-            ->unique();
+            ->unique()
+            ->toArray();
+
+        // Non-Advisory / Subject Students
+        $subjectStudentIds = Enrollment::whereIn('class_section_id', $teachingSectionIds)
+            ->whereNotIn('student_id', $advisoryStudentIds)
+            ->when($activeSchoolYear, fn($q) => $q->where('school_year_id', $activeSchoolYear->id))
+            ->pluck('student_id')
+            ->unique()
+            ->toArray();
+
+        $handledStudentIds = array_unique(array_merge($advisoryStudentIds, $subjectStudentIds));
 
         $students = Student::whereIn('id', $handledStudentIds)
             ->with(['user', 'educationLevel', 'gradeLevel', 'enrollments.classSection'])
@@ -69,6 +82,8 @@ class JuniorHighSchoolStudentController extends Controller
         return view('junior_high_school.students.index', compact(
             'teacher',
             'students',
+            'advisoryStudentIds',
+            'subjectStudentIds',
             'activeSchoolYear',
             'allGradeLevels',
             'jhsLevel',

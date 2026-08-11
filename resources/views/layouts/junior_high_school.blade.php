@@ -466,25 +466,39 @@
 
             <!-- Main Content Area -->
             <main class="content-body">
+                <script>
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+
+                    function showToast(icon, title) {
+                        Toast.fire({
+                            icon: icon,
+                            title: title
+                        });
+                    }
+                </script>
+
                 @if (session('success'))
                     <script>
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: "{{ session('success') }}",
-                            timer: 3000,
-                            showConfirmButton: false
+                        document.addEventListener('DOMContentLoaded', function() {
+                            showToast('success', "{{ session('success') }}");
                         });
                     </script>
                 @endif
 
                 @if (session('error'))
                     <script>
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: "{{ session('error') }}",
-                            showConfirmButton: true
+                        document.addEventListener('DOMContentLoaded', function() {
+                            showToast('error', "{{ session('error') }}");
                         });
                     </script>
                 @endif

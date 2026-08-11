@@ -98,14 +98,16 @@ class JuniorHighSchoolGradeController extends Controller
                     return ($item->enrollment ? $item->enrollment->student_id : null) . '_' . $item->grading_task_id;
                 });
 
-            // Attendance Records
+            // Attendance Records (Filtered by Quarter/Academic Period)
             $attendanceDates = Attendance::where('class_section_subject_id', $currentSectionSubject->id)
+                ->where('academic_period', $selectedPeriod)
                 ->select('attendance_date')
                 ->distinct()
                 ->orderBy('attendance_date', 'asc')
                 ->pluck('attendance_date');
 
             $attendances = Attendance::where('class_section_subject_id', $currentSectionSubject->id)
+                ->where('academic_period', $selectedPeriod)
                 ->with('enrollment')
                 ->get()
                 ->keyBy(function ($item) {
@@ -271,6 +273,7 @@ class JuniorHighSchoolGradeController extends Controller
     {
         $validated = $request->validate([
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
+            'academic_period' => 'required|string',
             'attendance_date' => 'required|date',
         ]);
 
@@ -284,9 +287,10 @@ class JuniorHighSchoolGradeController extends Controller
             Attendance::firstOrCreate([
                 'enrollment_id' => $enr->id,
                 'class_section_subject_id' => $sectionSubject->id,
+                'academic_period' => $validated['academic_period'],
                 'attendance_date' => $validated['attendance_date'],
             ], [
-                'status' => 'present',
+                'status' => 'P',
             ]);
         }
 
@@ -298,8 +302,9 @@ class JuniorHighSchoolGradeController extends Controller
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
+            'academic_period' => 'nullable|string',
             'attendance_date' => 'required|date',
-            'status' => 'required|in:present,absent,late,excused',
+            'status' => 'required|in:P,L,A,AEL,E,C,present,absent,late,excused,excused_letter,cutting',
         ]);
 
         $sectionSubject = ClassSectionSubject::findOrFail($validated['class_section_subject_id']);
@@ -311,10 +316,13 @@ class JuniorHighSchoolGradeController extends Controller
             return response()->json(['success' => false, 'message' => 'Student enrollment record not found.'], 404);
         }
 
+        $period = $request->input('academic_period', '1st Quarter');
+
         $attendance = Attendance::updateOrCreate(
             [
                 'enrollment_id' => $enrollment->id,
                 'class_section_subject_id' => $sectionSubject->id,
+                'academic_period' => $period,
                 'attendance_date' => $validated['attendance_date'],
             ],
             [
@@ -333,10 +341,12 @@ class JuniorHighSchoolGradeController extends Controller
     {
         $validated = $request->validate([
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
+            'academic_period' => 'required|string',
             'attendance_date' => 'required|date',
         ]);
 
         Attendance::where('class_section_subject_id', $validated['class_section_subject_id'])
+            ->where('academic_period', $validated['academic_period'])
             ->where('attendance_date', $validated['attendance_date'])
             ->delete();
 

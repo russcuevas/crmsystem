@@ -117,14 +117,21 @@ class SuperAdminGradeController extends Controller
 
             $enrolledStudents = $enrolledQuery->with(['student.user', 'taskScores'])->get();
 
-            // Fetch Distinct Attendance Dates and Records
-            $attendanceDates = Attendance::where('class_section_subject_id', $currentSectionSubject->id)
-                ->select('attendance_date')
+            // Fetch Distinct Attendance Dates and Records (Filtered by selectedPeriod)
+            $attendanceDatesQuery = Attendance::where('class_section_subject_id', $currentSectionSubject->id);
+            $attendancesQuery = Attendance::where('class_section_subject_id', $currentSectionSubject->id);
+
+            if ($selectedPeriod) {
+                $attendanceDatesQuery->where('academic_period', $selectedPeriod);
+                $attendancesQuery->where('academic_period', $selectedPeriod);
+            }
+
+            $attendanceDates = $attendanceDatesQuery->select('attendance_date')
                 ->distinct()
                 ->orderBy('attendance_date', 'asc')
                 ->pluck('attendance_date');
 
-            $attendances = Attendance::where('class_section_subject_id', $currentSectionSubject->id)->get();
+            $attendances = $attendancesQuery->get();
             $savedGrades = Grade::where('class_section_subject_id', $currentSectionSubject->id)->get();
         } else {
             $savedGrades = collect();
@@ -293,14 +300,16 @@ class SuperAdminGradeController extends Controller
         return back()->with('success', 'Grading Task deleted successfully.');
     }
 
-    public function storeAttendanceDate(Request $request)
+public function storeAttendanceDate(Request $request)
     {
         $request->validate([
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
             'attendance_date' => 'required|date',
+            'academic_period' => 'nullable|string',
         ]);
 
         $css = ClassSectionSubject::findOrFail($request->class_section_subject_id);
+        $period = $request->input('academic_period', '1st Quarter');
 
         $enrolledStudents = Enrollment::where('class_section_id', $css->class_section_id)->get();
 
@@ -309,6 +318,7 @@ class SuperAdminGradeController extends Controller
                 [
                     'class_section_subject_id' => $css->id,
                     'enrollment_id' => $enr->id,
+                    'academic_period' => $period,
                     'attendance_date' => $request->attendance_date,
                 ],
                 [
@@ -327,6 +337,7 @@ class SuperAdminGradeController extends Controller
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
             'enrollment_id' => 'required|exists:enrollments,id',
             'attendance_date' => 'required|date',
+            'academic_period' => 'nullable|string',
             'status' => 'required|string',
         ]);
 
@@ -336,10 +347,13 @@ class SuperAdminGradeController extends Controller
             $status = 'P';
         }
 
+        $period = $request->input('academic_period', '1st Quarter');
+
         $att = Attendance::updateOrCreate(
             [
                 'class_section_subject_id' => $request->class_section_subject_id,
                 'enrollment_id' => $request->enrollment_id,
+                'academic_period' => $period,
                 'attendance_date' => $request->attendance_date,
             ],
             [
@@ -350,7 +364,7 @@ class SuperAdminGradeController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Attendance status updated successfully.',
-            'status' => $att->status,
+            'attendance' => $att
         ]);
     }
 
@@ -359,13 +373,19 @@ class SuperAdminGradeController extends Controller
         $request->validate([
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
             'attendance_date' => 'required|date',
+            'academic_period' => 'nullable|string',
         ]);
 
-        Attendance::where('class_section_subject_id', $request->class_section_subject_id)
-            ->where('attendance_date', $request->attendance_date)
-            ->delete();
+        $query = Attendance::where('class_section_subject_id', $request->class_section_subject_id)
+            ->where('attendance_date', $request->attendance_date);
 
-        return back()->with('success', 'Attendance column deleted successfully.');
+        if ($request->filled('academic_period')) {
+            $query->where('academic_period', $request->academic_period);
+        }
+
+        $query->delete();
+
+        return back()->with('success', 'Attendance column deleted.');
     }
 
     public function updateSubjectWeights(Request $request)
