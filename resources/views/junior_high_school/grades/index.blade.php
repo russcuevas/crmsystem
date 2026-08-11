@@ -72,6 +72,23 @@
 @endpush
 
 @section('content')
+    <!-- Top Navigation Tabs (Subject Teacher View vs Adviser View) -->
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">
+        <a href="{{ route('junior_high_school.grades.page') }}"
+            style="padding: 0.65rem 1.25rem; border-radius: 0.625rem; font-weight: 700; font-size: 0.875rem; text-decoration: none; color: #ffffff; background: #1e1b4b; box-shadow: 0 4px 12px rgba(30, 27, 75, 0.25); display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-book"></i>
+            <span>My Handled Subjects (Subject Teacher)</span>
+        </a>
+        <a href="{{ route('junior_high_school.grades.advisory.page') }}"
+            style="padding: 0.65rem 1.25rem; border-radius: 0.625rem; font-weight: 700; font-size: 0.875rem; text-decoration: none; color: #64748b; background: transparent; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-user-shield"></i>
+            <span>Advisory Class Grades (Class Adviser)</span>
+            @if (!empty($isAdviser))
+                <span style="background: #f59e0b; color: #1e1b4b; padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 800;">Adviser</span>
+            @endif
+        </a>
+    </div>
+
     <!-- Header Controls: Subject Selector & Academic Quarter Tabs -->
     <div
         style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem;">

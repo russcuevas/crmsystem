@@ -60,6 +60,8 @@ Route::middleware(['auth', 'jhs.teacher'])->prefix('junior-high-school')->as('ju
 
     // Grades Module (Handled Subjects Only)
     Route::get('/grades', [JuniorHighSchoolGradeController::class, 'JuniorHighSchoolGradePage'])->name('grades.page');
+    Route::get('/grades/advisory', [JuniorHighSchoolGradeController::class, 'JuniorHighSchoolAdvisoryGradePage'])->name('grades.advisory.page');
+    Route::get('/grades/print-card/{student_id}', [JuniorHighSchoolGradeController::class, 'printReportCard'])->name('grades.print_card');
     Route::post('/grades/update-score', [JuniorHighSchoolGradeController::class, 'updateTaskScore'])->name('grades.update_score');
     Route::post('/grades/category/store', [JuniorHighSchoolGradeController::class, 'storeCategory'])->name('grades.category.store');
     Route::match(['post', 'put'], '/grades/category/update/{id}', [JuniorHighSchoolGradeController::class, 'updateCategory'])->name('grades.category.update');

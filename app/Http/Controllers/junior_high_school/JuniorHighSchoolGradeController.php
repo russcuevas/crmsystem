@@ -136,6 +136,12 @@ class JuniorHighSchoolGradeController extends Controller
             $categoriesData = [];
         }
 
+        $advisorySections = ClassSection::where('class_adviser_id', $teacher->id)
+            ->when($activeSchoolYear, fn($q) => $q->where('school_year_id', $activeSchoolYear->id))
+            ->with('gradeLevel')
+            ->get();
+        $isAdviser = $advisorySections->isNotEmpty();
+
         return view('junior_high_school.grades.index', compact(
             'teacher',
             'handledSubjects',
@@ -149,7 +155,197 @@ class JuniorHighSchoolGradeController extends Controller
             'attendanceDates',
             'attendances',
             'computedGrades',
-            'activeSchoolYear'
+            'activeSchoolYear',
+            'advisorySections',
+            'isAdviser'
+        ));
+    }
+
+    public function JuniorHighSchoolAdvisoryGradePage(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $teacher = $user->teacher;
+
+        if (!$teacher) {
+            return redirect()->route('junior_high_school.login.page')->with('error', 'Teacher profile not found.');
+        }
+
+        $activeSyId = session('active_school_year_id');
+        $activeSchoolYear = $activeSyId ? SchoolYear::find($activeSyId) : SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            $activeSchoolYear = SchoolYear::first();
+        }
+
+        // Advisory Sections for this teacher
+        $advisorySections = ClassSection::where('class_adviser_id', $teacher->id)
+            ->when($activeSchoolYear, fn($q) => $q->where('school_year_id', $activeSchoolYear->id))
+            ->with(['gradeLevel', 'schoolYear'])
+            ->get();
+
+        $isAdviser = $advisorySections->isNotEmpty();
+
+        $selectedSectionId = $request->input('class_section_id');
+        $selectedPeriod = $request->input('academic_period', '1st Quarter');
+
+        $currentSection = null;
+        if ($selectedSectionId) {
+            $currentSection = $advisorySections->firstWhere('id', $selectedSectionId);
+        }
+        if (!$currentSection && $isAdviser) {
+            $currentSection = $advisorySections->first();
+        }
+
+        $sectionSubjects = collect();
+        $enrolledStudents = collect();
+        $gradesMatrix = [];
+        $quarterGradesMatrix = [];
+        $studentSummaries = [];
+        $classStats = [
+            'total_students' => 0,
+            'class_average' => 0,
+            'passed_count' => 0,
+            'failed_count' => 0,
+            'pending_count' => 0,
+        ];
+
+        if ($currentSection) {
+            // All subjects assigned to this class section (regardless of who teaches them)
+            $sectionSubjects = ClassSectionSubject::where('class_section_id', $currentSection->id)
+                ->with(['subject', 'teacher'])
+                ->get();
+
+            $subjectIds = $sectionSubjects->pluck('id');
+
+            // Enrolled students in this advisory section
+            $enrolledStudents = Student::whereHas('enrollments', function ($q) use ($currentSection, $activeSchoolYear) {
+                $q->where('class_section_id', $currentSection->id)
+                  ->where('status', 'enrolled');
+                if ($activeSchoolYear) {
+                    $q->where('school_year_id', $activeSchoolYear->id);
+                }
+            })->with('user')->get();
+
+            // Fetch all published grades for these subjects
+            $allGrades = Grade::whereIn('class_section_subject_id', $subjectIds)
+                ->with('enrollment')
+                ->get();
+
+            $periods = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'];
+
+            foreach ($enrolledStudents as $student) {
+                $studentGrades = [];
+                $qGradesForStudent = [];
+                $validGradesForGwa = [];
+                $hasFailingGrade = false;
+                $hasPendingGrade = false;
+                $passedCount = 0;
+                $failedCount = 0;
+
+                foreach ($sectionSubjects as $secSub) {
+                    // Match grade by enrollment->student_id
+                    $subGrades = $allGrades->filter(function ($g) use ($student, $secSub) {
+                        $matchStudent = ($g->enrollment && $g->enrollment->student_id == $student->id);
+                        return $matchStudent && $g->class_section_subject_id == $secSub->id;
+                    });
+
+                    // Build 4 quarters breakdown
+                    $qGradesMap = [];
+                    foreach ($periods as $p) {
+                        $gP = $subGrades->firstWhere('academic_period', $p);
+                        $qGradesMap[$p] = ($gP && $gP->final_grade !== null) ? floatval($gP->final_grade) : null;
+                    }
+                    $qGradesForStudent[$secSub->id] = $qGradesMap;
+
+                    if ($selectedPeriod === 'All Quarters') {
+                        $nonNullQGrades = array_filter($qGradesMap, fn($v) => !is_null($v));
+                        if (count($nonNullQGrades) > 0) {
+                            $avgSubjectGrade = round(array_sum($nonNullQGrades) / count($nonNullQGrades), 2);
+                            $studentGrades[$secSub->id] = $avgSubjectGrade;
+                            $validGradesForGwa[] = $avgSubjectGrade;
+                            if ($avgSubjectGrade >= 75) {
+                                $passedCount++;
+                            } else {
+                                $failedCount++;
+                                $hasFailingGrade = true;
+                            }
+                        } else {
+                            $studentGrades[$secSub->id] = null;
+                            $hasPendingGrade = true;
+                        }
+                    } else {
+                        $gP = $subGrades->firstWhere('academic_period', $selectedPeriod);
+                        if ($gP && $gP->final_grade !== null) {
+                            $gradeVal = floatval($gP->final_grade);
+                            $studentGrades[$secSub->id] = $gradeVal;
+                            $validGradesForGwa[] = $gradeVal;
+                            if ($gradeVal >= 75) {
+                                $passedCount++;
+                            } else {
+                                $failedCount++;
+                                $hasFailingGrade = true;
+                            }
+                        } else {
+                            $studentGrades[$secSub->id] = null;
+                            $hasPendingGrade = true;
+                        }
+                    }
+                }
+
+                $gradesMatrix[$student->id] = $studentGrades;
+                $quarterGradesMatrix[$student->id] = $qGradesForStudent;
+
+                $gwa = count($validGradesForGwa) > 0 ? round(array_sum($validGradesForGwa) / count($validGradesForGwa), 2) : null;
+
+                $remarks = 'Pending';
+                if ($gwa !== null) {
+                    if ($hasFailingGrade || $gwa < 75) {
+                        $remarks = 'Failed';
+                    } else if (!$hasPendingGrade && count($validGradesForGwa) === $sectionSubjects->count()) {
+                        $remarks = 'Passed';
+                    } else {
+                        $remarks = ($gwa >= 75) ? 'Passed (Partial)' : 'Failed';
+                    }
+                }
+
+                $studentSummaries[$student->id] = [
+                    'gwa' => $gwa,
+                    'remarks' => $remarks,
+                    'passed_count' => $passedCount,
+                    'failed_count' => $failedCount,
+                    'pending_count' => $sectionSubjects->count() - ($passedCount + $failedCount),
+                ];
+            }
+
+            $totalStudents = $enrolledStudents->count();
+            $gwas = array_filter(array_column($studentSummaries, 'gwa'), fn($v) => !is_null($v));
+            $classAvg = count($gwas) > 0 ? round(array_sum($gwas) / count($gwas), 2) : 0;
+            $passedCount = count(array_filter($studentSummaries, fn($s) => str_contains($s['remarks'], 'Passed')));
+            $failedCount = count(array_filter($studentSummaries, fn($s) => $s['remarks'] === 'Failed'));
+            $pendingCount = $totalStudents - ($passedCount + $failedCount);
+
+            $classStats = [
+                'total_students' => $totalStudents,
+                'class_average' => $classAvg,
+                'passed_count' => $passedCount,
+                'failed_count' => $failedCount,
+                'pending_count' => max(0, $pendingCount),
+            ];
+        }
+
+        return view('junior_high_school.grades.advisory', compact(
+            'teacher',
+            'activeSchoolYear',
+            'advisorySections',
+            'isAdviser',
+            'currentSection',
+            'selectedPeriod',
+            'sectionSubjects',
+            'enrolledStudents',
+            'gradesMatrix',
+            'quarterGradesMatrix',
+            'studentSummaries',
+            'classStats'
         ));
     }
 
@@ -397,12 +593,11 @@ class JuniorHighSchoolGradeController extends Controller
 
             Grade::updateOrCreate(
                 [
-                    'student_id' => $enr->student_id,
+                    'enrollment_id' => $enr->id,
                     'class_section_subject_id' => $sectionSubject->id,
                     'academic_period' => $validated['academic_period'],
                 ],
                 [
-                    'quarter_grade' => $computedScore,
                     'final_grade' => $computedScore,
                     'remarks' => $remarks,
                 ]
@@ -410,5 +605,100 @@ class JuniorHighSchoolGradeController extends Controller
         }
 
         return redirect()->back()->with('success', 'Grades computed and published successfully!');
+    }
+
+    public function printReportCard(Request $request, $student_id)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $teacher = $user->teacher;
+
+        $activeSyId = session('active_school_year_id');
+        $activeSchoolYear = $activeSyId ? SchoolYear::find($activeSyId) : SchoolYear::where('is_active', true)->first();
+        if (!$activeSchoolYear) {
+            $activeSchoolYear = SchoolYear::first();
+        }
+
+        $student = Student::with('user')->findOrFail($student_id);
+
+        // Find enrollment
+        $enrollmentQuery = Enrollment::where('student_id', $student->id)->where('status', 'enrolled');
+        if ($request->filled('class_section_id')) {
+            $enrollmentQuery->where('class_section_id', $request->input('class_section_id'));
+        }
+        if ($activeSchoolYear) {
+            $enrollmentQuery->where('school_year_id', $activeSchoolYear->id);
+        }
+
+        $enrollment = $enrollmentQuery->with(['classSection.gradeLevel', 'classSection.adviser'])->first();
+        if (!$enrollment) {
+            $enrollment = Enrollment::where('student_id', $student->id)->with(['classSection.gradeLevel', 'classSection.adviser'])->latest()->first();
+        }
+
+        $currentSection = $enrollment ? $enrollment->classSection : null;
+
+        $sectionSubjects = collect();
+        $gradesBySubject = [];
+        $gwa = null;
+        $remarks = 'Pending';
+
+        if ($currentSection) {
+            $sectionSubjects = ClassSectionSubject::where('class_section_id', $currentSection->id)
+                ->with(['subject', 'teacher'])
+                ->get();
+
+            $subjectIds = $sectionSubjects->pluck('id');
+            $studentEnrollmentIds = Enrollment::where('student_id', $student->id)->pluck('id');
+
+            $allGrades = Grade::whereIn('class_section_subject_id', $subjectIds)
+                ->whereIn('enrollment_id', $studentEnrollmentIds)
+                ->get();
+
+            $periods = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'];
+            $subjectAverages = [];
+
+            foreach ($sectionSubjects as $secSub) {
+                $subGrades = $allGrades->where('class_section_subject_id', $secSub->id);
+                $qGrades = [];
+                foreach ($periods as $p) {
+                    $gObj = $subGrades->firstWhere('academic_period', $p);
+                    $qGrades[$p] = ($gObj && $gObj->final_grade !== null) ? floatval($gObj->final_grade) : null;
+                }
+
+                $nonNull = array_filter($qGrades, fn($v) => !is_null($v));
+                $finalGrade = count($nonNull) > 0 ? round(array_sum($nonNull) / count($nonNull), 2) : null;
+                $subRemarks = $finalGrade !== null ? ($finalGrade >= 75 ? 'Passed' : 'Failed') : '';
+
+                $gradesBySubject[$secSub->id] = [
+                    'q1' => $qGrades['1st Quarter'],
+                    'q2' => $qGrades['2nd Quarter'],
+                    'q3' => $qGrades['3rd Quarter'],
+                    'q4' => $qGrades['4th Quarter'],
+                    'final_grade' => $finalGrade,
+                    'remarks' => $subRemarks,
+                ];
+
+                if ($finalGrade !== null) {
+                    $subjectAverages[] = $finalGrade;
+                }
+            }
+
+            if (count($subjectAverages) > 0) {
+                $gwa = round(array_sum($subjectAverages) / count($subjectAverages), 2);
+                $hasFailing = count(array_filter($subjectAverages, fn($v) => $v < 75)) > 0;
+                $remarks = ($gwa >= 75 && !$hasFailing) ? 'Passed' : 'Failed';
+            }
+        }
+
+        return view('junior_high_school.grades.print.print_card', compact(
+            'student',
+            'enrollment',
+            'currentSection',
+            'activeSchoolYear',
+            'sectionSubjects',
+            'gradesBySubject',
+            'gwa',
+            'remarks'
+        ));
     }
 }
