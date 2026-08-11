@@ -5,6 +5,7 @@ namespace App\Http\Controllers\superadmins;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Teacher;
 use App\Models\Student;
@@ -13,9 +14,9 @@ use App\Models\ClassSection;
 use App\Models\SchoolYear;
 use App\Models\EducationLevel;
 
-class SuperAdminAccountController extends Controller
+class SuperAdminAdminController extends Controller
 {
-    public function SuperAdminAccountPage()
+    public function SuperAdminAdminPage()
     {
         $activeSyId = session('active_school_year_id');
         $activeSchoolYear = $activeSyId ? SchoolYear::find($activeSyId) : SchoolYear::where('is_active', true)->first();
@@ -24,20 +25,12 @@ class SuperAdminAccountController extends Controller
         }
 
         $selectedLevel = request('level');
-        $search = request('search');
         $educationLevelsList = EducationLevel::all();
 
-        $usersQuery = User::whereNotIn('role', ['superadmin', 'admin']);
+        // Retrieve admin users (roles 'admin' or 'superadmin')
+        $admins = User::whereIn('role', ['admin', 'superadmin'])->latest()->get();
 
-        if ($selectedLevel) {
-            $usersQuery->where(function ($q) use ($selectedLevel) {
-                $q->whereHas('student.enrollments.gradeLevel.educationLevel', fn($el) => $el->where('code', $selectedLevel))
-                  ->orWhereHas('teacher.educationLevel', fn($el) => $el->where('code', $selectedLevel));
-            });
-        }
-
-        $users = $usersQuery->latest()->get();
-        $totalAccounts = User::whereNotIn('role', ['superadmin', 'admin'])->count();
+        $totalAccounts = User::count();
 
         if ($activeSchoolYear) {
             $totalFaculty = Teacher::whereHas('advisedClassSections', function ($q) use ($activeSchoolYear) {
@@ -62,8 +55,8 @@ class SuperAdminAccountController extends Controller
             $totalSections = ClassSection::count();
         }
 
-        return view('superadmins.accounts.index', compact(
-            'users',
+        return view('superadmins.admins.index', compact(
+            'admins',
             'activeSchoolYear',
             'totalAccounts',
             'totalFaculty',
@@ -75,13 +68,35 @@ class SuperAdminAccountController extends Controller
         ));
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:6',
+            'role' => 'required|in:admin,superadmin',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'status' => $validated['status'],
+        ]);
+
+        return redirect()->back()->with('success', 'New admin account created successfully!');
+    }
+
     public function update(Request $request, $id)
     {
-        $user = User::findOrFail($id);
+        $admin = User::findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $id,
+            'role' => 'required|in:admin,superadmin',
             'status' => 'required|in:active,inactive',
             'password' => 'nullable|string|min:6',
         ]);
@@ -89,6 +104,7 @@ class SuperAdminAccountController extends Controller
         $updateData = [
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'role' => $validated['role'],
             'status' => $validated['status'],
         ];
 
@@ -96,8 +112,21 @@ class SuperAdminAccountController extends Controller
             $updateData['password'] = Hash::make($validated['password']);
         }
 
-        $user->update($updateData);
+        $admin->update($updateData);
 
-        return redirect()->back()->with('success', 'Account details updated successfully!');
+        return redirect()->back()->with('success', 'Admin account updated successfully!');
+    }
+
+    public function destroy($id)
+    {
+        $admin = User::findOrFail($id);
+
+        if (Auth::id() == $admin->id) {
+            return redirect()->back()->with('error', 'You cannot delete your own account while logged in!');
+        }
+
+        $admin->delete();
+
+        return redirect()->back()->with('success', 'Admin account deleted successfully!');
     }
 }

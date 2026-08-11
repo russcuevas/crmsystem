@@ -64,7 +64,55 @@ class AuthController extends Controller
 
     public function AdminLoginPage()
     {
+        if (Auth::check() && in_array(Auth::user()->role, ['admin', 'superadmin'])) {
+            return redirect()->route('admin.dashboard.page');
+        }
+
         return view('auth.admins.login');
+    }
+
+    public function AdminLogin(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            if (in_array($user->role, ['admin', 'superadmin'])) {
+                $user->last_login_at = now();
+                $user->save();
+
+                $request->session()->regenerate();
+
+                return redirect()->intended(route('admin.dashboard.page'))
+                    ->with('success', 'Welcome back, Admin!');
+            }
+
+            Auth::logout();
+            return redirect()->route('admin.login.page')
+                ->with('error', 'Unauthorized access. Only Admin accounts are permitted here.');
+        }
+
+        return redirect()->back()
+            ->withInput($request->only('email'))
+            ->with('error', 'Invalid email address or password.');
+    }
+
+    public function AdminLogout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('admin.login.page')
+            ->with('success', 'You have been logged out successfully.');
     }
 
     public function ElementaryLoginPage()

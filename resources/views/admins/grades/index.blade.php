@@ -1,4 +1,4 @@
-@extends('layouts.superadmin')
+@extends('layouts.admin')
 
 @section('title', 'GNHS - Class Record & Grading Management')
 
@@ -317,7 +317,7 @@
                             $gradeLevelName = $csSubject->classSection->gradeLevel->name ?? '';
                             $hasLab = $csSubject->subject && $csSubject->subject->has_lab;
                         @endphp
-                        <a href="{{ route('superadmin.grades.page', array_filter(['level' => $selectedLevel, 'section_subject_id' => $csSubject->id, 'semester' => request('semester')])) }}"
+                        <a href="{{ route('admin.grades.page', array_filter(['level' => $selectedLevel, 'section_subject_id' => $csSubject->id, 'semester' => request('semester')])) }}"
                             style="padding: 0.55rem 1rem; border-radius: 12px; font-size: 0.82rem; font-weight: 700; text-decoration: none; transition: all 0.2s ease; border: 1px solid {{ $isSelected ? 'var(--primary-navy)' : 'var(--border-color)' }}; background: {{ $isSelected ? 'var(--primary-navy)' : '#ffffff' }}; color: {{ $isSelected ? '#ffffff' : 'var(--primary-navy)' }};">
                             {{ $csSubject->classSection->section_name ?? 'Section' }} &bull;
                             {{ $csSubject->subject->subject_name ?? 'Subject' }}
@@ -361,7 +361,7 @@
                     Period:</span>
                 @if (isset($availablePeriods) && $availablePeriods->count() > 0)
                     @foreach ($availablePeriods as $period)
-                        <a href="{{ route('superadmin.grades.page', array_filter(['level' => $selectedLevel, 'section_subject_id' => $currentSectionSubject->id, 'academic_period' => $period, 'semester' => request('semester')])) }}"
+                        <a href="{{ route('admin.grades.page', array_filter(['level' => $selectedLevel, 'section_subject_id' => $currentSectionSubject->id, 'academic_period' => $period, 'semester' => request('semester')])) }}"
                             class="level-tab-item {{ $selectedPeriod == $period ? 'active' : '' }}"
                             style="border-radius: 20px; padding: 0.4rem 1rem; font-size: 0.8rem;">
                             {{ $period }}
@@ -458,13 +458,13 @@
                             elseif (str_contains(strtolower($sName), 'pe') || str_contains(strtolower($sName), 'physical')) $iconClass = 'fa-futbol';
                             elseif (str_contains(strtolower($sName), 'health')) $iconClass = 'fa-heart-pulse';
                         @endphp
-                        <a href="{{ route('superadmin.grades.page', array_filter(['level' => $selectedLevel, 'section_subject_id' => $currentSectionSubject->id, 'academic_period' => $selectedPeriod, 'semester' => request('semester'), 'sub_subject_id' => $subSec->id])) }}"
+                        <a href="{{ route('admin.grades.page', array_filter(['level' => $selectedLevel, 'section_subject_id' => $currentSectionSubject->id, 'academic_period' => $selectedPeriod, 'semester' => request('semester'), 'sub_subject_id' => $subSec->id])) }}"
                             style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem; transition: all 0.2s; {{ $isSubActive ? 'background: #4f46e5; color: #ffffff; box-shadow: 0 3px 8px rgba(79, 70, 229, 0.3);' : 'background: #f8fafc; color: #334155; border: 1.5px solid #cbd5e1;' }}">
                             <i class="fa-solid {{ $iconClass }}"></i> {{ $sName }}
                         </a>
                     @endforeach
 
-                    <a href="{{ route('superadmin.grades.page', array_filter(['level' => $selectedLevel, 'section_subject_id' => $currentSectionSubject->id, 'academic_period' => $selectedPeriod, 'semester' => request('semester'), 'sub_subject_id' => 'summary'])) }}"
+                    <a href="{{ route('admin.grades.page', array_filter(['level' => $selectedLevel, 'section_subject_id' => $currentSectionSubject->id, 'academic_period' => $selectedPeriod, 'semester' => request('semester'), 'sub_subject_id' => 'summary'])) }}"
                         style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem; transition: all 0.2s; {{ $activeSubSectionSubject === 'summary' ? 'background: #059669; color: #ffffff; box-shadow: 0 3px 8px rgba(5, 150, 105, 0.3);' : 'background: #f8fafc; color: #334155; border: 1.5px solid #cbd5e1;' }}">
                         <i class="fa-solid fa-chart-line"></i> {{ $currentSectionSubject->subject->subject_name }} Summary
                     </a>
@@ -628,7 +628,7 @@
                                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
                                                 </button>
-                                                <form action="{{ route('superadmin.grades.category.destroy', $cat->id) }}"
+                                                <form action="{{ route('admin.grades.category.destroy', $cat->id) }}"
                                                     method="POST" style="display: inline;"
                                                     onsubmit="return confirm('Are you sure you want to delete this category?');">
                                                     @csrf
@@ -678,7 +678,7 @@
                                                             </svg>
                                                         </button>
                                                         <form
-                                                            action="{{ route('superadmin.grades.task.destroy', $task->id) }}"
+                                                            action="{{ route('admin.grades.task.destroy', $task->id) }}"
                                                             method="POST" style="display: inline;"
                                                             onsubmit="return confirm('Are you sure you want to delete this task?');">
                                                             @csrf
@@ -717,7 +717,7 @@
                                                             style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                                                             onclick="closeModal('editTaskModal_{{ $task->id }}')">&times;</button>
                                                     </div>
-                                                    <form action="{{ route('superadmin.grades.task.update', $task->id) }}"
+                                                    <form action="{{ route('admin.grades.task.update', $task->id) }}"
                                                         method="POST">
                                                         @csrf
                                                         <div class="modal-body">
@@ -785,7 +785,7 @@
                                                 style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                                                 onclick="closeModal('editCategoryModal_{{ $cat->id }}')">&times;</button>
                                         </div>
-                                        <form action="{{ route('superadmin.grades.category.update', $cat->id) }}"
+                                        <form action="{{ route('admin.grades.category.update', $cat->id) }}"
                                             method="POST">
                                             @csrf
                                             <div class="modal-body">
@@ -898,7 +898,7 @@
                                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
                                                 </button>
-                                                <form action="{{ route('superadmin.grades.category.destroy', $cat->id) }}"
+                                                <form action="{{ route('admin.grades.category.destroy', $cat->id) }}"
                                                     method="POST" style="display: inline;"
                                                     onsubmit="return confirm('Are you sure you want to delete this category?');">
                                                     @csrf
@@ -948,7 +948,7 @@
                                                             </svg>
                                                         </button>
                                                         <form
-                                                            action="{{ route('superadmin.grades.task.destroy', $task->id) }}"
+                                                            action="{{ route('admin.grades.task.destroy', $task->id) }}"
                                                             method="POST" style="display: inline;"
                                                             onsubmit="return confirm('Are you sure you want to delete this task?');">
                                                             @csrf
@@ -987,7 +987,7 @@
                                                             style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                                                             onclick="closeModal('editTaskModal_{{ $task->id }}')">&times;</button>
                                                     </div>
-                                                    <form action="{{ route('superadmin.grades.task.update', $task->id) }}"
+                                                    <form action="{{ route('admin.grades.task.update', $task->id) }}"
                                                         method="POST">
                                                         @csrf
                                                         <div class="modal-body">
@@ -1055,7 +1055,7 @@
                                                 style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                                                 onclick="closeModal('editCategoryModal_{{ $cat->id }}')">&times;</button>
                                         </div>
-                                        <form action="{{ route('superadmin.grades.category.update', $cat->id) }}"
+                                        <form action="{{ route('admin.grades.category.update', $cat->id) }}"
                                             method="POST">
                                             @csrf
                                             <div class="modal-body">
@@ -1142,7 +1142,7 @@
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </button>
-                                        <form action="{{ route('superadmin.grades.category.destroy', $cat->id) }}"
+                                        <form action="{{ route('admin.grades.category.destroy', $cat->id) }}"
                                             method="POST" style="display: inline;"
                                             onsubmit="return confirm('Are you sure you want to delete this category?');">
                                             @csrf
@@ -1184,7 +1184,7 @@
                                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
                                                 </button>
-                                                <form action="{{ route('superadmin.grades.task.destroy', $task->id) }}"
+                                                <form action="{{ route('admin.grades.task.destroy', $task->id) }}"
                                                     method="POST" style="display: inline;"
                                                     onsubmit="return confirm('Are you sure you want to delete this task?');">
                                                     @csrf
@@ -1223,7 +1223,7 @@
                                                     style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                                                     onclick="closeModal('editTaskModal_{{ $task->id }}')">&times;</button>
                                             </div>
-                                            <form action="{{ route('superadmin.grades.task.update', $task->id) }}"
+                                            <form action="{{ route('admin.grades.task.update', $task->id) }}"
                                                 method="POST">
                                                 @csrf
                                                 <div class="modal-body">
@@ -1284,7 +1284,7 @@
                                         style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                                         onclick="closeModal('editCategoryModal_{{ $cat->id }}')">&times;</button>
                                 </div>
-                                <form action="{{ route('superadmin.grades.category.update', $cat->id) }}"
+                                <form action="{{ route('admin.grades.category.update', $cat->id) }}"
                                     method="POST">
                                     @csrf
                                     <div class="modal-body">
@@ -1950,7 +1950,7 @@
                                                         $targetAttSubjId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : $currentSectionSubject->id;
                                                     @endphp
                                                     <form
-                                                        action="{{ route('superadmin.grades.attendance.date.destroy') }}"
+                                                        action="{{ route('admin.grades.attendance.date.destroy') }}"
                                                         method="POST" style="display: inline;"
                                                         onsubmit="return confirm('Are you sure you want to delete attendance column for {{ $displayDate }}?');">
                                                         @csrf
@@ -2035,7 +2035,7 @@
                         style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                         onclick="closeModal('addCategoryModal')">&times;</button>
                 </div>
-                <form action="{{ route('superadmin.grades.category.store') }}" method="POST">
+                <form action="{{ route('admin.grades.category.store') }}" method="POST">
                     @csrf
                     @php
                         $targetModalSubjId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : ($currentSectionSubject->id ?? '');
@@ -2111,7 +2111,7 @@
                         style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                         onclick="closeModal('addTaskModal')">&times;</button>
                 </div>
-                <form action="{{ route('superadmin.grades.task.store') }}" method="POST">
+                <form action="{{ route('admin.grades.task.store') }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div style="background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 0.5rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.82rem; margin-bottom: 1rem;">
@@ -2174,7 +2174,7 @@
                         style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
                         onclick="closeModal('addAttendanceDateModal')">&times;</button>
                 </div>
-                <form action="{{ route('superadmin.grades.attendance.date.store') }}" method="POST">
+                <form action="{{ route('admin.grades.attendance.date.store') }}" method="POST">
                     @csrf
                     @php
                         $targetAttSubjId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : ($currentSectionSubject->id ?? '');
@@ -2215,7 +2215,7 @@
                             style="color: #ffffff; background: rgba(255,255,255,0.2); border: none;"
                             onclick="closeModal('editLecLabWeightModal')">&times;</button>
                     </div>
-                    <form action="{{ route('superadmin.grades.subject.weights.update') }}" method="POST">
+                    <form action="{{ route('admin.grades.subject.weights.update') }}" method="POST">
                         @csrf
                         <input type="hidden" name="subject_id" value="{{ $currentSectionSubject->subject->id }}">
                         <div class="modal-body">
@@ -2321,7 +2321,7 @@
             selectEl.className = 'att-status-select ' + statusVal;
 
             $.ajax({
-                url: "{{ route('superadmin.grades.attendance.update_status') }}",
+                url: "{{ route('admin.grades.attendance.update_status') }}",
                 method: "POST",
                 data: {
                     _token: "{{ csrf_token() }}",
@@ -2353,7 +2353,7 @@
             switchSheetTab(savedTab);
 
             const csrfToken = '{{ csrf_token() }}';
-            const updateScoreUrl = '{{ route('superadmin.grades.update_score') }}';
+            const updateScoreUrl = '{{ route('admin.grades.update_score') }}';
 
             // Click outside modal card to close modal
             document.addEventListener('click', function(e) {
@@ -2563,7 +2563,7 @@
             if (spinner) spinner.style.display = 'inline-block';
             if (btnText) btnText.textContent = 'Computing & Saving to DB...';
 
-            fetch('{{ route('superadmin.grades.compute.total') }}', {
+            fetch('{{ route('admin.grades.compute.total') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2633,7 +2633,7 @@
             if (spinner) spinner.style.display = 'inline-block';
             if (btnText) btnText.textContent = 'Deleting...';
 
-            fetch('{{ route('superadmin.grades.reset.total') }}', {
+            fetch('{{ route('admin.grades.reset.total') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2814,3 +2814,4 @@
         </div>
     @endif
 @endpush
+

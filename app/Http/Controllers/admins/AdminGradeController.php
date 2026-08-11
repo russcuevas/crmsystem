@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\superadmins;
+namespace App\Http\Controllers\admins;
 
 use App\Http\Controllers\Controller;
 use App\Models\ClassSectionSubject;
@@ -19,9 +19,9 @@ use App\Models\Attendance;
 use App\Models\Grade;
 use Illuminate\Http\Request;
 
-class SuperAdminGradeController extends Controller
+class AdminGradeController extends Controller
 {
-    public function SuperAdminGradePage()
+    public function AdminGradePage()
     {
         $activeSyId = session('active_school_year_id');
         $activeSchoolYear = $activeSyId ? SchoolYear::find($activeSyId) : SchoolYear::where('is_active', true)->first();
@@ -49,7 +49,6 @@ class SuperAdminGradeController extends Controller
             $subjectQuery->whereHas('classSection.gradeLevel.educationLevel', fn($q) => $q->where('code', $selectedLevel));
         }
 
-        // Strictly filter subjects by semester when viewing semestral level (SHS or COLLEGE)
         if (in_array(strtoupper($selectedLevel), ['SHS', 'COLLEGE'])) {
             $semKey = ($selectedSemester == '2nd Semester') ? '2nd' : '1st';
             $subjectQuery->whereHas('subject', function ($sq) use ($semKey, $selectedSemester) {
@@ -59,7 +58,6 @@ class SuperAdminGradeController extends Controller
             });
         }
 
-        // Only show top-level subjects in main class record selection list
         $subjectQuery->whereHas('subject', fn($sq) => $sq->whereNull('parent_subject_id'));
 
         $classSectionSubjects = $subjectQuery->get();
@@ -103,7 +101,6 @@ class SuperAdminGradeController extends Controller
                 $selectedPeriod = $availablePeriods->first();
             }
 
-            // Check if current subject is a parent subject (e.g. MAPEH)
             $isParentSubject = $currentSectionSubject->subject && ($currentSectionSubject->subject->is_parent || Subject::where('parent_subject_id', $currentSectionSubject->subject_id)->exists());
 
             if ($isParentSubject) {
@@ -123,7 +120,6 @@ class SuperAdminGradeController extends Controller
                 }
             }
 
-            // Target subject for grading tasks & attendance
             $targetSectionSubject = ($isParentSubject && $activeSubSectionSubject && $activeSubSectionSubject !== 'summary')
                 ? $activeSubSectionSubject
                 : $currentSectionSubject;
@@ -137,7 +133,6 @@ class SuperAdminGradeController extends Controller
 
             $categories = $categoriesQuery->get();
 
-            // Filter enrolled students by section, school year, and semester
             $enrolledQuery = Enrollment::where('class_section_id', $currentSectionSubject->class_section_id)
                 ->where('school_year_id', $currentSectionSubject->classSection->school_year_id ?? ($activeSchoolYear->id ?? null));
 
@@ -150,7 +145,6 @@ class SuperAdminGradeController extends Controller
 
             $enrolledStudents = $enrolledQuery->with(['student.user', 'taskScores'])->get();
 
-            // Fetch Component-Specific Distinct Attendance Dates and Records
             $attendanceDatesQuery = Attendance::where('class_section_subject_id', $targetSectionSubject->id);
             $attendancesQuery = Attendance::where('class_section_subject_id', $targetSectionSubject->id);
 
@@ -177,7 +171,7 @@ class SuperAdminGradeController extends Controller
             $savedGrades = collect();
         }
 
-        $totalAccounts = User::count();
+        $totalAccounts = User::whereNotIn('role', ['superadmin', 'admin'])->count();
         if ($activeSchoolYear) {
             $totalFaculty = Teacher::whereHas('advisedClassSections', fn($q) => $q->where('school_year_id', $activeSchoolYear->id))
                 ->orWhereHas('classSectionSubjects.classSection', fn($q) => $q->where('school_year_id', $activeSchoolYear->id))
@@ -192,7 +186,7 @@ class SuperAdminGradeController extends Controller
             $totalSections = ClassSection::count();
         }
 
-        return view('superadmins.grades.index', compact(
+        return view('admins.grades.index', compact(
             'classSectionSubjects',
             'currentSectionSubject',
             'categories',
@@ -348,7 +342,7 @@ class SuperAdminGradeController extends Controller
         return back()->with('success', 'Grading Task deleted successfully.');
     }
 
-public function storeAttendanceDate(Request $request)
+    public function storeAttendanceDate(Request $request)
     {
         $request->validate([
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
@@ -499,7 +493,6 @@ public function storeAttendanceDate(Request $request)
                 }
 
                 if (!$hasTasks) {
-                    // Delete any pre-existing empty/invalid 0 grade record for unconfigured period
                     Grade::where('enrollment_id', $enrollment->id)
                         ->where('class_section_subject_id', $subjectId)
                         ->where('academic_period', $period)
@@ -622,7 +615,6 @@ public function storeAttendanceDate(Request $request)
             ];
         }
 
-        // If this subject is a child of a parent subject (e.g. MAPEH subcomponent), auto-recalculate parent overall grade
         if ($currentSectionSubject->subject && $currentSectionSubject->subject->parent_subject_id) {
             $parentSubjectId = $currentSectionSubject->subject->parent_subject_id;
             $parentSecSub = ClassSectionSubject::where('class_section_id', $currentSectionSubject->class_section_id)

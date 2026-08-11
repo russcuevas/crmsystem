@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\superadmins;
+namespace App\Http\Controllers\admins;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -13,9 +13,9 @@ use App\Models\ClassSection;
 use App\Models\SchoolYear;
 use App\Models\EducationLevel;
 
-class SuperAdminAccountController extends Controller
+class AdminAccountController extends Controller
 {
-    public function SuperAdminAccountPage()
+    public function AdminAccountPage()
     {
         $activeSyId = session('active_school_year_id');
         $activeSchoolYear = $activeSyId ? SchoolYear::find($activeSyId) : SchoolYear::where('is_active', true)->first();
@@ -62,7 +62,7 @@ class SuperAdminAccountController extends Controller
             $totalSections = ClassSection::count();
         }
 
-        return view('superadmins.accounts.index', compact(
+        return view('admins.accounts.index', compact(
             'users',
             'activeSchoolYear',
             'totalAccounts',

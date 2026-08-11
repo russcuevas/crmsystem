@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'GNHS - Super Admin Dashboard')</title>
+    <title>@yield('title', 'GNHS - Admin Dashboard')</title>
 
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ asset('assets/images/home/logo-school.png') }}" type="image/x-icon">
@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <!-- Custom Super Admin CSS -->
+    <!-- Custom Super Admin CSS (Reused for Admin) -->
     <link rel="stylesheet" href="{{ asset('assets/css/superadmin-dashboard.css') }}">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -43,8 +43,8 @@
                 @endphp
 
                 <!-- All Levels Overview -->
-                <a href="{{ route('superadmin.dashboard.page') }}"
-                    class="nav-link {{ $routeName == 'superadmin.dashboard.page' && empty($selectedLevel) ? 'active' : '' }}">
+                <a href="{{ route('admin.dashboard.page') }}"
+                    class="nav-link {{ $routeName == 'admin.dashboard.page' && empty($selectedLevel) ? 'active' : '' }}">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -53,23 +53,13 @@
                 </a>
 
                 <!-- School Year Management -->
-                <a href="{{ route('superadmin.school_years.page') }}"
-                    class="nav-link {{ $routeName == 'superadmin.school_years.page' ? 'active' : '' }}">
+                <a href="{{ route('admin.school_years.page') }}"
+                    class="nav-link {{ $routeName == 'admin.school_years.page' ? 'active' : '' }}">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span>School Year</span>
-                </a>
-
-                <!-- Admins Management -->
-                <a href="{{ route('superadmin.admins.page') }}"
-                    class="nav-link {{ $routeName == 'superadmin.admins.page' ? 'active' : '' }}">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                    <span>Admins</span>
                 </a>
 
                 <div class="nav-section-label" style="margin-top: 0.75rem;">Education Levels</div>
@@ -89,9 +79,9 @@
                         $isSemestralLevel = in_array($lvl['code'], ['SHS', 'COLLEGE']);
                         $selectedSem = request('semester');
                         $currentRouteName = Route::currentRouteName();
-                        $navRouteTarget = in_array($currentRouteName, ['superadmin.students.show'])
-                            ? 'superadmin.students.page'
-                            : $currentRouteName ?? 'superadmin.dashboard.page';
+                        $navRouteTarget = in_array($currentRouteName, ['admin.students.show'])
+                            ? 'admin.students.page'
+                            : $currentRouteName ?? 'admin.dashboard.page';
                     @endphp
                     <div class="nav-dropdown-group {{ $isCurrentLevel ? 'open' : '' }}"
                         id="dropdown-{{ strtolower($lvl['code']) }}">
@@ -149,8 +139,8 @@
                             @endif
 
                             <!-- Dashboard -->
-                            <a href="{{ route('superadmin.dashboard.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
-                                class="sub-nav-link {{ $routeName == 'superadmin.dashboard.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
+                            <a href="{{ route('admin.dashboard.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
+                                class="sub-nav-link {{ $routeName == 'admin.dashboard.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -159,8 +149,8 @@
                             </a>
 
                             <!-- Accounts -->
-                            <a href="{{ route('superadmin.accounts.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
-                                class="sub-nav-link {{ $routeName == 'superadmin.accounts.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
+                            <a href="{{ route('admin.accounts.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
+                                class="sub-nav-link {{ $routeName == 'admin.accounts.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -169,8 +159,8 @@
                             </a>
 
                             <!-- Subject List -->
-                            <a href="{{ route('superadmin.subjects.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
-                                class="sub-nav-link {{ $routeName == 'superadmin.subjects.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
+                            <a href="{{ route('admin.subjects.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
+                                class="sub-nav-link {{ $routeName == 'admin.subjects.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -179,8 +169,8 @@
                             </a>
 
                             <!-- Faculty Information -->
-                            <a href="{{ route('superadmin.faculty.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
-                                class="sub-nav-link {{ $routeName == 'superadmin.faculty.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
+                            <a href="{{ route('admin.faculty.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
+                                class="sub-nav-link {{ $routeName == 'admin.faculty.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
@@ -189,8 +179,8 @@
                             </a>
 
                             <!-- Students -->
-                            <a href="{{ route('superadmin.students.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
-                                class="sub-nav-link {{ ($routeName == 'superadmin.students.page' || $routeName == 'superadmin.students.show') && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
+                            <a href="{{ route('admin.students.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
+                                class="sub-nav-link {{ ($routeName == 'admin.students.page' || $routeName == 'admin.students.show') && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -200,8 +190,8 @@
                             </a>
 
                             <!-- Manage Section -->
-                            <a href="{{ route('superadmin.sections.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
-                                class="sub-nav-link {{ $routeName == 'superadmin.sections.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
+                            <a href="{{ route('admin.sections.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
+                                class="sub-nav-link {{ $routeName == 'admin.sections.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12" />
@@ -210,8 +200,8 @@
                             </a>
 
                             <!-- Assigned Subjects -->
-                            <a href="{{ route('superadmin.assigned_subjects.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
-                                class="sub-nav-link {{ $routeName == 'superadmin.assigned_subjects.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
+                            <a href="{{ route('admin.assigned_subjects.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
+                                class="sub-nav-link {{ $routeName == 'admin.assigned_subjects.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -220,8 +210,8 @@
                             </a>
 
                             <!-- Enroll Students -->
-                            <a href="{{ route('superadmin.enrollment.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
-                                class="sub-nav-link {{ $routeName == 'superadmin.enrollment.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
+                            <a href="{{ route('admin.enrollment.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
+                                class="sub-nav-link {{ $routeName == 'admin.enrollment.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -230,8 +220,8 @@
                             </a>
 
                             <!-- Class Record & Grades -->
-                            <a href="{{ route('superadmin.grades.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
-                                class="sub-nav-link {{ $routeName == 'superadmin.grades.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
+                            <a href="{{ route('admin.grades.page', array_filter(['level' => $lvl['code'], 'semester' => $isSemestralLevel ? $selectedSem ?? '1st Semester' : null, 'academic_period' => !$isSemestralLevel ? $selectedQtr ?? '1st Quarter' : null])) }}"
+                                class="sub-nav-link {{ $routeName == 'admin.grades.page' && $selectedLevel == $lvl['code'] ? 'active' : '' }}">
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002-2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -246,13 +236,13 @@
             <div class="sidebar-footer">
                 <div class="user-profile-card">
                     <div class="user-avatar">
-                        {{ strtoupper(substr(Auth::user()->name ?? 'SA', 0, 2)) }}
+                        {{ strtoupper(substr(Auth::user()->name ?? 'AD', 0, 2)) }}
                     </div>
                     <div class="user-details">
-                        <div class="user-name">{{ Auth::user()->name ?? 'Super Admin' }}</div>
-                        <div class="user-role">Super Admin</div>
+                        <div class="user-name">{{ Auth::user()->name ?? 'Admin' }}</div>
+                        <div class="user-role">Admin</div>
                     </div>
-                    <form action="{{ route('superadmin.logout') }}" method="POST" style="display: inline;">
+                    <form action="{{ route('admin.logout') }}" method="POST" style="display: inline;">
                         @csrf
                         <button type="submit" class="btn-logout-icon" title="Logout">
                             <svg width="18" height="18" fill="none" viewBox="0 0 24 24"
@@ -288,7 +278,7 @@
                 </div>
 
                 <div class="navbar-right">
-                    <form action="{{ route('superadmin.school_year.switch') }}" method="POST"
+                    <form action="{{ route('admin.school_year.switch') }}" method="POST"
                         class="school-year-form" id="schoolYearForm">
                         @csrf
                         <div class="school-year-dropdown-wrapper" title="Select Active School Year">
@@ -328,11 +318,11 @@
 
             <!-- Page Body -->
             <div class="page-container">
-                @if (Route::currentRouteName() == 'superadmin.dashboard.page')
+                @if (Route::currentRouteName() == 'admin.dashboard.page')
                     <!-- Welcome Hero Banner -->
                     <div class="welcome-banner">
                         <div class="welcome-text">
-                            <h1>Welcome back, <span>{{ Auth::user()->name ?? 'Super Admin' }}</span>!</h1>
+                            <h1>Welcome back, <span>{{ Auth::user()->name ?? 'Admin' }}</span>!</h1>
                             <p>Guilhulugan National High School (GNHS) -
                                 {{ request('level') ? request('level') . ' Level Overview' : 'Class Record Management System Overview' }}
                             </p>
