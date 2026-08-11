@@ -189,7 +189,69 @@ class AuthController extends Controller
 
     public function SeniorHighSchoolLoginPage()
     {
+        if (Auth::check()) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            if ($user->role === 'teacher' && $user->teacher && $user->teacher->educationLevel && strtoupper($user->teacher->educationLevel->code) === 'SHS') {
+                return redirect()->route('senior_high_school.dashboard.page');
+            }
+        }
+
         return view('auth.senior_high_school.login');
+    }
+
+    public function SeniorHighSchoolLogin(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            $isShsTeacher = $user->role === 'teacher' 
+                && $user->teacher 
+                && $user->teacher->educationLevel 
+                && strtoupper($user->teacher->educationLevel->code) === 'SHS';
+
+            if ($isShsTeacher) {
+                $user->last_login_at = now();
+                $user->save();
+
+                $request->session()->regenerate();
+
+                $teacherName = $user->teacher ? ($user->teacher->first_name . ' ' . $user->teacher->last_name) : $user->name;
+
+                return redirect()->intended(route('senior_high_school.dashboard.page'))
+                    ->with('success', 'Welcome back, Teacher ' . $teacherName . '!');
+            }
+
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('senior_high_school.login.page')
+                ->with('error', 'Unauthorized access. Only designated Senior High School (SHS) teachers are permitted to log in here.');
+        }
+
+        return redirect()->back()
+            ->withInput($request->only('email'))
+            ->with('error', 'Invalid email address or password.');
+    }
+
+    public function SeniorHighSchoolLogout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('senior_high_school.login.page')
+            ->with('success', 'You have been logged out successfully.');
     }
 
     public function CollegeLoginPage()

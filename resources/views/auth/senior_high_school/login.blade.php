@@ -52,7 +52,19 @@
                 <h2 class="form-title">Login</h2>
                 <p class="form-subtitle">Senior High School Portal (Grade 11 - Grade 12)</p>
 
-                <form action="#" method="POST">
+                @if (session('error'))
+                    <div style="background-color: #fee2e2; border: 1px solid #f87171; color: #991b1b; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 500;">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @if (session('success'))
+                    <div style="background-color: #d1fae5; border: 1px solid #34d399; color: #065f46; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 500;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                <form action="{{ route('senior_high_school.login.submit') }}" method="POST">
                     @csrf
 
                     <div class="form-group">
