@@ -59,6 +59,9 @@ class SuperAdminGradeController extends Controller
             });
         }
 
+        // Only show top-level subjects in main class record selection list
+        $subjectQuery->whereHas('subject', fn($sq) => $sq->whereNull('parent_subject_id'));
+
         $classSectionSubjects = $subjectQuery->get();
 
         $currentSectionSubject = null;
@@ -75,6 +78,11 @@ class SuperAdminGradeController extends Controller
         $availablePeriods = collect();
         $attendanceDates = collect();
         $attendances = collect();
+        $subSectionSubjects = collect();
+        $selectedSubSubjectId = request('sub_subject_id');
+        $activeSubSectionSubject = null;
+        $isParentSubject = false;
+        $mapehSummaryGrades = collect();
 
         if ($currentSectionSubject) {
             $levelCode = $currentSectionSubject->classSection->gradeLevel->educationLevel->code ?? '';
@@ -95,7 +103,32 @@ class SuperAdminGradeController extends Controller
                 $selectedPeriod = $availablePeriods->first();
             }
 
-            $categoriesQuery = GradingCategory::where('class_section_subject_id', $currentSectionSubject->id)
+            // Check if current subject is a parent subject (e.g. MAPEH)
+            $isParentSubject = $currentSectionSubject->subject && ($currentSectionSubject->subject->is_parent || Subject::where('parent_subject_id', $currentSectionSubject->subject_id)->exists());
+
+            if ($isParentSubject) {
+                $subSectionSubjects = ClassSectionSubject::where('class_section_id', $currentSectionSubject->class_section_id)
+                    ->whereHas('subject', fn($q) => $q->where('parent_subject_id', $currentSectionSubject->subject_id))
+                    ->with(['subject'])
+                    ->get();
+
+                if ($selectedSubSubjectId === 'summary') {
+                    $activeSubSectionSubject = 'summary';
+                } elseif ($selectedSubSubjectId) {
+                    $activeSubSectionSubject = $subSectionSubjects->firstWhere('id', $selectedSubSubjectId);
+                }
+
+                if (!$activeSubSectionSubject && $subSectionSubjects->isNotEmpty()) {
+                    $activeSubSectionSubject = $subSectionSubjects->first();
+                }
+            }
+
+            // Target subject for grading tasks & attendance
+            $targetSectionSubject = ($isParentSubject && $activeSubSectionSubject && $activeSubSectionSubject !== 'summary')
+                ? $activeSubSectionSubject
+                : $currentSectionSubject;
+
+            $categoriesQuery = GradingCategory::where('class_section_subject_id', $targetSectionSubject->id)
                 ->with(['gradingTasks.studentTaskScores']);
 
             if ($selectedPeriod) {
@@ -117,9 +150,9 @@ class SuperAdminGradeController extends Controller
 
             $enrolledStudents = $enrolledQuery->with(['student.user', 'taskScores'])->get();
 
-            // Fetch Distinct Attendance Dates and Records (Filtered by selectedPeriod)
-            $attendanceDatesQuery = Attendance::where('class_section_subject_id', $currentSectionSubject->id);
-            $attendancesQuery = Attendance::where('class_section_subject_id', $currentSectionSubject->id);
+            // Fetch Component-Specific Distinct Attendance Dates and Records
+            $attendanceDatesQuery = Attendance::where('class_section_subject_id', $targetSectionSubject->id);
+            $attendancesQuery = Attendance::where('class_section_subject_id', $targetSectionSubject->id);
 
             if ($selectedPeriod) {
                 $attendanceDatesQuery->where('academic_period', $selectedPeriod);
@@ -132,7 +165,14 @@ class SuperAdminGradeController extends Controller
                 ->pluck('attendance_date');
 
             $attendances = $attendancesQuery->get();
-            $savedGrades = Grade::where('class_section_subject_id', $currentSectionSubject->id)->get();
+            $savedGrades = Grade::where('class_section_subject_id', $targetSectionSubject->id)->get();
+
+            if ($isParentSubject) {
+                $allSectionSubjectIds = $subSectionSubjects->pluck('id')->push($currentSectionSubject->id);
+                $mapehSummaryGrades = Grade::whereIn('class_section_subject_id', $allSectionSubjectIds)
+                    ->where('academic_period', $selectedPeriod)
+                    ->get();
+            }
         } else {
             $savedGrades = collect();
         }
@@ -163,6 +203,10 @@ class SuperAdminGradeController extends Controller
             'attendanceDates',
             'attendances',
             'savedGrades',
+            'subSectionSubjects',
+            'activeSubSectionSubject',
+            'isParentSubject',
+            'mapehSummaryGrades',
             'activeSchoolYear',
             'selectedLevel',
             'educationLevelsList',
@@ -243,6 +287,9 @@ class SuperAdminGradeController extends Controller
     public function destroyCategory($id)
     {
         $category = GradingCategory::findOrFail($id);
+        $taskIds = $category->gradingTasks()->pluck('id');
+        StudentTaskScore::whereIn('grading_task_id', $taskIds)->delete();
+        $category->gradingTasks()->delete();
         $category->delete();
 
         return back()->with('success', 'Grading Category deleted successfully.');
@@ -295,6 +342,7 @@ class SuperAdminGradeController extends Controller
     public function destroyTask($id)
     {
         $task = GradingTask::findOrFail($id);
+        StudentTaskScore::where('grading_task_id', $task->id)->delete();
         $task->delete();
 
         return back()->with('success', 'Grading Task deleted successfully.');
@@ -438,9 +486,28 @@ public function storeAttendanceDate(Request $request)
         foreach ($enrolledStudents as $enrollment) {
             $periodGrades = [];
             $sumPeriodGrades = 0;
+            $validPeriodCount = 0;
 
             foreach ($periodsList as $period) {
                 $periodCats = $allCategories->where('academic_period', $period);
+                $hasTasks = false;
+                foreach ($periodCats as $pCat) {
+                    if ($pCat->gradingTasks && $pCat->gradingTasks->count() > 0) {
+                        $hasTasks = true;
+                        break;
+                    }
+                }
+
+                if (!$hasTasks) {
+                    // Delete any pre-existing empty/invalid 0 grade record for unconfigured period
+                    Grade::where('enrollment_id', $enrollment->id)
+                        ->where('class_section_subject_id', $subjectId)
+                        ->where('academic_period', $period)
+                        ->delete();
+
+                    $periodGrades[$period] = null;
+                    continue;
+                }
 
                 if ($hasLab) {
                     $lecCats = $periodCats->where('component_type', '!=', 'laboratory');
@@ -506,6 +573,7 @@ public function storeAttendanceDate(Request $request)
                 $roundedPeriodGrade = round($periodFinalGrade, 2);
                 $periodGrades[$period] = $roundedPeriodGrade;
                 $sumPeriodGrades += $roundedPeriodGrade;
+                $validPeriodCount++;
 
                 Grade::updateOrCreate(
                     [
@@ -520,35 +588,89 @@ public function storeAttendanceDate(Request $request)
                 );
             }
 
-            $countPeriods = count($periodsList);
-            $subjectGrade = round($sumPeriodGrades / ($countPeriods > 0 ? $countPeriods : 1), 2);
-            $remarks = $subjectGrade >= 75 ? 'Passed' : 'Failed';
+            if ($validPeriodCount > 0) {
+                $subjectGrade = round($sumPeriodGrades / $validPeriodCount, 2);
+                $remarks = $subjectGrade >= 75 ? 'Passed' : 'Failed';
 
-            Grade::updateOrCreate(
-                [
-                    'enrollment_id' => $enrollment->id,
-                    'class_section_subject_id' => $subjectId,
-                    'academic_period' => 'Subject Grade',
-                ],
-                [
-                    'final_grade' => $subjectGrade,
-                    'remarks' => $remarks,
-                ]
-            );
+                Grade::updateOrCreate(
+                    [
+                        'enrollment_id' => $enrollment->id,
+                        'class_section_subject_id' => $subjectId,
+                        'academic_period' => 'Subject Grade',
+                    ],
+                    [
+                        'final_grade' => $subjectGrade,
+                        'remarks' => $remarks,
+                    ]
+                );
+            } else {
+                $subjectGrade = null;
+                $remarks = 'Pending';
+                Grade::where('enrollment_id', $enrollment->id)
+                    ->where('class_section_subject_id', $subjectId)
+                    ->where('academic_period', 'Subject Grade')
+                    ->delete();
+            }
 
             $computedResults[] = [
                 'enrollment_id' => $enrollment->id,
                 'student_number' => $enrollment->student->student_number ?? 'N/A',
                 'student_name' => trim(($enrollment->student->first_name ?? '') . ' ' . ($enrollment->student->last_name ?? '')),
                 'period_grades' => $periodGrades,
-                'subject_grade' => number_format($subjectGrade, 2),
+                'subject_grade' => $subjectGrade !== null ? number_format($subjectGrade, 2) : '-',
                 'remarks' => $remarks,
             ];
         }
 
+        // If this subject is a child of a parent subject (e.g. MAPEH subcomponent), auto-recalculate parent overall grade
+        if ($currentSectionSubject->subject && $currentSectionSubject->subject->parent_subject_id) {
+            $parentSubjectId = $currentSectionSubject->subject->parent_subject_id;
+            $parentSecSub = ClassSectionSubject::where('class_section_id', $currentSectionSubject->class_section_id)
+                ->where('subject_id', $parentSubjectId)
+                ->first();
+
+            if ($parentSecSub) {
+                $childSubjectIds = Subject::where('parent_subject_id', $parentSubjectId)->pluck('id');
+                $childSecSubIds = ClassSectionSubject::where('class_section_id', $currentSectionSubject->class_section_id)
+                    ->whereIn('subject_id', $childSubjectIds)
+                    ->pluck('id');
+
+                foreach ($enrolledStudents as $enrollment) {
+                    $allPeriods = array_merge($periodsList, ['Subject Grade']);
+                    foreach ($allPeriods as $pName) {
+                        $childGrades = Grade::where('enrollment_id', $enrollment->id)
+                            ->whereIn('class_section_subject_id', $childSecSubIds)
+                            ->where('academic_period', $pName)
+                            ->pluck('final_grade')
+                            ->filter(fn($v) => !is_null($v) && $v > 0);
+
+                        if ($childGrades->count() > 0) {
+                            $avgGrade = round($childGrades->avg(), 2);
+                            Grade::updateOrCreate(
+                                [
+                                    'enrollment_id' => $enrollment->id,
+                                    'class_section_subject_id' => $parentSecSub->id,
+                                    'academic_period' => $pName,
+                                ],
+                                [
+                                    'final_grade' => $avgGrade,
+                                    'remarks' => $avgGrade >= 75 ? 'Passed' : 'Failed',
+                                ]
+                            );
+                        } else {
+                            Grade::where('enrollment_id', $enrollment->id)
+                                ->where('class_section_subject_id', $parentSecSub->id)
+                                ->where('academic_period', $pName)
+                                ->delete();
+                        }
+                    }
+                }
+            }
+        }
+
         return response()->json([
             'status' => 'success',
-            'message' => 'Total grades for S.Y. & Semester computed and saved successfully!',
+            'message' => 'Total grades for ' . ($currentSectionSubject->subject->subject_name ?? 'Subject') . ' computed and saved successfully!',
             'periods' => $periodsList,
             'results' => $computedResults,
         ]);

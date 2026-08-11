@@ -450,14 +450,18 @@
 
                 <div class="header-actions">
 
-                    @if ($teacher)
+                    @php
+                        $teacherObj = isset($teacher) && $teacher ? $teacher : (Auth::check() && Auth::user()->teacher ? Auth::user()->teacher : null);
+                    @endphp
+
+                    @if ($teacherObj)
                         <div class="user-profile-badge">
                             <div class="avatar-circle">
-                                {{ strtoupper(substr($teacher->first_name, 0, 1) . substr($teacher->last_name, 0, 1)) }}
+                                {{ strtoupper(substr($teacherObj->first_name ?? 'T', 0, 1) . substr($teacherObj->last_name ?? 'C', 0, 1)) }}
                             </div>
                             <div class="user-details">
-                                <span class="name">{{ $teacher->first_name }} {{ $teacher->last_name }}</span>
-                                <span class="sub">ID: {{ $teacher->teacher_id }}</span>
+                                <span class="name">{{ $teacherObj->first_name ?? '' }} {{ $teacherObj->last_name ?? 'Teacher' }}</span>
+                                <span class="sub">ID: {{ $teacherObj->teacher_id ?? 'N/A' }}</span>
                             </div>
                         </div>
                     @endif

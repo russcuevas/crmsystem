@@ -348,6 +348,9 @@
             $currLvlCode = $currentSectionSubject->classSection->gradeLevel->educationLevel->code ?? '';
             $currGradeLevelName = $currentSectionSubject->classSection->gradeLevel->name ?? 'N/A';
             $currIsSemestral = in_array($currLvlCode, ['SHS', 'COLLEGE']);
+            $targetSecSubId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : ($currentSectionSubject->id ?? '');
+            $targetSecSubName = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->subject->subject_name : ($currentSectionSubject->subject->subject_name ?? '');
+            $targetSecSubCode = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? ($activeSubSectionSubject->subject->subject_code ?? '') : ($currentSectionSubject->subject->subject_code ?? '');
         @endphp
 
         <!-- Academic Period Filter Pills (Prelim, Midterm, Finals vs 1st-4th Quarters) -->
@@ -438,6 +441,113 @@
             </div>
         </div>
 
+        @if (isset($isParentSubject) && $isParentSubject)
+            <!-- MAPEH / Parent Subject Subcomponent Tabs -->
+            <div style="background: #ffffff; padding: 0.85rem 1.25rem; border-radius: 14px; border: 1px solid #cbd5e1; margin-bottom: 1.5rem; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                <div style="font-size: 0.78rem; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 0.6rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.4rem;">
+                    <i class="fa-solid fa-cubes" style="color: #4f46e5;"></i> {{ $currentSectionSubject->subject->subject_name }} Component Tabs & Attendance:
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+                    @foreach ($subSectionSubjects as $subSec)
+                        @php
+                            $isSubActive = is_object($activeSubSectionSubject) && $activeSubSectionSubject->id == $subSec->id;
+                            $sName = $subSec->subject->subject_name ?? '';
+                            $iconClass = 'fa-book';
+                            if (str_contains(strtolower($sName), 'music')) $iconClass = 'fa-music';
+                            elseif (str_contains(strtolower($sName), 'art')) $iconClass = 'fa-palette';
+                            elseif (str_contains(strtolower($sName), 'pe') || str_contains(strtolower($sName), 'physical')) $iconClass = 'fa-futbol';
+                            elseif (str_contains(strtolower($sName), 'health')) $iconClass = 'fa-heart-pulse';
+                        @endphp
+                        <a href="{{ route('superadmin.grades.page', array_filter(['level' => $selectedLevel, 'section_subject_id' => $currentSectionSubject->id, 'academic_period' => $selectedPeriod, 'semester' => request('semester'), 'sub_subject_id' => $subSec->id])) }}"
+                            style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem; transition: all 0.2s; {{ $isSubActive ? 'background: #4f46e5; color: #ffffff; box-shadow: 0 3px 8px rgba(79, 70, 229, 0.3);' : 'background: #f8fafc; color: #334155; border: 1.5px solid #cbd5e1;' }}">
+                            <i class="fa-solid {{ $iconClass }}"></i> {{ $sName }}
+                        </a>
+                    @endforeach
+
+                    <a href="{{ route('superadmin.grades.page', array_filter(['level' => $selectedLevel, 'section_subject_id' => $currentSectionSubject->id, 'academic_period' => $selectedPeriod, 'semester' => request('semester'), 'sub_subject_id' => 'summary'])) }}"
+                        style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem; transition: all 0.2s; {{ $activeSubSectionSubject === 'summary' ? 'background: #059669; color: #ffffff; box-shadow: 0 3px 8px rgba(5, 150, 105, 0.3);' : 'background: #f8fafc; color: #334155; border: 1.5px solid #cbd5e1;' }}">
+                        <i class="fa-solid fa-chart-line"></i> {{ $currentSectionSubject->subject->subject_name }} Summary
+                    </a>
+                </div>
+            </div>
+
+            @if ($activeSubSectionSubject === 'summary')
+                <!-- MAPEH Overall Summary Table Card -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header" style="background: #ecfdf5; border-bottom: 1.5px solid #a7f3d0;">
+                        <div class="card-title" style="color: #065f46; font-weight: 800;">
+                            <i class="fa-solid fa-chart-pie" style="color: #059669; margin-right: 6px;"></i>
+                            {{ $currentSectionSubject->subject->subject_name }} {{ $selectedPeriod }} Overall Component Summary
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>LRN</th>
+                                        <th>Student Name</th>
+                                        @foreach ($subSectionSubjects as $subSec)
+                                            <th style="text-align: center;">{{ $subSec->subject->subject_name }}</th>
+                                        @endforeach
+                                        <th style="text-align: center; background: #dcfce7; color: #15803d; font-weight: 800;">{{ $currentSectionSubject->subject->subject_name }} Grade</th>
+                                        <th style="text-align: center;">Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($enrolledStudents as $idx => $enrollment)
+                                        @php
+                                            $student = $enrollment->student;
+                                            $subGradesList = [];
+                                            foreach ($subSectionSubjects as $subSec) {
+                                                $g = $mapehSummaryGrades->where('enrollment_id', $enrollment->id)->where('class_section_subject_id', $subSec->id)->first();
+                                                $subGradesList[$subSec->id] = $g ? $g->final_grade : null;
+                                            }
+                                            $parentG = $mapehSummaryGrades->where('enrollment_id', $enrollment->id)->where('class_section_subject_id', $currentSectionSubject->id)->first();
+                                            $parentGradeVal = $parentG ? $parentG->final_grade : null;
+                                            $parentRemarks = $parentG ? $parentG->remarks : 'Pending';
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $idx + 1 }}</td>
+                                            <td><strong>{{ $student->lrn ?? 'N/A' }}</strong></td>
+                                            <td><strong>{{ $student->last_name }}, {{ $student->first_name }} {{ $student->middle_name }}</strong></td>
+                                            @foreach ($subSectionSubjects as $subSec)
+                                                <td style="text-align: center;">
+                                                    @if ($subGradesList[$subSec->id] !== null)
+                                                        <span style="font-weight: 800; font-size: 0.9rem; color: #0f172a;">{{ number_format($subGradesList[$subSec->id], 0) }}</span>
+                                                    @else
+                                                        <span style="color: #94a3b8; font-style: italic;">-</span>
+                                                    @endif
+                                                </td>
+                                            @endforeach
+                                            <td style="text-align: center; background: #f0fdf4;">
+                                                @if ($parentGradeVal !== null)
+                                                    <span style="font-weight: 800; font-size: 0.95rem; color: #047857;">{{ number_format($parentGradeVal, 0) }}</span>
+                                                @else
+                                                    <span style="color: #94a3b8; font-style: italic;">-</span>
+                                                @endif
+                                            </td>
+                                            <td style="text-align: center;">
+                                                @if ($parentRemarks == 'Passed')
+                                                    <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-weight: 700;">Passed</span>
+                                                @elseif($parentRemarks == 'Failed')
+                                                    <span class="badge" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; font-weight: 700;">Failed</span>
+                                                @else
+                                                    <span class="badge" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; font-weight: 700;">Pending</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endif
+
+        @if ($activeSubSectionSubject !== 'summary')
         <!-- Toggle Button for Categories & Tasks Breakdown -->
         <div style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
             <button type="button" class="btn-secondary" id="toggleBreakdownBtn" onclick="toggleCategoryBreakdown()"
@@ -1835,7 +1945,10 @@
                                             <div
                                                 style="display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
                                                 <span>{{ $displayDate }}</span>
-                                                @if ($currentSectionSubject)
+                                                 @if ($currentSectionSubject)
+                                                    @php
+                                                        $targetAttSubjId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : $currentSectionSubject->id;
+                                                    @endphp
                                                     <form
                                                         action="{{ route('superadmin.grades.attendance.date.destroy') }}"
                                                         method="POST" style="display: inline;"
@@ -1843,7 +1956,7 @@
                                                         @csrf
                                                         @method('DELETE')
                                                         <input type="hidden" name="class_section_subject_id"
-                                                            value="{{ $currentSectionSubject->id }}">
+                                                            value="{{ $targetAttSubjId }}">
                                                         @if ($selectedPeriod)
                                                             <input type="hidden" name="academic_period"
                                                                 value="{{ $selectedPeriod }}">
@@ -1851,7 +1964,7 @@
                                                         <input type="hidden" name="attendance_date"
                                                             value="{{ $formattedDate }}">
                                                         <button type="submit"
-                                                            style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1.1rem; font-weight: 800; padding: 0 0 0 4px; line-height: 1;"
+                                                            style="background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; cursor: pointer; font-size: 0.85rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; margin-left: 3px;"
                                                             title="Delete Column">&times;</button>
                                                     </form>
                                                 @endif
@@ -1911,6 +2024,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Add Category Modal -->
         <div class="modal-overlay" id="addCategoryModal">
@@ -1923,8 +2037,15 @@
                 </div>
                 <form action="{{ route('superadmin.grades.category.store') }}" method="POST">
                     @csrf
-                    <input type="hidden" name="class_section_subject_id" value="{{ $currentSectionSubject->id }}">
+                    @php
+                        $targetModalSubjId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : ($currentSectionSubject->id ?? '');
+                        $targetModalSubjName = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->subject->subject_name : ($currentSectionSubject->subject->subject_name ?? '');
+                    @endphp
+                    <input type="hidden" name="class_section_subject_id" value="{{ $targetModalSubjId }}">
                     <div class="modal-body">
+                        <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.5rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.82rem; margin-bottom: 1rem;">
+                            📌 Subject Component: <strong>{{ $targetModalSubjName }}</strong>
+                        </div>
                         @if ($selectedPeriod)
                             <input type="hidden" name="academic_period" value="{{ $selectedPeriod }}">
                             <div class="form-group">
@@ -1993,6 +2114,9 @@
                 <form action="{{ route('superadmin.grades.task.store') }}" method="POST">
                     @csrf
                     <div class="modal-body">
+                        <div style="background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 0.5rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.82rem; margin-bottom: 1rem;">
+                            📝 Task For Component: <strong>{{ (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->subject->subject_name : ($currentSectionSubject->subject->subject_name ?? '') }}</strong>
+                        </div>
                         <div class="form-group">
                             <label>Grading Category</label>
                             <select name="grading_category_id" id="addTaskCategorySelect" class="form-control" required>
@@ -2052,13 +2176,18 @@
                 </div>
                 <form action="{{ route('superadmin.grades.attendance.date.store') }}" method="POST">
                     @csrf
-                    @if ($currentSectionSubject)
-                        <input type="hidden" name="class_section_subject_id" value="{{ $currentSectionSubject->id }}">
-                    @endif
+                    @php
+                        $targetAttSubjId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : ($currentSectionSubject->id ?? '');
+                        $targetAttSubjName = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->subject->subject_name : ($currentSectionSubject->subject->subject_name ?? '');
+                    @endphp
+                    <input type="hidden" name="class_section_subject_id" value="{{ $targetAttSubjId }}">
                     @if ($selectedPeriod)
                         <input type="hidden" name="academic_period" value="{{ $selectedPeriod }}">
                     @endif
                     <div class="modal-body">
+                        <div style="background: #fff7ed; border: 1px solid #ffedd5; color: #c2410c; padding: 0.5rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.82rem; margin-bottom: 1rem;">
+                            📅 Attendance For Component: <strong>{{ $targetAttSubjName }}</strong>
+                        </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label>Select Attendance Date <span style="color: #ef4444;">*</span></label>
                             <input type="date" name="attendance_date" class="form-control"
@@ -2441,7 +2570,7 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({
-                        class_section_subject_id: '{{ $currentSectionSubject->id ?? '' }}'
+                        class_section_subject_id: '{{ $targetSecSubId }}'
                     })
                 })
                 .then(response => response.json())
@@ -2457,18 +2586,22 @@
                                 for (const [pName, val] of Object.entries(res.period_grades)) {
                                     const cell = row.querySelector(`[data-period-cell="${pName}"] .period-val`);
                                     if (cell) {
-                                        cell.textContent = parseFloat(val).toFixed(2) + '%';
+                                        cell.textContent = (val !== null && val !== undefined) ? parseFloat(val).toFixed(2) + '%' : '-';
                                     }
                                 }
                                 const sgCell = row.querySelector('[data-sg-cell] .sg-val');
                                 if (sgCell) {
-                                    sgCell.textContent = res.subject_grade + '%';
+                                    sgCell.textContent = (res.subject_grade && res.subject_grade !== '-') ? res.subject_grade + '%' : '-';
                                 }
                                 const remCell = row.querySelector('[data-remarks-cell]');
                                 if (remCell) {
-                                    const isPassed = res.remarks === 'Passed';
-                                    remCell.innerHTML =
-                                        `<span class="badge ${isPassed ? 'badge-active' : 'badge-danger'}" style="font-size: 0.8rem; font-weight: 800;">${res.remarks}</span>`;
+                                    if (res.subject_grade && res.subject_grade !== '-') {
+                                        const isPassed = res.remarks === 'Passed';
+                                        remCell.innerHTML =
+                                            `<span class="badge ${isPassed ? 'badge-active' : 'badge-danger'}" style="font-size: 0.8rem; font-weight: 800;">${res.remarks}</span>`;
+                                    } else {
+                                        remCell.innerHTML = `<span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.8rem;">-</span>`;
+                                    }
                                 }
                             }
                         });
@@ -2497,12 +2630,11 @@
                     <div>
                         <h3
                             style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #ffffff; display: flex; align-items: center; gap: 0.5rem;">
-                            Grade Breakdown
+                            Grade Breakdown & Final S.Y. Grade
                         </h3>
                         <div style="font-size: 0.78rem; color: #a5b4fc; margin-top: 2px;">
-                            Subject:
-                            <strong>{{ $currentSectionSubject->subject->subject_code ?? '' }} -
-                                {{ $currentSectionSubject->subject->subject_name ?? '' }}</strong>
+                            Component Subject:
+                            <strong>{{ $targetSecSubCode }} - {{ $targetSecSubName }}</strong>
                         </div>
                     </div>
                     <button type="button" class="btn-icon-action"
@@ -2515,15 +2647,17 @@
                         style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; background: #f8fafc; padding: 0.85rem 1.15rem; border-radius: 12px; border: 1.5px solid #cbd5e1; flex-wrap: wrap; gap: 0.75rem;">
                         <div>
                             <div style="font-size: 0.88rem; font-weight: 800; color: #1e293b;">
+                                📊 {{ $targetSecSubName }} Grade Computation Breakdown
                             </div>
                             <div style="font-size: 0.75rem; color: #64748b;">
+                                Computes period final grades & overall Subject Grade (SG) for {{ $targetSecSubName }}.
                             </div>
                         </div>
                         <button type="button" id="btnComputeTotalGrades" onclick="computeTotalGradesAjax()"
                             class="btn-primary"
                             style="background: #059669; color: #ffffff; font-weight: 800; padding: 0.6rem 1.2rem; border-radius: 10px; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.3); border: none; transition: all 0.2s ease;">
                             <span id="computeBtnSpinner" style="display: none;">⌛</span>
-                            <span id="computeBtnText">⚡ Compute Total Grade for this S.Y. and Sem</span>
+                            <span id="computeBtnText">⚡ Compute Total Grade for {{ $targetSecSubName }}</span>
                         </button>
                     </div>
 
@@ -2542,8 +2676,7 @@
                                         <th style="text-align: center;">MIDTERM</th>
                                         <th style="text-align: center;">FINALS</th>
                                     @endif
-                                    <th
-                                        style="text-align: center; background: #059669; color: #ffffff; font-weight: 800;">
+                                    <th style="text-align: center; background: rgba(16, 185, 129, 0.15); color: #065f46;">
                                         SUBJECT GRADE (SG)
                                     </th>
                                     <th style="text-align: center;">REMARKS</th>
@@ -2556,7 +2689,7 @@
                                             ? $savedGrades->where('enrollment_id', $enrollment->id)
                                             : collect();
                                         $sgModel = $stGrades->where('academic_period', 'Subject Grade')->first();
-                                        $sgVal = $sgModel ? number_format($sgModel->final_grade, 2) : null;
+                                        $sgVal = ($sgModel && $sgModel->final_grade !== null && floatval($sgModel->final_grade) > 0) ? number_format($sgModel->final_grade, 2) : null;
                                         $sgRemarks = $sgModel ? $sgModel->remarks : null;
                                     @endphp
                                     <tr data-breakdown-row="{{ $enrollment->id }}">
@@ -2569,7 +2702,7 @@
                                             @foreach ($availablePeriods as $pName)
                                                 @php
                                                     $pModel = $stGrades->where('academic_period', $pName)->first();
-                                                    $pVal = $pModel ? number_format($pModel->final_grade, 2) : '-';
+                                                    $pVal = ($pModel && $pModel->final_grade !== null && floatval($pModel->final_grade) > 0) ? number_format($pModel->final_grade, 2) : '-';
                                                 @endphp
                                                 <td style="text-align: center; font-weight: 700;"
                                                     data-period-cell="{{ $pName }}">

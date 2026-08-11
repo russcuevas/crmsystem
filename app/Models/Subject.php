@@ -19,10 +19,13 @@ class Subject extends Model
         'lecture_weight',
         'lab_weight',
         'course_id',
+        'parent_subject_id',
+        'is_parent',
     ];
 
     protected $casts = [
         'has_lab' => 'boolean',
+        'is_parent' => 'boolean',
         'lecture_weight' => 'decimal:2',
         'lab_weight' => 'decimal:2',
     ];
@@ -35,6 +38,16 @@ class Subject extends Model
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function parentSubject()
+    {
+        return $this->belongsTo(Subject::class, 'parent_subject_id');
+    }
+
+    public function subSubjects()
+    {
+        return $this->hasMany(Subject::class, 'parent_subject_id');
     }
 
     public function classSectionSubjects()

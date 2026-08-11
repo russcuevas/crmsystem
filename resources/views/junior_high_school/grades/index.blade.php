@@ -129,13 +129,130 @@
         </div>
     </div>
 
+    @if (isset($isParentSubject) && $isParentSubject)
+        <!-- MAPEH Subcomponents Tab Bar -->
+        <div style="background: #ffffff; padding: 0.85rem 1.25rem; border-radius: 1rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem; box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.78rem; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 0.6rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.4rem;">
+                <i class="fa-solid fa-cubes" style="color: #4f46e5;"></i> {{ $currentSectionSubject->subject->subject_name }} Component Tabs & Attendance:
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+                @foreach ($subSectionSubjects as $subSec)
+                    @php
+                        $isSubActive = is_object($activeSubSectionSubject) && $activeSubSectionSubject->id == $subSec->id;
+                        $sName = $subSec->subject->subject_name ?? '';
+                        $iconClass = 'fa-book';
+                        if (str_contains(strtolower($sName), 'music')) $iconClass = 'fa-music';
+                        elseif (str_contains(strtolower($sName), 'art')) $iconClass = 'fa-palette';
+                        elseif (str_contains(strtolower($sName), 'pe') || str_contains(strtolower($sName), 'physical')) $iconClass = 'fa-futbol';
+                        elseif (str_contains(strtolower($sName), 'health')) $iconClass = 'fa-heart-pulse';
+                    @endphp
+                    <a href="{{ route('junior_high_school.grades.page', ['section_subject_id' => $currentSectionSubject->id, 'academic_period' => $selectedPeriod, 'sub_subject_id' => $subSec->id]) }}"
+                        style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem; transition: all 0.2s; {{ $isSubActive ? 'background: #4f46e5; color: #ffffff; box-shadow: 0 3px 8px rgba(79, 70, 229, 0.3);' : 'background: #f8fafc; color: #334155; border: 1.5px solid #cbd5e1;' }}">
+                        <i class="fa-solid {{ $iconClass }}"></i> {{ $sName }}
+                    </a>
+                @endforeach
+
+                <a href="{{ route('junior_high_school.grades.page', ['section_subject_id' => $currentSectionSubject->id, 'academic_period' => $selectedPeriod, 'sub_subject_id' => 'summary']) }}"
+                    style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem; transition: all 0.2s; {{ $activeSubSectionSubject === 'summary' ? 'background: #059669; color: #ffffff; box-shadow: 0 3px 8px rgba(5, 150, 105, 0.3);' : 'background: #f8fafc; color: #334155; border: 1.5px solid #cbd5e1;' }}">
+                    <i class="fa-solid fa-chart-line"></i> {{ $currentSectionSubject->subject->subject_name }} Summary
+                </a>
+            </div>
+        </div>
+
+        @if ($activeSubSectionSubject === 'summary')
+            <!-- MAPEH Overall Summary Table Card -->
+            <div style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+                <div style="background: #ecfdf5; padding: 1rem 1.25rem; border-bottom: 1.5px solid #a7f3d0; color: #065f46; font-weight: 800; font-size: 1rem;">
+                    <i class="fa-solid fa-chart-pie" style="color: #059669; margin-right: 6px;"></i>
+                    {{ $currentSectionSubject->subject->subject_name }} {{ $selectedPeriod }} Overall Component Summary
+                </div>
+                <div style="padding: 1.25rem; overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+                        <thead>
+                            <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                                <th style="padding: 0.75rem; text-align: left;">#</th>
+                                <th style="padding: 0.75rem; text-align: left;">LRN</th>
+                                <th style="padding: 0.75rem; text-align: left;">Student Name</th>
+                                @foreach ($subSectionSubjects as $subSec)
+                                    <th style="padding: 0.75rem; text-align: center;">{{ $subSec->subject->subject_name }}</th>
+                                @endforeach
+                                <th style="padding: 0.75rem; text-align: center; background: #dcfce7; color: #15803d; font-weight: 800;">{{ $currentSectionSubject->subject->subject_name }} Grade</th>
+                                <th style="padding: 0.75rem; text-align: center;">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($enrolledStudents as $idx => $studentItem)
+                                @php
+                                    $student = (is_object($studentItem) && isset($studentItem->student) && $studentItem->student) ? $studentItem->student : $studentItem;
+                                    $studentEnrollmentIds = (is_object($student) && method_exists($student, 'enrollments') && $student->enrollments) ? $student->enrollments->pluck('id')->toArray() : [$studentItem->id ?? 0];
+
+                                    $subGradesList = [];
+                                    foreach ($subSectionSubjects as $subSec) {
+                                        $g = $mapehSummaryGrades->filter(function($item) use ($studentEnrollmentIds, $student, $subSec) {
+                                            return $item->class_section_subject_id == $subSec->id &&
+                                                (($item->enrollment && $item->enrollment->student_id == $student->id) || in_array($item->enrollment_id, $studentEnrollmentIds));
+                                        })->first();
+                                        $subGradesList[$subSec->id] = $g ? $g->final_grade : null;
+                                    }
+
+                                    $parentG = $mapehSummaryGrades->filter(function($item) use ($studentEnrollmentIds, $student, $currentSectionSubject) {
+                                        return $item->class_section_subject_id == $currentSectionSubject->id &&
+                                            (($item->enrollment && $item->enrollment->student_id == $student->id) || in_array($item->enrollment_id, $studentEnrollmentIds));
+                                    })->first();
+
+                                    $parentGradeVal = $parentG ? $parentG->final_grade : null;
+                                    $parentRemarks = $parentG ? $parentG->remarks : 'Pending';
+                                @endphp
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 0.75rem;">{{ $idx + 1 }}</td>
+                                    <td style="padding: 0.75rem;"><strong>{{ $student->lrn ?? ($student->student_number ?? 'N/A') }}</strong></td>
+                                    <td style="padding: 0.75rem;"><strong>{{ $student->last_name ?? '' }}, {{ $student->first_name ?? '' }} {{ $student->middle_name ?? '' }}</strong></td>
+                                    @foreach ($subSectionSubjects as $subSec)
+                                        <td style="padding: 0.75rem; text-align: center;">
+                                            @if ($subGradesList[$subSec->id] !== null)
+                                                <span style="font-weight: 800; font-size: 0.9rem; color: #0f172a;">{{ number_format($subGradesList[$subSec->id], 0) }}</span>
+                                            @else
+                                                <span style="color: #94a3b8; font-style: italic;">-</span>
+                                            @endif
+                                        </td>
+                                    @endforeach
+                                    <td style="padding: 0.75rem; text-align: center; background: #f0fdf4;">
+                                        @if ($parentGradeVal !== null)
+                                            <span style="font-weight: 800; font-size: 0.95rem; color: #047857;">{{ number_format($parentGradeVal, 0) }}</span>
+                                        @else
+                                            <span style="color: #94a3b8; font-style: italic;">-</span>
+                                        @endif
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: center;">
+                                        @if ($parentRemarks == 'Passed')
+                                            <span style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem;">Passed</span>
+                                        @elseif($parentRemarks == 'Failed')
+                                            <span style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem;">Failed</span>
+                                        @else
+                                            <span style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem;">Pending</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
+    @endif
+
     @if ($currentSectionSubject)
+        @php
+            $targetSecSubId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : $currentSectionSubject->id;
+            $displaySubjName = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->subject->subject_name : ($currentSectionSubject->subject ? $currentSectionSubject->subject->subject_name : 'N/A');
+        @endphp
+        @if ($activeSubSectionSubject !== 'summary')
         <!-- Action Toolbar for Grading Categories, Tasks, Attendance & Computations -->
         <div
             style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
             <div>
                 <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a;">
-                    {{ $currentSectionSubject->subject ? $currentSectionSubject->subject->subject_name ?? $currentSectionSubject->subject->subject_code : 'N/A' }}
+                    {{ $displaySubjName }}
                     <br>
                     <span style="color: #64748b; font-weight: 600; font-size: 0.95rem; margin-left: 0.35rem;">
                         {{ $currentSectionSubject->classSection ? $currentSectionSubject->classSection->section_name : 'N/A' }}
@@ -157,7 +274,7 @@
                 </button>
                 <form action="{{ route('junior_high_school.grades.compute.total') }}" method="POST" style="margin: 0;">
                     @csrf
-                    <input type="hidden" name="class_section_subject_id" value="{{ $currentSectionSubject->id }}">
+                    <input type="hidden" name="class_section_subject_id" value="{{ $targetSecSubId }}">
                     <input type="hidden" name="academic_period" value="{{ $selectedPeriod }}">
                     <button type="submit"
                         style="background: #10b981; color: #ffffff; padding: 0.5rem 0.9rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.8rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
@@ -268,13 +385,13 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <input type="hidden" name="class_section_subject_id"
-                                                    value="{{ $currentSectionSubject->id }}">
+                                                    value="{{ $targetSecSubId }}">
                                                 <input type="hidden" name="academic_period"
                                                     value="{{ $selectedPeriod }}">
                                                 <input type="hidden" name="attendance_date"
                                                     value="{{ $adate }}">
                                                 <button type="submit"
-                                                    style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem; padding: 0;"
+                                                    style="background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; cursor: pointer; font-size: 0.85rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; margin-left: 3px;"
                                                     title="Delete Date Session">&times;</button>
                                             </form>
                                         </div>
@@ -431,6 +548,7 @@
                 </div>
             @endif
         </div>
+        @endif
     @else
         <div
             style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 3rem; text-align: center; color: #64748b;">
@@ -444,11 +562,13 @@
         id="catModal">
         <div
             style="background: #ffffff; border-radius: 1rem; width: 100%; max-width: 480px; padding: 1.5rem; box-shadow: var(--shadow-lg);">
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;">Add Grading Category</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem;">Add Grading Category</h3>
+            <div style="background: #e0e7ff; color: #3730a3; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-bottom: 1rem;">
+                📌 Component: <strong>{{ $displaySubjName ?? 'Subject' }}</strong>
+            </div>
             <form action="{{ route('junior_high_school.grades.category.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="class_section_subject_id"
-                    value="{{ $currentSectionSubject ? $currentSectionSubject->id : '' }}">
+                <input type="hidden" name="class_section_subject_id" value="{{ $targetSecSubId ?? '' }}">
                 <input type="hidden" name="academic_period" value="{{ $selectedPeriod }}">
                 <div style="margin-bottom: 1rem;">
                     <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Category Name (e.g., Written Work,
@@ -476,7 +596,10 @@
         id="taskModal">
         <div
             style="background: #ffffff; border-radius: 1rem; width: 100%; max-width: 480px; padding: 1.5rem; box-shadow: var(--shadow-lg);">
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;">Add Assessment Task</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem;">Add Assessment Task</h3>
+            <div style="background: #fef3c7; color: #92400e; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-bottom: 1rem;">
+                📝 Component: <strong>{{ $displaySubjName ?? 'Subject' }}</strong>
+            </div>
             <form action="{{ route('junior_high_school.grades.task.store') }}" method="POST">
                 @csrf
                 <div style="margin-bottom: 1rem;">
@@ -515,11 +638,13 @@
         id="attendanceModal">
         <div
             style="background: #ffffff; border-radius: 1rem; width: 100%; max-width: 440px; padding: 1.5rem; box-shadow: var(--shadow-lg);">
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem;">Add Attendance Date Session</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem;">Add Attendance Date Session</h3>
+            <div style="background: #fff7ed; color: #c2410c; padding: 0.4rem 0.75rem; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-bottom: 1rem;">
+                📅 Component: <strong>{{ $displaySubjName ?? 'Subject' }}</strong>
+            </div>
             <form action="{{ route('junior_high_school.grades.attendance.date.store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="class_section_subject_id"
-                    value="{{ $currentSectionSubject ? $currentSectionSubject->id : '' }}">
+                <input type="hidden" name="class_section_subject_id" value="{{ $targetSecSubId ?? '' }}">
                 <input type="hidden" name="academic_period" value="{{ $selectedPeriod }}">
                 <div style="margin-bottom: 1.25rem;">
                     <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Select Attendance Date</label>

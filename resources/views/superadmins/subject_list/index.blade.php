@@ -84,6 +84,8 @@
             gap: 4px !important;
         }
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
         .dataTables_paginate ul li,
         .dataTables_paginate ul.pagination li {
             list-style: none !important;
@@ -103,7 +105,7 @@
             border-radius: 8px !important;
             border: 1px solid #cbd5e1 !important;
             background: #ffffff !important;
-            color: #475569 !important;
+            color: #0f172a !important;
             font-size: 0.82rem !important;
             font-weight: 700 !important;
             text-decoration: none !important;
@@ -121,10 +123,12 @@
 
         .dataTables_paginate ul.pagination li.active a.page-link,
         .dataTables_paginate .paginate_button.current,
+        .dataTables_paginate .paginate_button.current a,
         .dataTables_paginate .paginate_button.current:hover {
-            background: var(--primary-navy, #0f172a) !important;
+            background: #0f172a !important;
             color: #ffffff !important;
-            border-color: var(--primary-navy, #0f172a) !important;
+            border-color: #0f172a !important;
+            font-weight: 800 !important;
         }
 
         .dataTables_paginate ul.pagination li.disabled a.page-link {
@@ -401,10 +405,23 @@
                             @php
                                 $lvlCode = strtoupper($subject->educationLevel->code ?? '');
                                 $isJhsOrBed = in_array($lvlCode, ['JHS', 'BED']);
+                                $hasSub = $subject->is_parent || ($subject->subSubjects && $subject->subSubjects->isNotEmpty());
                             @endphp
-                            <tr>
+                            <tr class="{{ $hasSub ? 'parent-row' : '' }}">
                                 <td><strong>{{ $subject->subject_code }}</strong></td>
-                                <td>{{ $subject->subject_name }}</td>
+                                <td>
+                                    @if ($hasSub)
+                                        <button type="button" class="btn-toggle-sub" onclick="toggleSubRows({{ $subject->id }}, this)"
+                                            title="Click to view sub-subjects"
+                                            style="background: #0f172a; color: #ffffff; border: none; border-radius: 6px; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; cursor: pointer; margin-right: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: all 0.2s;">
+                                            <span id="icon-sub-{{ $subject->id }}" style="line-height: 1;">+</span>
+                                        </button>
+                                    @endif
+                                    <strong>{{ $subject->subject_name }}</strong>
+                                    @if ($subject->is_parent)
+                                        <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-size: 0.7rem; margin-left: 6px; font-weight: 700;">Parent Subject</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <span class="badge badge-admin">
                                         {{ $subject->educationLevel->code ?? 'N/A' }}
@@ -451,6 +468,48 @@
                                     </div>
                                 </td>
                             </tr>
+                            @if ($hasSub)
+                                @foreach ($subject->subSubjects as $sub)
+                                    <tr class="sub-row-{{ $subject->id }}" style="display: none; background: #f8fafc;">
+                                        <td style="padding-left: 2rem;"><strong>{{ $sub->subject_code }}</strong></td>
+                                        <td style="padding-left: 2rem; color: #334155;">
+                                            <i class="fa-solid fa-arrow-turn-up fa-rotate-90" style="color: #94a3b8; margin-right: 8px;"></i>
+                                            {{ $sub->subject_name }}
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-admin" style="opacity: 0.85;">
+                                                {{ $sub->educationLevel->code ?? ($subject->educationLevel->code ?? 'N/A') }}
+                                            </span>
+                                        </td>
+                                        @if (!$isJhsOrBedFilter)
+                                            <td>-</td>
+                                            <td>-</td>
+                                        @endif
+                                        <td>
+                                            <span class="badge-quarter" style="opacity: 0.85;">1st - 4th Quarter</span>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <div class="action-btn-group" style="justify-content: center;">
+                                                <button type="button" class="btn-action-icon" title="Edit Sub-Subject"
+                                                    onclick='openEditSubjectModal(@json($sub))'>
+                                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                                <form action="{{ route('superadmin.subjects.destroy', $sub->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this sub-subject?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn-action-icon danger" title="Delete Sub-Subject">
+                                                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
                         @endforeach
                     </tbody>
                 </table>
@@ -533,6 +592,25 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div class="form-group" id="add_parent_subject_group"
+                        style="display: none; background: #f0fdf4; padding: 0.85rem; border-radius: 8px; border: 1.5px dashed #bbf7d0; margin-top: 0.75rem;">
+                        <label
+                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; text-transform: none; font-size: 0.85rem; color: #166534;">
+                            <input type="checkbox" name="is_parent" id="add_is_parent" value="1"
+                                onchange="toggleParentSubjectSelect('add')">
+                            <strong>Is Parent Subject? (e.g. MAPEH)</strong>
+                        </label>
+                        <div id="add_parent_select_wrapper" style="margin-top: 0.65rem;">
+                            <label style="font-size: 0.75rem; color: #166534;">Assign to Parent Subject (Optional):</label>
+                            <select name="parent_subject_id" id="add_parent_subject_id" class="form-control-custom">
+                                <option value="">None (Standalone Subject)</option>
+                                @foreach ($parentSubjects as $pSub)
+                                    <option value="{{ $pSub->id }}">{{ $pSub->subject_name }} ({{ $pSub->subject_code }})</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group" id="add_lab_component_group"
@@ -631,6 +709,25 @@
                         </select>
                     </div>
 
+                    <div class="form-group" id="edit_parent_subject_group"
+                        style="display: none; background: #f0fdf4; padding: 0.85rem; border-radius: 8px; border: 1.5px dashed #bbf7d0; margin-top: 0.75rem;">
+                        <label
+                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; text-transform: none; font-size: 0.85rem; color: #166534;">
+                            <input type="checkbox" name="is_parent" id="edit_is_parent" value="1"
+                                onchange="toggleParentSubjectSelect('edit')">
+                            <strong>Is Parent Subject? (e.g. MAPEH)</strong>
+                        </label>
+                        <div id="edit_parent_select_wrapper" style="margin-top: 0.65rem;">
+                            <label style="font-size: 0.75rem; color: #166534;">Assign to Parent Subject (Optional):</label>
+                            <select name="parent_subject_id" id="edit_parent_subject_id" class="form-control-custom">
+                                <option value="">None (Standalone Subject)</option>
+                                @foreach ($parentSubjects as $pSub)
+                                    <option value="{{ $pSub->id }}">{{ $pSub->subject_name }} ({{ $pSub->subject_code }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="form-group" id="edit_lab_component_group"
                         style="display: none; background: #f8fafc; padding: 0.85rem; border-radius: 8px; border: 1.5px dashed #cbd5e1; margin-top: 0.75rem;">
                         <label
@@ -695,6 +792,26 @@
             });
         });
 
+        function toggleSubRows(parentId, btn) {
+            const rows = document.querySelectorAll('.sub-row-' + parentId);
+            const icon = document.getElementById('icon-sub-' + parentId);
+            let isExpanding = false;
+            rows.forEach(r => {
+                if (r.style.display === 'none' || !r.style.display) {
+                    r.style.display = 'table-row';
+                    isExpanding = true;
+                } else {
+                    r.style.display = 'none';
+                }
+            });
+            if (icon) {
+                icon.innerText = isExpanding ? '−' : '+';
+            }
+            if (btn) {
+                btn.style.background = isExpanding ? '#dc2626' : '#0f172a';
+            }
+        }
+
         function updateSemesterOptions(semSelect, code, selectedValue) {
             if (!semSelect) return;
 
@@ -747,6 +864,20 @@
             }
         }
 
+        function toggleParentSubjectSelect(prefix) {
+            const chk = document.getElementById(prefix + '_is_parent');
+            const wrapper = document.getElementById(prefix + '_parent_select_wrapper');
+            const parentSelect = document.getElementById(prefix + '_parent_subject_id');
+            if (chk && wrapper) {
+                if (chk.checked) {
+                    wrapper.style.display = 'none';
+                    if (parentSelect) parentSelect.value = '';
+                } else {
+                    wrapper.style.display = 'block';
+                }
+            }
+        }
+
         function openAddSubjectModal() {
             document.getElementById('addSubjectModal').style.display = 'flex';
             const levelEl = document.getElementById('add_education_level_id');
@@ -755,6 +886,7 @@
                     'add_course_id');
             }
             toggleLabWeights('add');
+            toggleParentSubjectSelect('add');
         }
 
         function closeAddSubjectModal() {
@@ -769,6 +901,13 @@
             document.getElementById('edit_subject_code').value = subject.subject_code;
             document.getElementById('edit_subject_name').value = subject.subject_name;
             document.getElementById('edit_units').value = subject.units ?? '';
+
+            const isParentChk = document.getElementById('edit_is_parent');
+            if (isParentChk) {
+                isParentChk.checked = !!subject.is_parent;
+                document.getElementById('edit_parent_subject_id').value = subject.parent_subject_id ?? '';
+                toggleParentSubjectSelect('edit');
+            }
 
             const hasLabChk = document.getElementById('edit_has_lab');
             if (hasLabChk) {
@@ -805,6 +944,7 @@
 
             const prefix = (selectEl.id && selectEl.id.startsWith('add')) ? 'add' : 'edit';
             const labGroup = document.getElementById(prefix + '_lab_component_group');
+            const parentGroup = document.getElementById(prefix + '_parent_subject_group');
 
             const semSelect = document.getElementById(semSelectId);
             const courseGroup = document.getElementById(courseGroupId);
@@ -841,6 +981,7 @@
 
             if (code === 'BED' || code === 'JHS') {
                 if (labGroup) labGroup.style.display = 'none';
+                if (parentGroup) parentGroup.style.display = 'block';
                 if (unitsInput) {
                     unitsInput.value = '';
                     unitsInput.disabled = true;
@@ -868,6 +1009,7 @@
                 }
             } else if (code === 'SHS' || code === 'COLLEGE') {
                 if (labGroup) labGroup.style.display = 'block';
+                if (parentGroup) parentGroup.style.display = 'none';
                 if (unitsInput) {
                     unitsInput.disabled = false;
                     unitsInput.placeholder = '';

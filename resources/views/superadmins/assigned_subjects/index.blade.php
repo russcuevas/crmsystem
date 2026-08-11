@@ -84,6 +84,8 @@
             gap: 4px !important;
         }
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
         .dataTables_paginate ul li,
         .dataTables_paginate ul.pagination li {
             list-style: none !important;
@@ -103,7 +105,7 @@
             border-radius: 8px !important;
             border: 1px solid #cbd5e1 !important;
             background: #ffffff !important;
-            color: #475569 !important;
+            color: #0f172a !important;
             font-size: 0.82rem !important;
             font-weight: 700 !important;
             text-decoration: none !important;
@@ -121,10 +123,12 @@
 
         .dataTables_paginate ul.pagination li.active a.page-link,
         .dataTables_paginate .paginate_button.current,
+        .dataTables_paginate .paginate_button.current a,
         .dataTables_paginate .paginate_button.current:hover {
-            background: var(--primary-navy, #0f172a) !important;
+            background: #0f172a !important;
             color: #ffffff !important;
-            border-color: var(--primary-navy, #0f172a) !important;
+            border-color: #0f172a !important;
+            font-weight: 800 !important;
         }
 
         .dataTables_paginate ul.pagination li.disabled a.page-link {
@@ -350,7 +354,8 @@
                                 $secCourseCode = $assigned->classSection->course->course_code ?? null;
                                 $teacherName =
                                     $assigned->teacher->user->name ??
-                                    $assigned->teacher->first_name . ' ' . $assigned->teacher->last_name;
+                                    ($assigned->teacher->first_name . ' ' . $assigned->teacher->last_name);
+                                $hasAssignedSub = isset($assigned->assignedSubSubjects) && $assigned->assignedSubSubjects->isNotEmpty();
                             @endphp
                             <tr>
                                 <td>
@@ -368,8 +373,18 @@
                                     <span class="badge badge-admin">{{ $secLevelCode }}</span>
                                 </td>
                                 <td>
+                                    @if ($hasAssignedSub)
+                                        <button type="button" class="btn-toggle-assigned-sub" onclick="toggleAssignedSubRows({{ $assigned->id }}, this)"
+                                            title="Click to view assigned sub-subjects"
+                                            style="background: #0f172a; color: #ffffff; border: none; border-radius: 6px; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; cursor: pointer; margin-right: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: all 0.2s;">
+                                            <span id="icon-assigned-sub-{{ $assigned->id }}" style="line-height: 1;">+</span>
+                                        </button>
+                                    @endif
                                     <strong>{{ $assigned->subject->subject_code ?? 'N/A' }}</strong> -
                                     {{ $assigned->subject->subject_name ?? '' }}
+                                    @if ($assigned->subject && $assigned->subject->is_parent)
+                                        <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-size: 0.7rem; margin-left: 6px; font-weight: 700;">Parent Subject</span>
+                                    @endif
                                 </td>
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 0.4rem;">
@@ -394,7 +409,7 @@
 
                                         <form action="{{ route('superadmin.assigned_subjects.destroy', $assigned->id) }}"
                                             method="POST" style="display: inline;"
-                                            onsubmit="return confirm('Are you sure you want to remove this assigned subject?');">
+                                            onsubmit="return confirm('Are you sure you want to remove this assigned subject and its sub-subjects?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-action-icon danger" title="Delete Assignment">
@@ -408,6 +423,30 @@
                                     </div>
                                 </td>
                             </tr>
+                            @if ($hasAssignedSub)
+                                @foreach ($assigned->assignedSubSubjects as $subAssigned)
+                                    @php
+                                        $subTeacherName = $subAssigned->teacher->user->name ?? ($subAssigned->teacher->first_name . ' ' . $subAssigned->teacher->last_name);
+                                    @endphp
+                                    <tr class="assigned-sub-row-{{ $assigned->id }}" style="display: none; background: #f8fafc;">
+                                        <td style="opacity: 0.7;">{{ $assigned->classSection->section_name ?? 'N/A' }}</td>
+                                        <td><span class="badge badge-admin" style="opacity: 0.85;">{{ $secLevelCode }}</span></td>
+                                        <td style="padding-left: 2rem; color: #334155;">
+                                            <i class="fa-solid fa-arrow-turn-up fa-rotate-90" style="color: #94a3b8; margin-right: 8px;"></i>
+                                            <strong>{{ $subAssigned->subject->subject_code ?? 'N/A' }}</strong> - {{ $subAssigned->subject->subject_name ?? '' }}
+                                        </td>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 0.4rem; color: #475569;">
+                                                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: #64748b;">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
+                                                <span>{{ $subTeacherName }}</span>
+                                            </div>
+                                        </td>
+                                        <td style="text-align: center; color: #94a3b8; font-size: 0.8rem;">Auto-Assigned</td>
+                                    </tr>
+                                @endforeach
+                            @endif
                         @endforeach
                     </tbody>
                 </table>
@@ -600,6 +639,26 @@
                 }
             });
         });
+
+        function toggleAssignedSubRows(assignedId, btn) {
+            const rows = document.querySelectorAll('.assigned-sub-row-' + assignedId);
+            const icon = document.getElementById('icon-assigned-sub-' + assignedId);
+            let isExpanding = false;
+            rows.forEach(r => {
+                if (r.style.display === 'none' || !r.style.display) {
+                    r.style.display = 'table-row';
+                    isExpanding = true;
+                } else {
+                    r.style.display = 'none';
+                }
+            });
+            if (icon) {
+                icon.innerText = isExpanding ? '−' : '+';
+            }
+            if (btn) {
+                btn.style.background = isExpanding ? '#dc2626' : '#0f172a';
+            }
+        }
 
         function handleAssignedSectionCascade(prefix, targetSubjectId = null, targetTeacherId = null) {
             const secSelect = document.getElementById(prefix + '_class_section_id');

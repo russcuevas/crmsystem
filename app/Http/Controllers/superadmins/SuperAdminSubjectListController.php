@@ -31,7 +31,7 @@ class SuperAdminSubjectListController extends Controller
         $educationLevelsList = EducationLevel::all();
         $coursesList = Course::all();
 
-        $subjectsQuery = Subject::with(['educationLevel', 'course']);
+        $subjectsQuery = Subject::with(['educationLevel', 'course', 'parentSubject', 'subSubjects']);
 
         if ($selectedLevel) {
             $subjectsQuery->whereHas('educationLevel', function ($q) use ($selectedLevel) {
@@ -61,9 +61,12 @@ class SuperAdminSubjectListController extends Controller
                 $q->where('subject_code', 'like', '%' . $search . '%')
                   ->orWhere('subject_name', 'like', '%' . $search . '%');
             });
+        } else {
+            $subjectsQuery->whereNull('parent_subject_id');
         }
 
         $subjects = $subjectsQuery->latest()->get();
+        $parentSubjects = Subject::where('is_parent', true)->get();
         $totalAccounts = User::count();
 
         if ($activeSchoolYear) {
@@ -91,6 +94,7 @@ class SuperAdminSubjectListController extends Controller
 
         return view('superadmins.subject_list.index', compact(
             'subjects',
+            'parentSubjects',
             'activeSchoolYear',
             'totalAccounts',
             'totalFaculty',
@@ -116,6 +120,8 @@ class SuperAdminSubjectListController extends Controller
             'has_lab' => 'nullable|boolean',
             'lecture_weight' => 'nullable|numeric|min:0|max:100',
             'lab_weight' => 'nullable|numeric|min:0|max:100',
+            'parent_subject_id' => 'nullable|exists:subjects,id',
+            'is_parent' => 'nullable|boolean',
         ]);
 
         $educationLevel = EducationLevel::find($validated['education_level_id']);
@@ -128,7 +134,11 @@ class SuperAdminSubjectListController extends Controller
             $validated['has_lab'] = false;
             $validated['lecture_weight'] = 100.00;
             $validated['lab_weight'] = 0.00;
+            $validated['is_parent'] = $request->boolean('is_parent');
+            $validated['parent_subject_id'] = $validated['is_parent'] ? null : $request->input('parent_subject_id');
         } else {
+            $validated['is_parent'] = false;
+            $validated['parent_subject_id'] = null;
             $validated['has_lab'] = $request->boolean('has_lab');
             if ($validated['has_lab']) {
                 $validated['lecture_weight'] = $validated['lecture_weight'] ?? 70.00;
@@ -158,6 +168,8 @@ class SuperAdminSubjectListController extends Controller
             'has_lab' => 'nullable|boolean',
             'lecture_weight' => 'nullable|numeric|min:0|max:100',
             'lab_weight' => 'nullable|numeric|min:0|max:100',
+            'parent_subject_id' => 'nullable|exists:subjects,id',
+            'is_parent' => 'nullable|boolean',
         ]);
 
         $educationLevel = EducationLevel::find($validated['education_level_id']);
@@ -170,7 +182,11 @@ class SuperAdminSubjectListController extends Controller
             $validated['has_lab'] = false;
             $validated['lecture_weight'] = 100.00;
             $validated['lab_weight'] = 0.00;
+            $validated['is_parent'] = $request->boolean('is_parent');
+            $validated['parent_subject_id'] = $validated['is_parent'] ? null : $request->input('parent_subject_id');
         } else {
+            $validated['is_parent'] = false;
+            $validated['parent_subject_id'] = null;
             $validated['has_lab'] = $request->boolean('has_lab');
             if ($validated['has_lab']) {
                 $validated['lecture_weight'] = $validated['lecture_weight'] ?? 70.00;

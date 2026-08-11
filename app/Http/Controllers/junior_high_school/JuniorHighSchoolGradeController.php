@@ -46,9 +46,8 @@ class JuniorHighSchoolGradeController extends Controller
             'teacher'
         ])->where('teacher_id', $teacher->id);
 
-        if ($activeSchoolYear) {
-            $handledSubjectsQuery->whereHas('classSection', fn($q) => $q->where('school_year_id', $activeSchoolYear->id));
-        }
+        // Filter handled subjects to top-level subjects ONLY (excluding sub-subjects from main list)
+        $handledSubjectsQuery->whereHas('subject', fn($sq) => $sq->whereNull('parent_subject_id'));
 
         $handledSubjects = $handledSubjectsQuery->get();
 
@@ -60,6 +59,11 @@ class JuniorHighSchoolGradeController extends Controller
         $attendanceDates = collect();
         $attendances = collect();
         $computedGrades = collect();
+        $subSectionSubjects = collect();
+        $selectedSubSubjectId = request('sub_subject_id');
+        $activeSubSectionSubject = null;
+        $isParentSubject = false;
+        $mapehSummaryGrades = collect();
 
         if ($selectedSubjectId) {
             $currentSectionSubject = $handledSubjects->firstWhere('id', $selectedSubjectId);
@@ -72,6 +76,31 @@ class JuniorHighSchoolGradeController extends Controller
         if ($currentSectionSubject) {
             $classSectionId = $currentSectionSubject->class_section_id;
 
+            // Check if current subject is a parent subject (e.g. MAPEH)
+            $isParentSubject = $currentSectionSubject->subject && ($currentSectionSubject->subject->is_parent || Subject::where('parent_subject_id', $currentSectionSubject->subject_id)->exists());
+
+            if ($isParentSubject) {
+                $subSectionSubjects = ClassSectionSubject::where('class_section_id', $currentSectionSubject->class_section_id)
+                    ->whereHas('subject', fn($q) => $q->where('parent_subject_id', $currentSectionSubject->subject_id))
+                    ->with(['subject'])
+                    ->get();
+
+                if ($selectedSubSubjectId === 'summary') {
+                    $activeSubSectionSubject = 'summary';
+                } elseif ($selectedSubSubjectId) {
+                    $activeSubSectionSubject = $subSectionSubjects->firstWhere('id', $selectedSubSubjectId);
+                }
+
+                if (!$activeSubSectionSubject && $subSectionSubjects->isNotEmpty()) {
+                    $activeSubSectionSubject = $subSectionSubjects->first();
+                }
+            }
+
+            // Target subject for grading tasks & attendance
+            $targetSectionSubject = ($isParentSubject && $activeSubSectionSubject && $activeSubSectionSubject !== 'summary')
+                ? $activeSubSectionSubject
+                : $currentSectionSubject;
+
             // Enrolled students in section
             $enrolledStudents = Student::whereHas('enrollments', function ($q) use ($classSectionId, $activeSchoolYear) {
                 $q->where('class_section_id', $classSectionId)
@@ -82,7 +111,7 @@ class JuniorHighSchoolGradeController extends Controller
             })->with('user')->get();
 
             // Categories & Tasks
-            $categories = GradingCategory::where('class_section_subject_id', $currentSectionSubject->id)
+            $categories = GradingCategory::where('class_section_subject_id', $targetSectionSubject->id)
                 ->where('academic_period', $selectedPeriod)
                 ->with('gradingTasks')
                 ->get();
@@ -98,15 +127,15 @@ class JuniorHighSchoolGradeController extends Controller
                     return ($item->enrollment ? $item->enrollment->student_id : null) . '_' . $item->grading_task_id;
                 });
 
-            // Attendance Records (Filtered by Quarter/Academic Period)
-            $attendanceDates = Attendance::where('class_section_subject_id', $currentSectionSubject->id)
+            // Attendance Records for Target Component (Filtered by Quarter/Academic Period)
+            $attendanceDates = Attendance::where('class_section_subject_id', $targetSectionSubject->id)
                 ->where('academic_period', $selectedPeriod)
                 ->select('attendance_date')
                 ->distinct()
                 ->orderBy('attendance_date', 'asc')
                 ->pluck('attendance_date');
 
-            $attendances = Attendance::where('class_section_subject_id', $currentSectionSubject->id)
+            $attendances = Attendance::where('class_section_subject_id', $targetSectionSubject->id)
                 ->where('academic_period', $selectedPeriod)
                 ->with('enrollment')
                 ->get()
@@ -114,11 +143,19 @@ class JuniorHighSchoolGradeController extends Controller
                     return ($item->enrollment ? $item->enrollment->student_id : null) . '_' . \Carbon\Carbon::parse($item->attendance_date)->format('Y-m-d');
                 });
 
-            // Final Computed Grades
-            $computedGrades = Grade::where('class_section_subject_id', $currentSectionSubject->id)
+            // Final Computed Grades for Target Component
+            $computedGrades = Grade::where('class_section_subject_id', $targetSectionSubject->id)
                 ->where('academic_period', $selectedPeriod)
                 ->get()
                 ->keyBy('student_id');
+
+            if ($isParentSubject) {
+                $allSectionSubjectIds = $subSectionSubjects->pluck('id')->push($currentSectionSubject->id);
+                $mapehSummaryGrades = Grade::whereIn('class_section_subject_id', $allSectionSubjectIds)
+                    ->where('academic_period', $selectedPeriod)
+                    ->get();
+            }
+
             // Categories Data for JS
             $categoriesData = $categories->map(function ($c) {
                 return [
@@ -138,26 +175,27 @@ class JuniorHighSchoolGradeController extends Controller
 
         $advisorySections = ClassSection::where('class_adviser_id', $teacher->id)
             ->when($activeSchoolYear, fn($q) => $q->where('school_year_id', $activeSchoolYear->id))
-            ->with('gradeLevel')
             ->get();
-        $isAdviser = $advisorySections->isNotEmpty();
 
         return view('junior_high_school.grades.index', compact(
             'teacher',
             'handledSubjects',
             'currentSectionSubject',
-            'selectedPeriod',
             'enrolledStudents',
             'categories',
-            'categoriesData',
             'tasks',
             'scores',
             'attendanceDates',
             'attendances',
             'computedGrades',
-            'activeSchoolYear',
+            'categoriesData',
+            'selectedPeriod',
             'advisorySections',
-            'isAdviser'
+            'subSectionSubjects',
+            'activeSubSectionSubject',
+            'isParentSubject',
+            'mapehSummaryGrades',
+            'activeSchoolYear'
         ));
     }
 
@@ -210,8 +248,9 @@ class JuniorHighSchoolGradeController extends Controller
         ];
 
         if ($currentSection) {
-            // All subjects assigned to this class section (regardless of who teaches them)
+            // All top-level subjects assigned to this class section (excluding sub-subjects like Music, Arts, PE, Health)
             $sectionSubjects = ClassSectionSubject::where('class_section_id', $currentSection->id)
+                ->whereHas('subject', fn($sq) => $sq->whereNull('parent_subject_id'))
                 ->with(['subject', 'teacher'])
                 ->get();
 
@@ -425,6 +464,9 @@ class JuniorHighSchoolGradeController extends Controller
     public function destroyCategory($id)
     {
         $category = GradingCategory::findOrFail($id);
+        $taskIds = $category->gradingTasks()->pluck('id');
+        StudentTaskScore::whereIn('grading_task_id', $taskIds)->delete();
+        $category->gradingTasks()->delete();
         $category->delete();
 
         return redirect()->back()->with('success', 'Grading category deleted successfully!');
@@ -460,6 +502,7 @@ class JuniorHighSchoolGradeController extends Controller
     public function destroyTask($id)
     {
         $task = GradingTask::findOrFail($id);
+        StudentTaskScore::where('grading_task_id', $task->id)->delete();
         $task->delete();
 
         return redirect()->back()->with('success', 'Task deleted successfully!');
@@ -567,8 +610,24 @@ class JuniorHighSchoolGradeController extends Controller
             ->with('student')
             ->get();
 
+        $hasTasksInPeriod = false;
+        foreach ($categories as $cat) {
+            if ($cat->gradingTasks && $cat->gradingTasks->count() > 0) {
+                $hasTasksInPeriod = true;
+                break;
+            }
+        }
+
         foreach ($enrolments as $enr) {
             if (!$enr->student) continue;
+
+            if (!$hasTasksInPeriod) {
+                Grade::where('enrollment_id', $enr->id)
+                    ->where('class_section_subject_id', $sectionSubject->id)
+                    ->where('academic_period', $validated['academic_period'])
+                    ->delete();
+                continue;
+            }
 
             $finalQuarterGrade = 0;
 
@@ -602,6 +661,54 @@ class JuniorHighSchoolGradeController extends Controller
                     'remarks' => $remarks,
                 ]
             );
+        }
+
+        // Auto-calculate parent subject (MAPEH) grade if sectionSubject is part of a parent subject
+        $subjectModel = $sectionSubject->subject;
+        $parentSubjectId = $subjectModel ? ($subjectModel->parent_subject_id ?? ($subjectModel->is_parent ? $subjectModel->id : null)) : null;
+
+        if ($parentSubjectId) {
+            $parentSectionSubject = ClassSectionSubject::where('class_section_id', $sectionSubject->class_section_id)
+                ->whereHas('subject', fn($q) => $q->where('id', $parentSubjectId)->orWhere('is_parent', true))
+                ->first();
+
+            $childSectionSubjects = ClassSectionSubject::where('class_section_id', $sectionSubject->class_section_id)
+                ->whereHas('subject', fn($q) => $q->where('parent_subject_id', $parentSubjectId))
+                ->get();
+
+            if ($parentSectionSubject && $childSectionSubjects->isNotEmpty()) {
+                $childSubjectIds = $childSectionSubjects->pluck('id');
+
+                foreach ($enrolments as $enr) {
+                    $childGrades = Grade::where('enrollment_id', $enr->id)
+                        ->whereIn('class_section_subject_id', $childSubjectIds)
+                        ->where('academic_period', $validated['academic_period'])
+                        ->pluck('final_grade')
+                        ->filter(fn($v) => !is_null($v) && $v > 0);
+
+                    if ($childGrades->isNotEmpty()) {
+                        $mapehComputedScore = round($childGrades->avg(), 2);
+                        $mapehRemarks = $mapehComputedScore >= 75 ? 'Passed' : 'Failed';
+
+                        Grade::updateOrCreate(
+                            [
+                                'enrollment_id' => $enr->id,
+                                'class_section_subject_id' => $parentSectionSubject->id,
+                                'academic_period' => $validated['academic_period'],
+                            ],
+                            [
+                                'final_grade' => $mapehComputedScore,
+                                'remarks' => $mapehRemarks,
+                            ]
+                        );
+                    } else {
+                        Grade::where('enrollment_id', $enr->id)
+                            ->where('class_section_subject_id', $parentSectionSubject->id)
+                            ->where('academic_period', $validated['academic_period'])
+                            ->delete();
+                    }
+                }
+            }
         }
 
         return redirect()->back()->with('success', 'Grades computed and published successfully!');
@@ -662,7 +769,8 @@ class JuniorHighSchoolGradeController extends Controller
                 $qGrades = [];
                 foreach ($periods as $p) {
                     $gObj = $subGrades->firstWhere('academic_period', $p);
-                    $qGrades[$p] = ($gObj && $gObj->final_grade !== null) ? floatval($gObj->final_grade) : null;
+                    $val = ($gObj && $gObj->final_grade !== null) ? floatval($gObj->final_grade) : null;
+                    $qGrades[$p] = ($val !== null && $val > 0) ? $val : null;
                 }
 
                 $nonNull = array_filter($qGrades, fn($v) => !is_null($v));

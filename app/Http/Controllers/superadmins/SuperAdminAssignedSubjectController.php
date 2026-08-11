@@ -28,9 +28,11 @@ class SuperAdminAssignedSubjectController extends Controller
         $assignedQuery = ClassSectionSubject::with([
             'classSection.gradeLevel.educationLevel',
             'classSection.course',
-            'subject',
+            'subject.subSubjects',
             'teacher.user'
-        ]);
+        ])->whereHas('subject', function ($q) {
+            $q->whereNull('parent_subject_id');
+        });
 
         if ($activeSchoolYear) {
             $assignedQuery->whereHas('classSection', function ($q) use ($activeSchoolYear) {
@@ -46,6 +48,19 @@ class SuperAdminAssignedSubjectController extends Controller
 
         $assignedSubjects = $assignedQuery->latest()->get();
 
+        // Attach assigned sub-subjects for display in roster table
+        foreach ($assignedSubjects as $assigned) {
+            if ($assigned->subject && ($assigned->subject->is_parent || $assigned->subject->subSubjects->isNotEmpty())) {
+                $subSubjectIds = $assigned->subject->subSubjects->pluck('id');
+                $assigned->assignedSubSubjects = ClassSectionSubject::where('class_section_id', $assigned->class_section_id)
+                    ->whereIn('subject_id', $subSubjectIds)
+                    ->with(['subject', 'teacher.user'])
+                    ->get();
+            } else {
+                $assigned->assignedSubSubjects = collect();
+            }
+        }
+
         // Get Available Class Sections for current S.Y. and Level filter
         $sectionsQuery = ClassSection::with(['gradeLevel.educationLevel', 'course']);
         if ($activeSchoolYear) {
@@ -58,9 +73,9 @@ class SuperAdminAssignedSubjectController extends Controller
         }
         $classSections = $sectionsQuery->get();
 
-        // Get Available Subjects
+        // Get Available Top-Level Subjects
         $selectedSem = request('semester');
-        $subjectsQuery = Subject::with('educationLevel');
+        $subjectsQuery = Subject::with('educationLevel')->whereNull('parent_subject_id');
         if ($selectedLevel) {
             $subjectsQuery->whereHas('educationLevel', function ($q) use ($selectedLevel) {
                 $q->where('code', $selectedLevel);
@@ -111,6 +126,8 @@ class SuperAdminAssignedSubjectController extends Controller
             'teacher_id' => 'required|exists:teachers,id',
         ]);
 
+        $subject = Subject::with('subSubjects')->findOrFail($validated['subject_id']);
+
         // Check if subject already assigned to this section
         $exists = ClassSectionSubject::where('class_section_id', $validated['class_section_id'])
             ->where('subject_id', $validated['subject_id'])
@@ -120,14 +137,29 @@ class SuperAdminAssignedSubjectController extends Controller
             return redirect()->back()->withErrors(['subject_id' => 'This subject is already assigned to the selected class section!']);
         }
 
-        ClassSectionSubject::create($validated);
+        $parentAssignment = ClassSectionSubject::create($validated);
 
-        return redirect()->back()->with('success', 'Subject assigned to class section successfully!');
+        // Auto-assign sub-subjects (Music, Arts, PE, Health) under the same section & teacher
+        if ($subject->is_parent || $subject->subSubjects->isNotEmpty()) {
+            foreach ($subject->subSubjects as $subSubject) {
+                ClassSectionSubject::updateOrCreate(
+                    [
+                        'class_section_id' => $validated['class_section_id'],
+                        'subject_id' => $subSubject->id,
+                    ],
+                    [
+                        'teacher_id' => $validated['teacher_id'],
+                    ]
+                );
+            }
+        }
+
+        return redirect()->back()->with('success', 'Subject and sub-subjects assigned to class section successfully!');
     }
 
     public function update(Request $request, $id)
     {
-        $assignedSubject = ClassSectionSubject::findOrFail($id);
+        $assignedSubject = ClassSectionSubject::with('subject.subSubjects')->findOrFail($id);
 
         $validated = $request->validate([
             'class_section_id' => 'required|exists:class_sections,id',
@@ -147,12 +179,37 @@ class SuperAdminAssignedSubjectController extends Controller
 
         $assignedSubject->update($validated);
 
+        // Also update sub-subjects assigned teacher if parent subject is updated
+        $subject = $assignedSubject->subject;
+        if ($subject && ($subject->is_parent || $subject->subSubjects->isNotEmpty())) {
+            foreach ($subject->subSubjects as $subSubject) {
+                ClassSectionSubject::updateOrCreate(
+                    [
+                        'class_section_id' => $validated['class_section_id'],
+                        'subject_id' => $subSubject->id,
+                    ],
+                    [
+                        'teacher_id' => $validated['teacher_id'],
+                    ]
+                );
+            }
+        }
+
         return redirect()->back()->with('success', 'Assigned subject details updated successfully!');
     }
 
     public function destroy($id)
     {
-        $assignedSubject = ClassSectionSubject::findOrFail($id);
+        $assignedSubject = ClassSectionSubject::with('subject.subSubjects')->findOrFail($id);
+        $subject = $assignedSubject->subject;
+
+        if ($subject && ($subject->is_parent || $subject->subSubjects->isNotEmpty())) {
+            $subSubjectIds = $subject->subSubjects->pluck('id');
+            ClassSectionSubject::where('class_section_id', $assignedSubject->class_section_id)
+                ->whereIn('subject_id', $subSubjectIds)
+                ->delete();
+        }
+
         $assignedSubject->delete();
 
         return redirect()->back()->with('success', 'Assigned subject removed successfully!');
