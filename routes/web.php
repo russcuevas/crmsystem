@@ -167,7 +167,7 @@ Route::middleware(['auth', 'jhs.teacher'])->prefix('junior-high-school')->as('ju
 });
 
 // Admin Protected Routes
-Route::middleware(['auth'])->prefix('admin')->as('admin.')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->as('admin.')->group(function () {
     Route::post('/logout', [AuthController::class, 'AdminLogout'])->name('logout');
     Route::get('/dashboard', [AdminDashboardController::class, 'AdminDashboardPage'])->name('dashboard.page');
     Route::get('/accounts', [AdminAccountController::class, 'AdminAccountPage'])->name('accounts.page');
@@ -225,7 +225,7 @@ Route::get('/auth/superadmin', [AuthController::class, 'SuperAdminLoginPage'])->
 Route::post('/auth/superadmin', [AuthController::class, 'SuperAdminLogin'])->name('superadmin.login.submit');
 
 // Super Admin Protected Routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'superadmin'])->group(function () {
     Route::post('/superadmin/logout', [AuthController::class, 'SuperAdminLogout'])->name('superadmin.logout');
     Route::get('/superadmin/dashboard', [SuperAdminDashboardController::class, 'SuperAdminDashboardPage'])->name('superadmin.dashboard.page');
     Route::get('/superadmin/accounts', [SuperAdminAccountController::class, 'SuperAdminAccountPage'])->name('superadmin.accounts.page');

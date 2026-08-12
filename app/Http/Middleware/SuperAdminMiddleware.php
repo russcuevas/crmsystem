@@ -21,6 +21,10 @@ class SuperAdminMiddleware
         }
 
         if (Auth::user()->role !== 'superadmin') {
+            if (Auth::user()->role === 'admin') {
+                return redirect()->route('admin.dashboard.page')->with('error', 'Access Denied: Only Super Admin can access the Super Admin portal.');
+            }
+
             Auth::logout();
             return redirect()->route('superadmin.login.page')->with('error', 'Unauthorized access. Only Super Admin is allowed.');
         }
