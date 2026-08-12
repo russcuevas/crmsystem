@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Class Record Management System</title>
+    <title>Class Record Management System - Basic Education</title>
 
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ asset('assets/images/home/logo-school.png') }}" type="image/x-icon">
@@ -21,17 +21,17 @@
 
 <body>
     <div class="login-wrapper">
-        <!-- Left Banner Panel (Emerald / Forest Theme) -->
+        <!-- Left Banner Panel (Emerald Theme) -->
         <div class="left-panel theme-elementary">
             <div class="left-top">
-                <img src="{{ asset('assets/images/home/logo-school.png') }}" alt="NAAP Logo" class="school-logo">
+                <img src="{{ asset('assets/images/home/logo-school.png') }}" alt="School Logo" class="school-logo">
             </div>
 
             <div class="left-center">
-                <span class="level-badge">Basic Education (Kinder - Grade 6)</span>
-                <h1 class="school-title">National Aviation Academy of the Philippines</h1>
+                <span class="level-badge">Basic Education School (Kinder - Grade 6)</span>
+                <h1 class="school-title">Guihulngan National High School</h1>
                 <p class="school-subtitle">
-                    <strong>WELCOME</strong> to the <strong>HOME</strong> of the <strong>AVIATORS</strong>
+                    <strong>WELCOME</strong> to the <strong>HOME</strong> of the <strong>GNHSPN</strong>
                 </p>
             </div>
 
@@ -52,7 +52,29 @@
                 <h2 class="form-title">Login</h2>
                 <p class="form-subtitle">Basic Education Portal (Kinder - Grade 6)</p>
 
-                <form action="#" method="POST">
+                @if (session('error'))
+                    <div style="background-color: #fee2e2; border: 1px solid #f87171; color: #991b1b; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 500;">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @if (session('success'))
+                    <div style="background-color: #d1fae5; border: 1px solid #34d399; color: #065f46; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 500;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div style="background-color: #fee2e2; border: 1px solid #f87171; color: #991b1b; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; font-size: 0.875rem;">
+                        <ul style="margin: 0; padding-left: 1.25rem;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form action="{{ route('elementary.login.submit') }}" method="POST">
                     @csrf
 
                     <div class="form-group">
@@ -60,8 +82,8 @@
                             Email Address <span class="required">*</span>
                         </label>
                         <input type="email" id="email" name="email" class="form-control"
-                            placeholder="Email Address" required autofocus>
-                        <span class="form-help">Please enter your email address.</span>
+                            placeholder="Email Address" value="{{ old('email') }}" required autofocus>
+                        <span class="form-help">Please enter your registered BED teacher email.</span>
                     </div>
 
                     <div class="form-group">

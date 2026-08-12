@@ -205,13 +205,13 @@
 
         <!-- School Level Buttons -->
         <div class="buttons-group">
-            {{-- <a href="{{ route('elementary.login.page') }}" class="school-btn">
+            <a href="{{ route('elementary.login.page') }}" class="school-btn">
                 <svg viewBox="0 0 24 24">
                     <path
                         d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.78c0-2.33 4.67-3.5 7-3.5s7 1.17 7 3.5v.78z" />
                 </svg>
                 Basic Education School <br> (Kinder - Grade 6)
-            </a> --}}
+            </a>
 
             <a href="{{ route('junior_high_school.login.page') }}" class="school-btn">
                 <svg viewBox="0 0 24 24">

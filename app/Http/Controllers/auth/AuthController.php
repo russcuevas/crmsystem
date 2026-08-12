@@ -117,7 +117,69 @@ class AuthController extends Controller
 
     public function ElementaryLoginPage()
     {
+        if (Auth::check()) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            if ($user->role === 'teacher' && $user->teacher && $user->teacher->educationLevel && in_array(strtoupper($user->teacher->educationLevel->code), ['BED', 'ELEM', 'ELEMENTARY'])) {
+                return redirect()->route('elementary.dashboard.page');
+            }
+        }
+
         return view('auth.elementary.login');
+    }
+
+    public function ElementaryLogin(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            $isBedTeacher = $user->role === 'teacher' 
+                && $user->teacher 
+                && $user->teacher->educationLevel 
+                && in_array(strtoupper($user->teacher->educationLevel->code), ['BED', 'ELEM', 'ELEMENTARY']);
+
+            if ($isBedTeacher) {
+                $user->last_login_at = now();
+                $user->save();
+
+                $request->session()->regenerate();
+
+                $teacherName = $user->teacher ? ($user->teacher->first_name . ' ' . $user->teacher->last_name) : $user->name;
+
+                return redirect()->intended(route('elementary.dashboard.page'))
+                    ->with('success', 'Welcome back, Teacher ' . $teacherName . '!');
+            }
+
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('elementary.login.page')
+                ->with('error', 'Unauthorized access. Only designated Basic Education / Elementary teachers are permitted to log in here.');
+        }
+
+        return redirect()->back()
+            ->withInput($request->only('email'))
+            ->with('error', 'Invalid email address or password.');
+    }
+
+    public function ElementaryLogout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('elementary.login.page')
+            ->with('success', 'You have been logged out successfully.');
     }
 
     public function JuniorHighSchoolLoginPage()

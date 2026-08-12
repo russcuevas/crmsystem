@@ -30,6 +30,10 @@ use App\Http\Controllers\senior_high_school\SeniorHighSchoolTeacherController;
 use App\Http\Controllers\senior_high_school\SeniorHighSchoolStudentController;
 use App\Http\Controllers\senior_high_school\SeniorHighSchoolEnrollmentController;
 use App\Http\Controllers\senior_high_school\SeniorHighSchoolGradeController;
+use App\Http\Controllers\elementary\ElementaryTeacherController;
+use App\Http\Controllers\elementary\ElementaryStudentController;
+use App\Http\Controllers\elementary\ElementaryEnrollmentController;
+use App\Http\Controllers\elementary\ElementaryGradeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -49,7 +53,42 @@ Route::get('/', function () {
 
 // Authentication Routes for School Levels & Admins
 Route::get('/auth/elementary', [AuthController::class, 'ElementaryLoginPage'])->name('elementary.login.page');
+Route::post('/auth/elementary', [AuthController::class, 'ElementaryLogin'])->name('elementary.login.submit');
+Route::post('/auth/elementary/submit', [AuthController::class, 'ElementaryLogin'])->name('elementary.login');
 Route::get('/auth/junior-high-school', [AuthController::class, 'JuniorHighSchoolLoginPage'])->name('junior_high_school.login.page');
+
+// Elementary / Basic Education (BED) Teacher Protected Routes
+Route::middleware(['auth', 'elementary.teacher'])->prefix('elementary')->as('elementary.')->group(function () {
+    Route::get('/dashboard', [ElementaryTeacherController::class, 'dashboard'])->name('dashboard.page');
+    Route::post('/logout', [AuthController::class, 'ElementaryLogout'])->name('logout');
+
+    // Students Module
+    Route::get('/students', [ElementaryStudentController::class, 'index'])->name('students.page');
+    Route::get('/students/{id}', [ElementaryStudentController::class, 'show'])->name('students.show');
+
+    // Enrollment Module
+    Route::get('/enrollment', [ElementaryEnrollmentController::class, 'index'])->name('enrollment.page');
+    Route::post('/enrollment/store', [ElementaryEnrollmentController::class, 'store'])->name('enrollment.store');
+    Route::post('/enrollment/update/{id}', [ElementaryEnrollmentController::class, 'updateStatus'])->name('enrollment.update');
+    Route::delete('/enrollment/delete/{id}', [ElementaryEnrollmentController::class, 'destroy'])->name('enrollment.destroy');
+
+    // Grades Module
+    Route::get('/grades', [ElementaryGradeController::class, 'index'])->name('grades.page');
+    Route::get('/grades/advisory', [ElementaryGradeController::class, 'advisoryClassGrades'])->name('grades.advisory.page');
+    Route::get('/grades/print-card/{student_id}', [ElementaryGradeController::class, 'printReportCard'])->name('grades.print_card');
+    Route::post('/grades/update-score', [ElementaryGradeController::class, 'updateScore'])->name('grades.update_score');
+    Route::post('/grades/category/store', [ElementaryGradeController::class, 'storeCategory'])->name('grades.category.store');
+    Route::match(['post', 'put'], '/grades/category/update/{id}', [ElementaryGradeController::class, 'updateCategory'])->name('grades.category.update');
+    Route::delete('/grades/category/delete/{id}', [ElementaryGradeController::class, 'destroyCategory'])->name('grades.category.destroy');
+    Route::post('/grades/task/store', [ElementaryGradeController::class, 'storeTask'])->name('grades.task.store');
+    Route::match(['post', 'put'], '/grades/task/update/{id}', [ElementaryGradeController::class, 'updateTask'])->name('grades.task.update');
+    Route::delete('/grades/task/delete/{id}', [ElementaryGradeController::class, 'destroyTask'])->name('grades.task.destroy');
+    Route::post('/grades/attendance/date/store', [ElementaryGradeController::class, 'storeAttendanceDate'])->name('grades.attendance.date.store');
+    Route::post('/grades/attendance/update-status', [ElementaryGradeController::class, 'updateAttendanceStatus'])->name('grades.attendance.update_status');
+    Route::post('/grades/attendance/status/update', [ElementaryGradeController::class, 'updateAttendanceStatus'])->name('grades.attendance.status.update');
+    Route::delete('/grades/attendance/date/delete', [ElementaryGradeController::class, 'destroyAttendanceDate'])->name('grades.attendance.date.destroy');
+    Route::post('/grades/compute-total', [ElementaryGradeController::class, 'computeTotalGrades'])->name('grades.compute');
+});
 Route::post('/auth/junior-high-school', [AuthController::class, 'JuniorHighSchoolLogin'])->name('junior_high_school.login.submit');
 Route::get('/auth/senior-high-school', [AuthController::class, 'SeniorHighSchoolLoginPage'])->name('senior_high_school.login.page');
 Route::post('/auth/senior-high-school', [AuthController::class, 'SeniorHighSchoolLogin'])->name('senior_high_school.login.submit');
