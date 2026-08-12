@@ -210,10 +210,10 @@
                                 <td class="subject-name">
                                     {{ $row['subject'] ? $row['subject']->subject_name ?? $row['subject']->name : 'N/A' }}
                                 </td>
-                                <td>{{ $row['grades']['Prelim'] ?? '-' }}</td>
-                                <td>{{ $row['grades']['Midterm'] ?? '-' }}</td>
-                                <td>{{ $row['grades']['Finals'] ?? '-' }}</td>
-                                <td style="font-weight: bold;">{{ $row['final_rating'] ?? '-' }}</td>
+                                <td>{{ isset($row['grades']['Prelim']) && $row['grades']['Prelim'] !== null ? round($row['grades']['Prelim']) : '-' }}</td>
+                                <td>{{ isset($row['grades']['Midterm']) && $row['grades']['Midterm'] !== null ? round($row['grades']['Midterm']) : '-' }}</td>
+                                <td>{{ isset($row['grades']['Finals']) && $row['grades']['Finals'] !== null ? round($row['grades']['Finals']) : '-' }}</td>
+                                <td style="font-weight: bold;">{{ isset($row['final_rating']) && $row['final_rating'] !== null ? round($row['final_rating']) : '-' }}</td>
                                 <td>
                                     @if ($row['remarks'] === 'PASSED')
                                         <span class="remarks-passed">PASSED</span>
@@ -229,7 +229,7 @@
                             <td class="subject-name">General Average</td>
                             <td colspan="3" style="text-align: right; padding-right: 8px;">Final Average:</td>
                             <td style="font-size: 11px; font-weight: 800; color: #7f1d1d;">
-                                {{ $overallFinalRating ?? '-' }}</td>
+                                {{ isset($overallFinalRating) && $overallFinalRating !== null ? round($overallFinalRating) : '-' }}</td>
                             <td>
                                 @if ($overallFinalRating)
                                     <span

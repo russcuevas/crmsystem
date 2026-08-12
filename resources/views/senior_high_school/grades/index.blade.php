@@ -278,8 +278,8 @@
                                     style="min-width: 200px; text-align: left; position: sticky; left: 0; background: #f8fafc; z-index: 5;">
                                     Student Name</th>
                                 @foreach ($categories as $cat)
-                                    <th colspan="{{ $cat->gradingTasks->count() ?: 1 }}"
-                                        style="text-align: center; background: #eef2ff; padding: 0.5rem;">
+                                    <th colspan="{{ $cat->gradingTasks->isNotEmpty() ? $cat->gradingTasks->count() + 1 : 1 }}"
+                                        style="text-align: center; background: #eef2ff; padding: 0.5rem; border-right: 2px solid #cbd5e1;">
                                         <div
                                             style="display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
                                             <span
@@ -348,9 +348,13 @@
                                                 </div>
                                             </th>
                                         @endforeach
+                                        <th style="text-align: center; font-size: 0.775rem; background: #e0e7ff; color: #3730a3; min-width: 80px; border-right: 2px solid #cbd5e1;">
+                                            <strong>Total Score</strong><br>
+                                            <span style="color: #4338ca; font-weight: normal;">(Max: {{ floatval($cat->gradingTasks->sum('max_score')) }})</span>
+                                        </th>
                                     @else
                                         <th
-                                            style="text-align: center; font-size: 0.75rem; color: #94a3b8; font-style: italic;">
+                                            style="text-align: center; font-size: 0.75rem; color: #94a3b8; font-style: italic; border-right: 2px solid #cbd5e1;">
                                             No Tasks</th>
                                     @endif
                                 @endforeach
@@ -397,10 +401,16 @@
 
                                     @foreach ($categories as $cat)
                                         @if ($cat->gradingTasks->isNotEmpty())
+                                            @php
+                                                $catStudentTotal = 0;
+                                            @endphp
                                             @foreach ($cat->gradingTasks as $t)
                                                 @php
                                                     $key = $stu->id . '_' . $t->id;
                                                     $scoreVal = isset($scores[$key]) ? $scores[$key]->score : '';
+                                                    if ($scoreVal !== '' && $scoreVal !== null) {
+                                                        $catStudentTotal += floatval($scoreVal);
+                                                    }
                                                 @endphp
                                                 <td style="text-align: center;">
                                                     <input type="number" step="0.01" max="{{ $t->max_score }}"
@@ -411,8 +421,12 @@
                                                         class="score-cell" placeholder="-">
                                                 </td>
                                             @endforeach
+                                            <td id="cat-total-{{ $stu->id }}-{{ $cat->id }}"
+                                                style="text-align: center; font-weight: 800; font-size: 0.9rem; background: #f5f3ff; color: #4338ca; border-right: 2px solid #e2e8f0;">
+                                                {{ number_format($catStudentTotal, 2) }}
+                                            </td>
                                         @else
-                                            <td style="text-align: center; color: #cbd5e1;">-</td>
+                                            <td style="text-align: center; color: #cbd5e1; border-right: 2px solid #e2e8f0;">-</td>
                                         @endif
                                     @endforeach
 
@@ -788,6 +802,11 @@
                     if (catMaxScore > 0) {
                         let catPct = (catStudentScore / catMaxScore) * 100;
                         totalQuarterGrade += (catPct * cat.weight) / 100;
+                    }
+
+                    const catTotalTd = $(`#cat-total-${studentId}-${cat.id}`);
+                    if (catTotalTd.length) {
+                        catTotalTd.text(catStudentScore.toFixed(2));
                     }
                 }
             });

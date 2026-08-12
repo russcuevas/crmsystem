@@ -21,6 +21,11 @@ class GradingCategory extends Model
         'weight' => 'decimal:2',
     ];
 
+    public function getCategoryNameAttribute()
+    {
+        return $this->attributes['name'] ?? null;
+    }
+
     public function classSectionSubject()
     {
         return $this->belongsTo(ClassSectionSubject::class);

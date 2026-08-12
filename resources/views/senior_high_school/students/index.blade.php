@@ -101,10 +101,6 @@
             <p style="font-size: 0.85rem; color: #64748b;">Senior High School Students enrolled in your Advisory and Subject
                 Sections.</p>
         </div>
-        <button onclick="openModal('addStudentModal')"
-            style="background: #7f1d1d; color: #ffffff; padding: 0.65rem 1.15rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 10px rgba(127, 29, 29, 0.25);">
-            <i class="fa-solid fa-user-plus"></i> Add New Student
-        </button>
     </div>
 
     <!-- Table Card -->
@@ -162,14 +158,6 @@
                                     class="btn-action btn-view" title="View Profile">
                                     <i class="fa-solid fa-eye"></i> View
                                 </a>
-                                <button onclick="openEditModal({{ json_encode($student) }})" class="btn-action btn-edit"
-                                    title="Edit Student">
-                                    <i class="fa-solid fa-pen-to-square"></i> Edit
-                                </button>
-                                <button onclick="confirmDelete({{ $student->id }}, '{{ addslashes($fullName) }}')"
-                                    class="btn-action btn-delete" title="Delete Student">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
                             </div>
                         </td>
                     </tr>

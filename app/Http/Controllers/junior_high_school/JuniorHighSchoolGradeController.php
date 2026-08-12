@@ -792,7 +792,7 @@ class JuniorHighSchoolGradeController extends Controller
             }
 
             if (count($subjectAverages) > 0) {
-                $gwa = round(array_sum($subjectAverages) / count($subjectAverages), 2);
+                $gwa = round(array_sum($subjectAverages) / count($subjectAverages));
                 $hasFailing = count(array_filter($subjectAverages, fn($v) => $v < 75)) > 0;
                 $remarks = ($gwa >= 75 && !$hasFailing) ? 'Passed' : 'Failed';
             }

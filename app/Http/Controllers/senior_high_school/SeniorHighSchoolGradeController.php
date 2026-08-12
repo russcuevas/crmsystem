@@ -301,36 +301,47 @@ class SeniorHighSchoolGradeController extends Controller
             })->with('user')->get();
 
             $allSectionSubjectIds = ClassSectionSubject::where('class_section_id', $currentSection->id)->pluck('id');
-            $allGrades = Grade::whereIn('class_section_subject_id', $allSectionSubjectIds)->get();
+            $studentEnrollments = Enrollment::where('class_section_id', $currentSection->id)
+                ->whereIn('status', ['enrolled', 'active'])
+                ->get();
+            $enrollmentIds = $studentEnrollments->pluck('id');
+
+            $allGrades = Grade::whereIn('class_section_subject_id', $allSectionSubjectIds)
+                ->whereIn('enrollment_id', $enrollmentIds)
+                ->get();
 
             foreach ($enrolledStudents as $student) {
-                $studentSumGrades = 0;
-                $studentCountGrades = 0;
+                $enr = $studentEnrollments->firstWhere('student_id', $student->id);
+                $enrId = $enr ? $enr->id : null;
+
+                $studentSubjectFinalRatings = [];
 
                 foreach ($sectionSubjects as $css) {
-                    $stGrade = $allGrades->where('student_id', $student->id)
-                        ->where('class_section_subject_id', $css->id)
-                        ->where('academic_period', $selectedPeriod)
-                        ->first();
-
-                    $gradesMatrix[$student->id][$css->id] = $stGrade ? floatval($stGrade->final_quarter_grade) : null;
-
+                    $periodGrades = [];
                     foreach ($periods as $p) {
-                        $pGrade = $allGrades->where('student_id', $student->id)
+                        $pGrade = $allGrades->where('enrollment_id', $enrId)
                             ->where('class_section_subject_id', $css->id)
                             ->where('academic_period', $p)
                             ->first();
 
-                        $quarterGradesMatrix[$student->id][$css->id][$p] = $pGrade ? floatval($pGrade->final_quarter_grade) : null;
+                        $val = ($pGrade && !is_null($pGrade->final_grade)) ? floatval($pGrade->final_grade) : null;
+                        $quarterGradesMatrix[$student->id][$css->id][$p] = $val;
+
+                        if ($val !== null) {
+                            $periodGrades[] = $val;
+                        }
                     }
 
-                    if ($stGrade && !is_null($stGrade->final_quarter_grade)) {
-                        $studentSumGrades += floatval($stGrade->final_quarter_grade);
-                        $studentCountGrades++;
+                    $stGradeVal = $quarterGradesMatrix[$student->id][$css->id][$selectedPeriod] ?? null;
+                    $gradesMatrix[$student->id][$css->id] = $stGradeVal;
+
+                    if (!empty($periodGrades)) {
+                        $subjFinal = round(array_sum($periodGrades) / count($periodGrades), 2);
+                        $studentSubjectFinalRatings[] = $subjFinal;
                     }
                 }
 
-                $genAvg = $studentCountGrades > 0 ? round($studentSumGrades / $studentCountGrades, 2) : null;
+                $genAvg = !empty($studentSubjectFinalRatings) ? round(array_sum($studentSubjectFinalRatings) / count($studentSubjectFinalRatings), 2) : null;
                 $remarks = $genAvg ? ($genAvg >= 75 ? 'PASSED' : 'FAILED') : 'PENDING';
 
                 $studentSummaries[$student->id] = [
@@ -415,28 +426,28 @@ class SeniorHighSchoolGradeController extends Controller
             $subjectGrades = [];
             foreach ($periods as $p) {
                 $g = $grades->where('class_section_subject_id', $css->id)->where('academic_period', $p)->first();
-                $subjectGrades[$p] = ($g && $g->final_grade !== null) ? floatval($g->final_grade) : null;
+                $subjectGrades[$p] = ($g && $g->final_grade !== null) ? round(floatval($g->final_grade)) : null;
             }
 
             $prelim = $subjectGrades['Prelim'];
             $midterm = $subjectGrades['Midterm'];
             $finals = $subjectGrades['Finals'];
 
-            $validPeriods = collect([$prelim, $midterm, $finals])->filter();
-            $finalRating = $validPeriods->isNotEmpty() ? round($validPeriods->avg(), 2) : null;
+            $validPeriods = collect([$prelim, $midterm, $finals])->filter(fn($v) => !is_null($v));
+            $finalRating = $validPeriods->isNotEmpty() ? round($validPeriods->avg()) : null;
 
-            if ($finalRating) $yearlyAvgs[] = $finalRating;
+            if ($finalRating !== null) $yearlyAvgs[] = $finalRating;
 
             $reportCardData[] = [
                 'subject' => $css->subject,
                 'teacher' => $css->teacher,
                 'grades' => $subjectGrades,
                 'final_rating' => $finalRating,
-                'remarks' => $finalRating ? ($finalRating >= 75 ? 'PASSED' : 'FAILED') : ''
+                'remarks' => $finalRating !== null ? ($finalRating >= 75 ? 'PASSED' : 'FAILED') : ''
             ];
         }
 
-        $overallFinalRating = !empty($yearlyAvgs) ? round(array_sum($yearlyAvgs) / count($yearlyAvgs), 2) : null;
+        $overallFinalRating = !empty($yearlyAvgs) ? round(array_sum($yearlyAvgs) / count($yearlyAvgs)) : null;
 
         return view('senior_high_school.grades.print.report_card', compact(
             'student',
@@ -501,17 +512,21 @@ class SeniorHighSchoolGradeController extends Controller
 
     public function storeCategory(Request $request)
     {
+        $categoryName = $request->input('name') ?? $request->input('category_name');
+
+        $request->merge(['name' => $categoryName]);
+
         $validated = $request->validate([
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
             'academic_period' => 'required|string',
-            'category_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'weight' => 'required|numeric|min:0|max:100',
         ]);
 
         GradingCategory::create([
             'class_section_subject_id' => $validated['class_section_subject_id'],
             'academic_period' => $validated['academic_period'],
-            'category_name' => $validated['category_name'],
+            'name' => $validated['name'],
             'weight' => $validated['weight'],
         ]);
 
@@ -522,12 +537,18 @@ class SeniorHighSchoolGradeController extends Controller
     {
         $category = GradingCategory::findOrFail($id);
 
+        $categoryName = $request->input('name') ?? $request->input('category_name');
+        $request->merge(['name' => $categoryName]);
+
         $validated = $request->validate([
-            'category_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'weight' => 'required|numeric|min:0|max:100',
         ]);
 
-        $category->update($validated);
+        $category->update([
+            'name' => $validated['name'],
+            'weight' => $validated['weight'],
+        ]);
 
         return redirect()->back()->with('success', 'Grading category updated successfully!');
     }
@@ -691,25 +712,157 @@ class SeniorHighSchoolGradeController extends Controller
         $validated = $request->validate([
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
             'academic_period' => 'required|string',
-            'grades' => 'required|array',
+            'grades' => 'nullable|array',
         ]);
 
-        foreach ($validated['grades'] as $studentId => $finalGrade) {
-            if (!is_null($finalGrade) && $finalGrade !== '') {
-                $numGrade = floatval($finalGrade);
-                $remarks = $numGrade >= 75 ? 'PASSED' : 'FAILED';
+        $sectionSubject = ClassSectionSubject::findOrFail($validated['class_section_subject_id']);
 
-                Grade::updateOrCreate([
-                    'student_id' => $studentId,
-                    'class_section_subject_id' => $validated['class_section_subject_id'],
-                    'academic_period' => $validated['academic_period'],
-                ], [
-                    'final_quarter_grade' => $numGrade,
-                    'remarks' => $remarks
-                ]);
+        $activeSyId = session('active_school_year_id');
+        $activeSchoolYear = $activeSyId ? SchoolYear::find($activeSyId) : SchoolYear::where('is_active', true)->first();
+
+        $enrolments = Enrollment::where('class_section_id', $sectionSubject->class_section_id)
+            ->whereIn('status', ['enrolled', 'active'])
+            ->when($activeSchoolYear, fn($q) => $q->where('school_year_id', $activeSchoolYear->id))
+            ->with('student')
+            ->get();
+
+        if (empty($enrolments) || $enrolments->isEmpty()) {
+            $enrolments = Enrollment::where('class_section_id', $sectionSubject->class_section_id)
+                ->whereIn('status', ['enrolled', 'active'])
+                ->with('student')
+                ->get();
+        }
+
+        // If manual grades array is provided
+        if (!empty($validated['grades'])) {
+            foreach ($validated['grades'] as $studentId => $finalGrade) {
+                if (!is_null($finalGrade) && $finalGrade !== '') {
+                    $numGrade = floatval($finalGrade);
+                    $remarks = $numGrade >= 75 ? 'PASSED' : 'FAILED';
+
+                    $enr = $enrolments->firstWhere('student_id', $studentId);
+                    if ($enr) {
+                        Grade::updateOrCreate([
+                            'enrollment_id' => $enr->id,
+                            'class_section_subject_id' => $validated['class_section_subject_id'],
+                            'academic_period' => $validated['academic_period'],
+                        ], [
+                            'final_grade' => $numGrade,
+                            'remarks' => $remarks
+                        ]);
+                    }
+                }
+            }
+            return redirect()->back()->with('success', 'Grades saved and published successfully!');
+        }
+
+        // Otherwise compute automatically from grading categories & task scores
+        $categories = GradingCategory::where('class_section_subject_id', $sectionSubject->id)
+            ->where('academic_period', $validated['academic_period'])
+            ->with('gradingTasks')
+            ->get();
+
+        $hasTasksInPeriod = false;
+        foreach ($categories as $cat) {
+            if ($cat->gradingTasks && $cat->gradingTasks->count() > 0) {
+                $hasTasksInPeriod = true;
+                break;
             }
         }
 
-        return redirect()->back()->with('success', 'Grades saved and updated successfully!');
+        foreach ($enrolments as $enr) {
+            if (!$enr->student) continue;
+
+            if (!$hasTasksInPeriod) {
+                Grade::where('enrollment_id', $enr->id)
+                    ->where('class_section_subject_id', $sectionSubject->id)
+                    ->where('academic_period', $validated['academic_period'])
+                    ->delete();
+                continue;
+            }
+
+            $finalQuarterGrade = 0;
+
+            foreach ($categories as $cat) {
+                $categoryTasks = $cat->gradingTasks;
+                $catTotalMaxScore = $categoryTasks->sum('max_score');
+
+                if ($catTotalMaxScore > 0) {
+                    $taskIds = $categoryTasks->pluck('id');
+                    $catTotalStudentScore = StudentTaskScore::where('enrollment_id', $enr->id)
+                        ->whereIn('grading_task_id', $taskIds)
+                        ->sum('score');
+
+                    $percentage = ($catTotalStudentScore / $catTotalMaxScore) * 100;
+                    $weightedContribution = ($percentage * $cat->weight) / 100;
+                    $finalQuarterGrade += $weightedContribution;
+                }
+            }
+
+            $computedScore = round($finalQuarterGrade, 2);
+            $remarks = $computedScore >= 75 ? 'PASSED' : 'FAILED';
+
+            Grade::updateOrCreate(
+                [
+                    'enrollment_id' => $enr->id,
+                    'class_section_subject_id' => $sectionSubject->id,
+                    'academic_period' => $validated['academic_period'],
+                ],
+                [
+                    'final_grade' => $computedScore,
+                    'remarks' => $remarks,
+                ]
+            );
+        }
+
+        // Auto-calculate parent subject grade if sectionSubject is part of a parent subject
+        $subjectModel = $sectionSubject->subject;
+        $parentSubjectId = $subjectModel ? ($subjectModel->parent_subject_id ?? ($subjectModel->is_parent ? $subjectModel->id : null)) : null;
+
+        if ($parentSubjectId) {
+            $parentSectionSubject = ClassSectionSubject::where('class_section_id', $sectionSubject->class_section_id)
+                ->whereHas('subject', fn($q) => $q->where('id', $parentSubjectId)->orWhere('is_parent', true))
+                ->first();
+
+            $childSectionSubjects = ClassSectionSubject::where('class_section_id', $sectionSubject->class_section_id)
+                ->whereHas('subject', fn($q) => $q->where('parent_subject_id', $parentSubjectId))
+                ->get();
+
+            if ($parentSectionSubject && $childSectionSubjects->isNotEmpty()) {
+                $childSubjectIds = $childSectionSubjects->pluck('id');
+
+                foreach ($enrolments as $enr) {
+                    $childGrades = Grade::where('enrollment_id', $enr->id)
+                        ->whereIn('class_section_subject_id', $childSubjectIds)
+                        ->where('academic_period', $validated['academic_period'])
+                        ->pluck('final_grade')
+                        ->filter(fn($v) => !is_null($v) && $v > 0);
+
+                    if ($childGrades->isNotEmpty()) {
+                        $mapehComputedScore = round($childGrades->avg(), 2);
+                        $mapehRemarks = $mapehComputedScore >= 75 ? 'PASSED' : 'FAILED';
+
+                        Grade::updateOrCreate(
+                            [
+                                'enrollment_id' => $enr->id,
+                                'class_section_subject_id' => $parentSectionSubject->id,
+                                'academic_period' => $validated['academic_period'],
+                            ],
+                            [
+                                'final_grade' => $mapehComputedScore,
+                                'remarks' => $mapehRemarks,
+                            ]
+                        );
+                    } else {
+                        Grade::where('enrollment_id', $enr->id)
+                            ->where('class_section_subject_id', $parentSectionSubject->id)
+                            ->where('academic_period', $validated['academic_period'])
+                            ->delete();
+                    }
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Grades computed and published successfully!');
     }
 }

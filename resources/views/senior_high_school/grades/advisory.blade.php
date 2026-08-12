@@ -244,16 +244,24 @@
                     <table class="grade-matrix-table">
                         <thead>
                             <tr>
-                                <th style="text-align: left; position: sticky; left: 0; background: #f8fafc; z-index: 5;">
-                                    Student Name</th>
+                                <th rowspan="2" style="text-align: left; position: sticky; left: 0; background: #f8fafc; z-index: 6; border-bottom: 2px solid #cbd5e1;">
+                                    Student Name
+                                </th>
                                 @foreach ($sectionSubjects as $css)
-                                    <th style="text-align: center;">
-                                        {{ $css->subject ? $css->subject->subject_code ?? $css->subject->code : 'SUBJ' }}
+                                    <th colspan="3" style="text-align: center; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; background: #f1f5f9;">
+                                        {{ $css->subject ? ($css->subject->subject_code ?? ($css->subject->code ?? $css->subject->subject_name)) : 'SUBJ' }}
                                     </th>
                                 @endforeach
-                                <th style="text-align: center; background: #e0e7ff; color: #3730a3;">General Average</th>
-                                <th style="text-align: center; background: #e0e7ff; color: #3730a3;">Remarks</th>
-                                <th style="text-align: center;">Action</th>
+                                <th rowspan="2" style="text-align: center; background: #e0e7ff; color: #3730a3; border-bottom: 2px solid #cbd5e1;">General Average</th>
+                                <th rowspan="2" style="text-align: center; background: #e0e7ff; color: #3730a3; border-bottom: 2px solid #cbd5e1;">Remarks</th>
+                                <th rowspan="2" style="text-align: center; border-bottom: 2px solid #cbd5e1;">Action</th>
+                            </tr>
+                            <tr>
+                                @foreach ($sectionSubjects as $css)
+                                    <th style="width: 45px; text-align: center; font-size: 0.75rem; background: #f8fafc; color: #475569; border-bottom: 2px solid #cbd5e1;">P</th>
+                                    <th style="width: 45px; text-align: center; font-size: 0.75rem; background: #f8fafc; color: #475569; border-bottom: 2px solid #cbd5e1;">M</th>
+                                    <th style="width: 45px; text-align: center; font-size: 0.75rem; background: #f8fafc; color: #475569; border-bottom: 2px solid #cbd5e1; border-right: 1px solid #cbd5e1;">F</th>
+                                @endforeach
                             </tr>
                         </thead>
                         <tbody>
@@ -271,12 +279,27 @@
                                     </td>
                                     @foreach ($sectionSubjects as $css)
                                         @php
-                                            $gVal = $gradesMatrix[$student->id][$css->id] ?? null;
+                                            $pGrad = $quarterGradesMatrix[$student->id][$css->id]['Prelim'] ?? null;
+                                            $mGrad = $quarterGradesMatrix[$student->id][$css->id]['Midterm'] ?? null;
+                                            $fGrad = $quarterGradesMatrix[$student->id][$css->id]['Finals'] ?? null;
                                         @endphp
-                                        <td style="text-align: center; font-weight: 700;">
-                                            @if ($gVal)
-                                                <span
-                                                    style="{{ $gVal < 75 ? 'color: #dc2626;' : 'color: #0f172a;' }}">{{ number_format($gVal, 2) }}</span>
+                                        <td style="text-align: center; font-weight: 600; font-size: 0.825rem;">
+                                            @if ($pGrad !== null)
+                                                <span style="{{ $pGrad < 75 ? 'color: #dc2626; font-weight: 800;' : 'color: #0f172a;' }}">{{ number_format($pGrad, 0) }}</span>
+                                            @else
+                                                <span style="color: #cbd5e1;">-</span>
+                                            @endif
+                                        </td>
+                                        <td style="text-align: center; font-weight: 600; font-size: 0.825rem;">
+                                            @if ($mGrad !== null)
+                                                <span style="{{ $mGrad < 75 ? 'color: #dc2626; font-weight: 800;' : 'color: #0f172a;' }}">{{ number_format($mGrad, 0) }}</span>
+                                            @else
+                                                <span style="color: #cbd5e1;">-</span>
+                                            @endif
+                                        </td>
+                                        <td style="text-align: center; font-weight: 600; font-size: 0.825rem; border-right: 1px solid #cbd5e1;">
+                                            @if ($fGrad !== null)
+                                                <span style="{{ $fGrad < 75 ? 'color: #dc2626; font-weight: 800;' : 'color: #0f172a;' }}">{{ number_format($fGrad, 0) }}</span>
                                             @else
                                                 <span style="color: #cbd5e1;">-</span>
                                             @endif

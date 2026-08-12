@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Card (SF9 / Form 138) - {{ $student->first_name }} {{ $student->last_name }}</title>
+    <title>JHS Report Card (SF9 / Form 138) - {{ $student->first_name }} {{ $student->last_name }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @page {
@@ -21,8 +22,8 @@
             font-family: 'Arial', sans-serif;
             background: #f8fafc;
             color: #000;
-            font-size: 10.5px;
-            line-height: 1.25;
+            font-size: 10px;
+            line-height: 1.2;
         }
 
         .no-print-bar {
@@ -33,7 +34,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .btn-print {
@@ -60,7 +61,7 @@
         }
 
         .student-info-header {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-bottom: 2px solid #000;
             padding-bottom: 6px;
         }
@@ -69,7 +70,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 4px 12px;
-            font-size: 10.5px;
+            font-size: 10px;
         }
 
         .info-grid div span {
@@ -91,8 +92,8 @@
         .table-title {
             text-align: center;
             font-weight: bold;
-            font-size: 10.5px;
-            margin-bottom: 6px;
+            font-size: 10px;
+            margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
@@ -100,11 +101,11 @@
         table.deped-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9.5px;
+            font-size: 9px;
             table-layout: fixed;
         }
 
-        table.deped-table th, 
+        table.deped-table th,
         table.deped-table td {
             border: 1px solid #000000;
             padding: 3px 4px;
@@ -121,54 +122,77 @@
             text-align: center;
         }
 
-        .text-left {
-            text-align: left;
-        }
-
         .text-bold {
             font-weight: bold;
         }
 
         .indent-sub {
-            padding-left: 14px !important;
+            padding-left: 12px !important;
+        }
+
+        .remarks-passed {
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .remarks-failed {
+            color: #991b1b;
+            font-weight: bold;
         }
 
         /* Bottom Grading Scale & Marking Tables */
-        .legends-wrapper {
-            display: flex;
-            gap: 12px;
-            margin-top: 10px;
-            font-size: 9px;
-        }
-
-        .legend-box {
-            flex: 1;
-        }
-
         .legend-title-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             font-weight: bold;
             margin-bottom: 2px;
+            font-size: 9px;
         }
 
         .legend-row-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             margin-bottom: 1px;
+            font-size: 8.5px;
         }
 
         .marking-title-grid {
             display: grid;
-            grid-template-columns: 75px 1fr;
+            grid-template-columns: 65px 1fr;
             font-weight: bold;
             margin-bottom: 2px;
+            font-size: 9px;
         }
 
         .marking-row-grid {
             display: grid;
-            grid-template-columns: 75px 1fr;
+            grid-template-columns: 65px 1fr;
             margin-bottom: 1px;
+            font-size: 8.5px;
+        }
+
+        .signatures-wrapper {
+            margin-top: 18px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+
+        .signature-box {
+            text-align: center;
+            width: 42%;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .signature-label {
+            font-size: 8.5px;
+            color: #475569;
         }
 
         @media print {
@@ -179,9 +203,11 @@
                 padding: 0 !important;
                 background: #ffffff !important;
             }
+
             .no-print-bar {
                 display: none !important;
             }
+
             .card-container {
                 border: none !important;
                 padding: 0 !important;
@@ -192,30 +218,38 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Top Action Bar (Hidden when printing) -->
     <div class="no-print-bar">
-        <div style="font-weight: 700; font-size: 1rem;">
-            <i class="fa-solid fa-id-card"></i> DepEd Form 138 (Report Card) Preview
-        </div>
         <div>
-            <button type="button" class="btn-print" onclick="window.print()">
-                <i class="fa-solid fa-print"></i> Print Report Card
-            </button>
+            <span style="font-weight: 800; font-size: 1.1rem;">JUNIOR HIGH SCHOOL REPORT CARD (SF9)</span>
+            <span style="font-size: 0.85rem; margin-left: 0.75rem; color: #c7d2fe;">
+                {{ $student->first_name }} {{ $student->middle_name ? $student->middle_name . ' ' : '' }}{{ $student->last_name }}
+            </span>
         </div>
+        <button type="button" class="btn-print" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> Print Report Card
+        </button>
     </div>
 
     <div class="card-container">
-        <!-- Student Header Info -->
+        <!-- Student Information Header -->
         <div class="student-info-header">
+            <div style="text-align: center; margin-bottom: 6px;">
+                <h2 style="font-size: 14px; font-weight: 800; text-transform: uppercase;">Guihulngan National High School</h2>
+                <p style="font-size: 10px; font-weight: bold; color: #1e1b4b;">JUNIOR HIGH SCHOOL REPORT CARD (SF9 / FORM 138)</p>
+            </div>
             <div class="info-grid">
-                <div>Name: <span>{{ strtoupper($student->last_name . ', ' . $student->first_name . ' ' . ($student->middle_name ? substr($student->middle_name, 0, 1) . '.' : '')) }}</span></div>
-                <div>LRN: <span>{{ $student->lrn ?? ($student->student_number ?? 'N/A') }}</span></div>
-                <div>Grade & Section: <span>{{ $currentSection ? $currentSection->section_name : 'N/A' }} ({{ $currentSection && $currentSection->gradeLevel ? $currentSection->gradeLevel->name : '' }})</span></div>
-                <div>Class Adviser: <span>{{ $currentSection && $currentSection->adviser ? $currentSection->adviser->first_name . ' ' . $currentSection->adviser->last_name : 'N/A' }}</span></div>
-                <div>School Year: <span>{{ $activeSchoolYear ? ($activeSchoolYear->school_year ?? $activeSchoolYear->name) : 'N/A' }}</span></div>
-                <div>Gender: <span>{{ ucfirst($student->gender ?? 'N/A') }}</span></div>
+                <div><span>Name:</span> {{ $student->last_name }}, {{ $student->first_name }} {{ $student->middle_name ?? '' }} {{ $student->extension_name ?? '' }}</div>
+                <div><span>LRN:</span> {{ $student->lrn ?? ($student->student_number ?? 'N/A') }}</div>
+                <div><span>Student ID:</span> {{ $student->student_number }}</div>
+                <div><span>Grade Level:</span> {{ $currentSection && $currentSection->gradeLevel ? $currentSection->gradeLevel->name : 'N/A' }}</div>
+                <div><span>Section:</span> {{ $currentSection ? $currentSection->section_name : 'N/A' }}</div>
+                <div><span>School Year:</span> {{ $activeSchoolYear ? ($activeSchoolYear->school_year ?? $activeSchoolYear->name) : 'N/A' }}</div>
+                <div><span>Class Adviser:</span> {{ $currentSection && $currentSection->adviser ? $currentSection->adviser->first_name . ' ' . $currentSection->adviser->last_name : 'N/A' }}</div>
+                <div><span>Gender:</span> {{ ucfirst($student->gender ?? 'N/A') }}</div>
             </div>
         </div>
 
@@ -240,7 +274,6 @@
                     </thead>
                     <tbody>
                         @php
-                            // Standard DepEd JHS subjects structure
                             $standardSubjects = [
                                 'Filipino',
                                 'English',
@@ -255,13 +288,6 @@
                                 'Physical Education (PE)',
                                 'Health'
                             ];
-
-                            // Map assigned section subjects by code/name
-                            $mappedSubjects = [];
-                            foreach($sectionSubjects as $subItem) {
-                                $sName = $subItem->subject ? ($subItem->subject->subject_name ?? $subItem->subject->subject_code) : '';
-                                $mappedSubjects[$subItem->id] = $sName;
-                            }
                         @endphp
 
                         @if ($sectionSubjects->isNotEmpty())
@@ -273,16 +299,23 @@
                                 @endphp
                                 <tr>
                                     <td class="{{ $isSubMAPEH ? 'indent-sub' : '' }}">{{ $sName }}</td>
-                                    <td class="text-center">{{ $subData['q1'] !== null ? number_format($subData['q1'], 0) : '' }}</td>
-                                    <td class="text-center">{{ $subData['q2'] !== null ? number_format($subData['q2'], 0) : '' }}</td>
-                                    <td class="text-center">{{ $subData['q3'] !== null ? number_format($subData['q3'], 0) : '' }}</td>
-                                    <td class="text-center">{{ $subData['q4'] !== null ? number_format($subData['q4'], 0) : '' }}</td>
-                                    <td class="text-center text-bold">{{ $subData['final_grade'] !== null ? number_format($subData['final_grade'], 0) : '' }}</td>
-                                    <td class="text-center" style="font-size: 9px;">{{ $subData['remarks'] }}</td>
+                                    <td class="text-center">{{ $subData['q1'] !== null ? round($subData['q1']) : '' }}</td>
+                                    <td class="text-center">{{ $subData['q2'] !== null ? round($subData['q2']) : '' }}</td>
+                                    <td class="text-center">{{ $subData['q3'] !== null ? round($subData['q3']) : '' }}</td>
+                                    <td class="text-center">{{ $subData['q4'] !== null ? round($subData['q4']) : '' }}</td>
+                                    <td class="text-center text-bold">{{ $subData['final_grade'] !== null ? round($subData['final_grade']) : '' }}</td>
+                                    <td class="text-center" style="font-size: 9px;">
+                                        @if ($subData['remarks'] === 'Passed' || $subData['remarks'] === 'PASSED')
+                                            <span class="remarks-passed">PASSED</span>
+                                        @elseif ($subData['remarks'] === 'Failed' || $subData['remarks'] === 'FAILED')
+                                            <span class="remarks-failed">FAILED</span>
+                                        @else
+                                            {{ $subData['remarks'] }}
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         @else
-                            <!-- Fallback standard template rows if no custom subjects set -->
                             @foreach ($standardSubjects as $subName)
                                 @php
                                     $isSubMAPEH = in_array($subName, ['Music', 'Arts', 'Physical Education (PE)', 'Health']);
@@ -300,20 +333,26 @@
                         @endif
 
                         <!-- General Average Row -->
-                        <tr>
-                            <td colspan="5" class="text-bold text-center" style="padding: 6px;">General Average</td>
-                            <td class="text-center text-bold" style="font-size: 11px;">
-                                {{ $gwa !== null ? number_format($gwa, 0) : '' }}
+                        <tr style="font-weight: bold; background-color: #f8fafc;">
+                            <td colspan="5" class="text-bold text-center" style="padding: 5px;">General Average</td>
+                            <td class="text-center text-bold" style="font-size: 11px; color: #1e1b4b;">
+                                {{ $gwa !== null ? round($gwa) : '' }}
                             </td>
                             <td class="text-center text-bold" style="font-size: 9px;">
-                                {{ $remarks != 'Pending' ? $remarks : '' }}
+                                @if ($remarks && $remarks !== 'Pending')
+                                    <span class="{{ ($gwa && round($gwa) >= 75) ? 'remarks-passed' : 'remarks-failed' }}">
+                                        {{ strtoupper($remarks) }}
+                                    </span>
+                                @else
+                                    -
+                                @endif
                             </td>
                         </tr>
                     </tbody>
                 </table>
 
                 <!-- Bottom Legend: Descriptors & Grading Scale -->
-                <div style="margin-top: 15px; font-size: 9.5px;">
+                <div style="margin-top: 12px; font-size: 9px;">
                     <div class="legend-title-grid">
                         <div>Descriptors</div>
                         <div class="text-center">Grading Scale</div>
@@ -343,6 +382,23 @@
                         <div>Did Not Meet Expectations</div>
                         <div class="text-center">Below 75</div>
                         <div class="text-center">Failed</div>
+                    </div>
+                </div>
+
+                <!-- Left Side Adviser & Principal Signatures -->
+                <div class="signatures-wrapper">
+                    <div class="signature-box">
+                        <div class="signature-line">
+                            {{ $currentSection && $currentSection->adviser ? $currentSection->adviser->first_name . ' ' . $currentSection->adviser->last_name : 'Class Adviser' }}
+                        </div>
+                        <span class="signature-label">Class Adviser Signature</span>
+                    </div>
+
+                    <div class="signature-box">
+                        <div class="signature-line">
+                            School Principal
+                        </div>
+                        <span class="signature-label">Principal Signature</span>
                     </div>
                 </div>
             </div>
@@ -429,7 +485,7 @@
                 </table>
 
                 <!-- Bottom Legend: Markings & Non-numerical Rating -->
-                <div style="margin-top: 15px; font-size: 9.5px;">
+                <div style="margin-top: 12px; font-size: 9px;">
                     <div class="marking-title-grid">
                         <div>Marking</div>
                         <div>Non-numerical Rating</div>
