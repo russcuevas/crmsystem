@@ -480,7 +480,7 @@
                         <select name="class_section_id" id="add_class_section_id" class="form-control-custom" required
                             onchange="handleAssignedSectionCascade('add')">
                             <option value="">-- Select Class Section --</option>
-                            @foreach ($sectionsList as $sec)
+                            @foreach ($sectionsList ?? $classSections ?? [] as $sec)
                                 <option value="{{ $sec->id }}"
                                     data-ed-level-id="{{ $sec->gradeLevel->education_level_id ?? '' }}">
                                     {{ $sec->section_name }} ({{ $sec->gradeLevel->name ?? 'N/A' }} -
@@ -494,7 +494,7 @@
                         <label>Subject Catalog <span style="color: #ef4444;">*</span></label>
                         <select name="subject_id" id="add_subject_id" class="form-control-custom" required>
                             <option value="">-- Select Subject --</option>
-                            @foreach ($subjectsList as $subj)
+                            @foreach ($subjectsList ?? $subjects ?? [] as $subj)
                                 <option value="{{ $subj->id }}" data-ed-level-id="{{ $subj->education_level_id }}"
                                     data-sem="{{ $subj->semester }}">
                                     {{ $subj->subject_code }} - {{ $subj->subject_name }}
@@ -508,7 +508,7 @@
                         <label>Assign Instructor / Teacher <span style="color: #ef4444;">*</span></label>
                         <select name="teacher_id" id="add_teacher_id" class="form-control-custom" required>
                             <option value="">-- Select Teacher --</option>
-                            @foreach ($teachersList as $t)
+                            @foreach ($teachersList ?? $teachers ?? [] as $t)
                                 <option value="{{ $t->id }}" data-ed-level-id="{{ $t->education_level_id }}">
                                     {{ $t->first_name }} {{ $t->last_name }} ({{ $t->position ?? 'Teacher' }})
                                 </option>
@@ -540,7 +540,7 @@
                         <select name="class_section_id" id="edit_class_section_id" class="form-control-custom" required
                             onchange="handleAssignedSectionCascade('edit')">
                             <option value="">-- Select Class Section --</option>
-                            @foreach ($sectionsList as $sec)
+                            @foreach ($sectionsList ?? $classSections ?? [] as $sec)
                                 <option value="{{ $sec->id }}"
                                     data-ed-level-id="{{ $sec->gradeLevel->education_level_id ?? '' }}">
                                     {{ $sec->section_name }} ({{ $sec->gradeLevel->name ?? 'N/A' }})
@@ -553,7 +553,7 @@
                         <label>Subject Catalog <span style="color: #ef4444;">*</span></label>
                         <select name="subject_id" id="edit_subject_id" class="form-control-custom" required>
                             <option value="">-- Select Subject --</option>
-                            @foreach ($subjectsList as $subj)
+                            @foreach ($subjectsList ?? $subjects ?? [] as $subj)
                                 <option value="{{ $subj->id }}" data-ed-level-id="{{ $subj->education_level_id }}"
                                     data-sem="{{ $subj->semester }}">
                                     {{ $subj->subject_code }} - {{ $subj->subject_name }}
@@ -566,7 +566,7 @@
                         <label>Assigned Instructor <span style="color: #ef4444;">*</span></label>
                         <select name="teacher_id" id="edit_teacher_id" class="form-control-custom" required>
                             <option value="">-- Select Teacher --</option>
-                            @foreach ($teachersList as $t)
+                            @foreach ($teachersList ?? $teachers ?? [] as $t)
                                 <option value="{{ $t->id }}" data-ed-level-id="{{ $t->education_level_id }}">
                                     {{ $t->first_name }} {{ $t->last_name }} ({{ $t->position ?? 'Teacher' }})
                                 </option>

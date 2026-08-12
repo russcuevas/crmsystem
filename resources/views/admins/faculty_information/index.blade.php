@@ -764,6 +764,7 @@
 
         async function loadProvinces(provSelectEl, defaultProv = null, citySelectEl = null, defaultCity = null,
             brgySelectEl = null, defaultBrgy = null) {
+            if (!provSelectEl) return;
             try {
                 provSelectEl.innerHTML = '<option value="">Loading Provinces...</option>';
                 const res = await fetch(`${PSGC_BASE_URL}/provinces.json`);
@@ -772,109 +773,125 @@
 
                 provSelectEl.innerHTML = '<option value="">-- Select Province --</option>';
                 let matchedProvCode = null;
+                let matched = false;
 
                 provinces.forEach(p => {
                     const opt = document.createElement('option');
                     opt.value = p.name;
+                    opt.textContent = p.name;
                     opt.setAttribute('data-code', p.code);
-                    if (defaultProv && defaultProv.toLowerCase() === p.name.toLowerCase()) {
+                    if (defaultProv && (defaultProv.toLowerCase() === p.name.toLowerCase() || defaultProv === p.code)) {
                         opt.selected = true;
                         matchedProvCode = p.code;
+                        matched = true;
                     }
                     provSelectEl.appendChild(opt);
                 });
+
+                if (defaultProv && !matched) {
+                    const customOpt = document.createElement('option');
+                    customOpt.value = defaultProv;
+                    customOpt.textContent = defaultProv;
+                    customOpt.selected = true;
+                    provSelectEl.appendChild(customOpt);
+                }
 
                 if (matchedProvCode && citySelectEl) {
                     loadCities(citySelectEl, matchedProvCode, defaultCity, brgySelectEl, defaultBrgy);
                 }
             } catch (err) {
                 console.error('Error fetching provinces:', err);
-                provSelectEl.innerHTML = '<option value="">Error loading provinces</option>';
+                provSelectEl.innerHTML = '<option value="">-- Select Province --</option>';
             }
         }
 
         async function loadCities(citySelectEl, provCode, defaultCity = null, brgySelectEl = null, defaultBrgy = null) {
+            if (!citySelectEl) return;
             if (!provCode) {
-                citySelectEl.innerHTML = '<option value="">-- Select City --</option>';
-                citySelectEl.disabled = true;
+                citySelectEl.innerHTML = '<option value="">-- Select City / Municipality --</option>';
                 if (brgySelectEl) {
                     brgySelectEl.innerHTML = '<option value="">-- Select Barangay --</option>';
-                    brgySelectEl.disabled = true;
                 }
                 return;
             }
 
             try {
-                citySelectEl.disabled = false;
                 citySelectEl.innerHTML = '<option value="">Loading Cities...</option>';
-
-                const [munRes, cityRes] = await Promise.all([
-                    fetch(`${PSGC_BASE_URL}/provinces/${provCode}/municipalities.json`),
-                    fetch(`${PSGC_BASE_URL}/provinces/${provCode}/cities.json`)
-                ]);
-
-                const muns = await munRes.json();
-                const cities = await cityRes.json();
-                const combined = [...muns, ...cities];
-                combined.sort((a, b) => a.name.localeCompare(b.name));
+                const res = await fetch(`${PSGC_BASE_URL}/provinces/${provCode}/cities-municipalities.json`);
+                const cities = await res.json();
+                cities.sort((a, b) => a.name.localeCompare(b.name));
 
                 citySelectEl.innerHTML = '<option value="">-- Select City / Municipality --</option>';
                 let matchedCityCode = null;
+                let matched = false;
 
-                combined.forEach(c => {
+                cities.forEach(c => {
                     const opt = document.createElement('option');
                     opt.value = c.name;
+                    opt.textContent = c.name;
                     opt.setAttribute('data-code', c.code);
-                    opt.setAttribute('data-type', c.municipalityCode ? 'municipality' : 'city');
-                    if (defaultCity && defaultCity.toLowerCase() === c.name.toLowerCase()) {
+                    if (defaultCity && (defaultCity.toLowerCase() === c.name.toLowerCase() || defaultCity === c.code)) {
                         opt.selected = true;
                         matchedCityCode = c.code;
+                        matched = true;
                     }
                     citySelectEl.appendChild(opt);
                 });
 
+                if (defaultCity && !matched) {
+                    const customOpt = document.createElement('option');
+                    customOpt.value = defaultCity;
+                    customOpt.textContent = defaultCity;
+                    customOpt.selected = true;
+                    citySelectEl.appendChild(customOpt);
+                }
+
                 if (matchedCityCode && brgySelectEl) {
-                    const selectedOpt = citySelectEl.options[citySelectEl.selectedIndex];
-                    const type = selectedOpt ? selectedOpt.getAttribute('data-type') : 'municipality';
-                    loadBarangays(brgySelectEl, matchedCityCode, type, defaultBrgy);
+                    loadBarangays(brgySelectEl, matchedCityCode, defaultBrgy);
                 }
             } catch (err) {
                 console.error('Error fetching cities:', err);
-                citySelectEl.innerHTML = '<option value="">Error loading cities</option>';
+                citySelectEl.innerHTML = '<option value="">-- Select City / Municipality --</option>';
             }
         }
 
-        async function loadBarangays(brgySelectEl, cityCode, type = 'municipality', defaultBrgy = null) {
+        async function loadBarangays(brgySelectEl, cityCode, defaultBrgy = null) {
+            if (!brgySelectEl) return;
             if (!cityCode) {
                 brgySelectEl.innerHTML = '<option value="">-- Select Barangay --</option>';
-                brgySelectEl.disabled = true;
                 return;
             }
 
             try {
-                brgySelectEl.disabled = false;
                 brgySelectEl.innerHTML = '<option value="">Loading Barangays...</option>';
-
-                const endpoint = (type === 'city') ?
-                    `${PSGC_BASE_URL}/cities/${cityCode}/barangays.json` :
-                    `${PSGC_BASE_URL}/municipalities/${cityCode}/barangays.json`;
-
-                const res = await fetch(endpoint);
+                const res = await fetch(`${PSGC_BASE_URL}/cities-municipalities/${cityCode}/barangays.json`);
                 const barangays = await res.json();
                 barangays.sort((a, b) => a.name.localeCompare(b.name));
 
                 brgySelectEl.innerHTML = '<option value="">-- Select Barangay --</option>';
+                let matched = false;
+
                 barangays.forEach(b => {
                     const opt = document.createElement('option');
                     opt.value = b.name;
-                    if (defaultBrgy && defaultBrgy.toLowerCase() === b.name.toLowerCase()) {
+                    opt.textContent = b.name;
+                    if (defaultBrgy && (defaultBrgy.toLowerCase() === b.name.toLowerCase() || defaultBrgy === b.code)) {
                         opt.selected = true;
+                        matched = true;
                     }
                     brgySelectEl.appendChild(opt);
                 });
+
+                if (defaultBrgy && !matched) {
+                    const customOpt = document.createElement('option');
+                    customOpt.value = defaultBrgy;
+                    customOpt.textContent = defaultBrgy;
+                    customOpt.selected = true;
+                    brgySelectEl.appendChild(customOpt);
+                }
             } catch (err) {
                 console.error('Error fetching barangays:', err);
-                brgySelectEl.innerHTML = '<option value="">Error loading barangays</option>';
+                brgySelectEl.innerHTML = '<option value="">-- Select Barangay --</option>';
             }
         }
 
@@ -888,8 +905,7 @@
             cityEl.addEventListener('change', function() {
                 const selectedOpt = cityEl.options[cityEl.selectedIndex];
                 const cityCode = selectedOpt ? selectedOpt.getAttribute('data-code') : null;
-                const type = selectedOpt ? selectedOpt.getAttribute('data-type') : 'municipality';
-                loadBarangays(brgyEl, cityCode, type, null);
+                loadBarangays(brgyEl, cityCode, null);
             });
         }
 

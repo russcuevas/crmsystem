@@ -343,6 +343,12 @@
         </div>
     </div>
 
+    @php
+        $targetSecSubId = '';
+        $targetSecSubName = '';
+        $targetSecSubCode = '';
+    @endphp
+
     @if ($currentSectionSubject)
         @php
             $currLvlCode = $currentSectionSubject->classSection->gradeLevel->educationLevel->code ?? '';

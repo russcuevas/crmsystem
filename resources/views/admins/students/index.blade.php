@@ -637,7 +637,7 @@
                                 <div class="form-group">
                                     <label>Student Number</label>
                                     <input type="text" name="student_number" class="form-control-custom"
-                                        value="{{ $nextStudentNumber }}" placeholder="Auto-generated if empty">
+                                        value="{{ $nextStudentId ?? $nextStudentNumber ?? '' }}" placeholder="Auto-generated if empty">
                                 </div>
                                 <div class="form-group">
                                     <label>LRN (Learner Reference No.)</label>

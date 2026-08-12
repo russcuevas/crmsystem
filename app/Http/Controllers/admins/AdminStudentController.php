@@ -40,31 +40,13 @@ class AdminStudentController extends Controller
 
         $students = $studentsQuery->latest()->get();
         $nextStudentId = 'STU-' . date('Y') . '-' . str_pad(Student::max('id') + 1, 4, '0', STR_PAD_LEFT);
+        $nextStudentNumber = $nextStudentId;
 
         $totalAccounts = User::whereNotIn('role', ['superadmin', 'admin'])->count();
-
-        if ($activeSchoolYear) {
-            $totalFaculty = Teacher::whereHas('advisedClassSections', function ($q) use ($activeSchoolYear) {
-                $q->where('school_year_id', $activeSchoolYear->id);
-            })->orWhereHas('classSectionSubjects.classSection', function ($q) use ($activeSchoolYear) {
-                $q->where('school_year_id', $activeSchoolYear->id);
-            })->distinct()->count();
-
-            $totalStudents = Student::whereHas('enrollments', function ($q) use ($activeSchoolYear) {
-                $q->where('school_year_id', $activeSchoolYear->id);
-            })->distinct()->count();
-
-            $totalSections = ClassSection::where('school_year_id', $activeSchoolYear->id)->count();
-
-            $totalSubjects = Subject::whereHas('classSectionSubjects.classSection', function ($q) use ($activeSchoolYear) {
-                $q->where('school_year_id', $activeSchoolYear->id);
-            })->distinct()->count();
-        } else {
-            $totalFaculty = Teacher::count();
-            $totalStudents = Student::count();
-            $totalSubjects = Subject::count();
-            $totalSections = ClassSection::count();
-        }
+        $totalFaculty = Teacher::count();
+        $totalStudents = Student::count();
+        $totalSubjects = Subject::count();
+        $totalSections = ClassSection::count();
 
         return view('admins.students.index', compact(
             'students',
@@ -78,7 +60,8 @@ class AdminStudentController extends Controller
             'educationLevelsList',
             'allGradeLevels',
             'allCourses',
-            'nextStudentId'
+            'nextStudentId',
+            'nextStudentNumber'
         ));
     }
 

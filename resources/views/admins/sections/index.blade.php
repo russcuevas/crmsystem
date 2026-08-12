@@ -543,7 +543,7 @@
                         <label>Class Adviser (Optional)</label>
                         <select name="class_adviser_id" id="add_section_adviser" class="form-control-custom">
                             <option value="">-- Select Class Adviser --</option>
-                            @foreach ($teachersList as $teacher)
+                            @foreach ($teachersList ?? $teachers ?? [] as $teacher)
                                 <option value="{{ $teacher->id }}"
                                     data-ed-level-id="{{ $teacher->education_level_id }}">
                                     {{ $teacher->first_name }} {{ $teacher->last_name }} ({{ $teacher->teacher_id }})
@@ -631,7 +631,7 @@
                         <label>Class Adviser</label>
                         <select name="class_adviser_id" id="edit_section_adviser" class="form-control-custom">
                             <option value="">-- Unassigned --</option>
-                            @foreach ($teachersList as $teacher)
+                            @foreach ($teachersList ?? $teachers ?? [] as $teacher)
                                 <option value="{{ $teacher->id }}"
                                     data-ed-level-id="{{ $teacher->education_level_id }}">
                                     {{ $teacher->first_name }} {{ $teacher->last_name }} ({{ $teacher->teacher_id }})

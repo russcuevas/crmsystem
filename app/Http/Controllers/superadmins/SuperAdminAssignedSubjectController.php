@@ -94,6 +94,9 @@ class SuperAdminAssignedSubjectController extends Controller
 
         // Get All Teachers
         $teachers = Teacher::with(['user', 'educationLevel'])->get();
+        $sectionsList = $classSections;
+        $subjectsList = $subjects;
+        $teachersList = $teachers;
 
         // Counts for layout compatibility
         $totalAccounts = User::count();
@@ -105,8 +108,11 @@ class SuperAdminAssignedSubjectController extends Controller
         return view('superadmins.assigned_subjects.index', compact(
             'assignedSubjects',
             'classSections',
+            'sectionsList',
             'subjects',
+            'subjectsList',
             'teachers',
+            'teachersList',
             'activeSchoolYear',
             'selectedLevel',
             'educationLevelsList',

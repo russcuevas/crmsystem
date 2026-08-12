@@ -90,6 +90,9 @@ class AdminAssignedSubjectController extends Controller
         $subjects = $subjectsQuery->get();
 
         $teachers = Teacher::with(['user', 'educationLevel'])->get();
+        $sectionsList = $classSections;
+        $subjectsList = $subjects;
+        $teachersList = $teachers;
 
         $totalAccounts = User::whereNotIn('role', ['superadmin', 'admin'])->count();
         $totalFaculty = Teacher::count();
@@ -100,8 +103,11 @@ class AdminAssignedSubjectController extends Controller
         return view('admins.assigned_subjects.index', compact(
             'assignedSubjects',
             'classSections',
+            'sectionsList',
             'subjects',
+            'subjectsList',
             'teachers',
+            'teachersList',
             'activeSchoolYear',
             'selectedLevel',
             'educationLevelsList',

@@ -27,9 +27,11 @@ class SuperAdminManageSectionController extends Controller
         $selectedLevel = request('level');
         $educationLevelsList = EducationLevel::all();
         $allSchoolYears = SchoolYear::all();
+        $schoolYears = $allSchoolYears;
         $allGradeLevels = GradeLevel::with('educationLevel')->get();
         $allCourses = Course::all();
         $teachers = Teacher::with(['user', 'educationLevel'])->get();
+        $teachersList = $teachers;
 
         $sectionsQuery = ClassSection::with(['schoolYear', 'gradeLevel.educationLevel', 'course', 'adviser.user']);
         if ($activeSchoolYear) {
@@ -54,9 +56,11 @@ class SuperAdminManageSectionController extends Controller
             'sections',
             'activeSchoolYear',
             'allSchoolYears',
+            'schoolYears',
             'allGradeLevels',
             'allCourses',
             'teachers',
+            'teachersList',
             'totalAccounts',
             'totalFaculty',
             'totalStudents',
