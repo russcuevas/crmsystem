@@ -1,6 +1,6 @@
 @extends('layouts.senior_high_school')
 
-@section('title', 'GNHS - Advisory Class Grades Summary (SHS)')
+@section('title', 'GNHS-P - Advisory Class Grades Summary (SHS)')
 @section('header_title', 'Advisory Class Grades Summary')
 
 @push('styles')
@@ -28,14 +28,14 @@
         }
 
         .top-nav-tab:hover {
-            color: #7f1d1d;
+            color: #1e1b4b;
             background: #f1f5f9;
         }
 
         .top-nav-tab.active {
             color: #ffffff;
-            background: #7f1d1d;
-            box-shadow: 0 4px 12px rgba(127, 29, 29, 0.25);
+            background: #1e1b4b;
+            box-shadow: 0 4px 12px rgba(30, 27, 75, 0.25);
         }
 
         .period-tab {
@@ -56,10 +56,10 @@
         }
 
         .period-tab.active {
-            background: #7f1d1d;
+            background: #1e1b4b;
             color: #ffffff;
-            border-color: #7f1d1d;
-            box-shadow: 0 2px 8px rgba(127, 29, 29, 0.3);
+            border-color: #1e1b4b;
+            box-shadow: 0 2px 8px rgba(30, 27, 75, 0.3);
         }
 
         .stat-card {
@@ -124,26 +124,32 @@
         <a href="{{ route('senior_high_school.grades.advisory.page') }}" class="top-nav-tab active">
             <i class="fa-solid fa-user-shield"></i>
             <span>Advisory Class Grades (Class Adviser)</span>
-            <span style="background: #f59e0b; color: #450a0a; padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 800;">Adviser</span>
+            <span
+                style="background: #f59e0b; color: #450a0a; padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 800;">Adviser</span>
         </a>
     </div>
 
     @if ($isAdviser)
         <!-- Controls Bar -->
-        <div style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem;">
+        <div
+            style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem;">
             <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
-                
-                <form action="{{ route('senior_high_school.grades.advisory.page') }}" method="GET" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin: 0; width: 100%; max-width: 680px;">
+
+                <form action="{{ route('senior_high_school.grades.advisory.page') }}" method="GET"
+                    style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin: 0; width: 100%; max-width: 680px;">
                     <input type="hidden" name="academic_period" value="{{ $selectedPeriod }}">
-                    
+
                     <!-- Semester Filter -->
                     <div style="display: flex; align-items: center; gap: 0.4rem;">
                         <label style="font-weight: 700; font-size: 0.875rem; color: #0f172a; white-space: nowrap;">
                             <i class="fa-solid fa-calendar-days" style="color: #7f1d1d;"></i> Semester:
                         </label>
-                        <select name="semester" onchange="this.form.submit()" style="padding: 0.6rem 0.85rem; border: 1.5px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 700; color: #7f1d1d; background: #fff1f2; outline: none; cursor: pointer;">
-                            <option value="1st Semester" {{ $selectedSemester == '1st Semester' ? 'selected' : '' }}>1st Semester</option>
-                            <option value="2nd Semester" {{ $selectedSemester == '2nd Semester' ? 'selected' : '' }}>2nd Semester</option>
+                        <select name="semester" onchange="this.form.submit()"
+                            style="padding: 0.6rem 0.85rem; border: 1.5px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 700; color: #7f1d1d; background: #fff1f2; outline: none; cursor: pointer;">
+                            <option value="1st Semester" {{ $selectedSemester == '1st Semester' ? 'selected' : '' }}>1st
+                                Semester</option>
+                            <option value="2nd Semester" {{ $selectedSemester == '2nd Semester' ? 'selected' : '' }}>2nd
+                                Semester</option>
                         </select>
                     </div>
 
@@ -152,10 +158,13 @@
                         <label style="font-weight: 700; font-size: 0.875rem; color: #0f172a; white-space: nowrap;">
                             <i class="fa-solid fa-users-rectangle" style="color: #7f1d1d;"></i> Section:
                         </label>
-                        <select name="class_section_id" onchange="this.form.submit()" style="width: 100%; padding: 0.6rem 0.85rem; border: 1.5px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; outline: none; background: #ffffff;">
+                        <select name="class_section_id" onchange="this.form.submit()"
+                            style="width: 100%; padding: 0.6rem 0.85rem; border: 1.5px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; outline: none; background: #ffffff;">
                             @foreach ($advisorySections as $sec)
-                                <option value="{{ $sec->id }}" {{ $currentSection && $currentSection->id == $sec->id ? 'selected' : '' }}>
-                                    {{ $sec->section_name }} ({{ $sec->gradeLevel ? $sec->gradeLevel->name : '' }} {{ $sec->course ? '- Strand: ' . $sec->course->course_code : '' }})
+                                <option value="{{ $sec->id }}"
+                                    {{ $currentSection && $currentSection->id == $sec->id ? 'selected' : '' }}>
+                                    {{ $sec->section_name }} ({{ $sec->gradeLevel ? $sec->gradeLevel->name : '' }}
+                                    {{ $sec->course ? '- Strand: ' . $sec->course->course_code : '' }})
                                 </option>
                             @endforeach
                         </select>
@@ -179,8 +188,11 @@
             <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
                 <div class="stat-card">
                     <div>
-                        <span style="font-size: 0.775rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Total Students</span>
-                        <h4 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-top: 0.15rem;">{{ $classStats['total_students'] }}</h4>
+                        <span
+                            style="font-size: 0.775rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Total
+                            Students</span>
+                        <h4 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-top: 0.15rem;">
+                            {{ $classStats['total_students'] }}</h4>
                     </div>
                     <div class="stat-icon" style="background: #fee2e2; color: #991b1b;">
                         <i class="fa-solid fa-users"></i>
@@ -189,8 +201,11 @@
 
                 <div class="stat-card">
                     <div>
-                        <span style="font-size: 0.775rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Class Average</span>
-                        <h4 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-top: 0.15rem;">{{ $classStats['class_average'] ? $classStats['class_average'] . '%' : 'N/A' }}</h4>
+                        <span
+                            style="font-size: 0.775rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Class
+                            Average</span>
+                        <h4 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-top: 0.15rem;">
+                            {{ $classStats['class_average'] ? $classStats['class_average'] . '%' : 'N/A' }}</h4>
                     </div>
                     <div class="stat-icon" style="background: #fef3c7; color: #d97706;">
                         <i class="fa-solid fa-chart-line"></i>
@@ -199,8 +214,10 @@
 
                 <div class="stat-card">
                     <div>
-                        <span style="font-size: 0.775rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Passed</span>
-                        <h4 style="font-size: 1.5rem; font-weight: 800; color: #059669; margin-top: 0.15rem;">{{ $classStats['passed_count'] }}</h4>
+                        <span
+                            style="font-size: 0.775rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Passed</span>
+                        <h4 style="font-size: 1.5rem; font-weight: 800; color: #059669; margin-top: 0.15rem;">
+                            {{ $classStats['passed_count'] }}</h4>
                     </div>
                     <div class="stat-icon" style="background: #d1fae5; color: #059669;">
                         <i class="fa-solid fa-circle-check"></i>
@@ -209,8 +226,10 @@
 
                 <div class="stat-card">
                     <div>
-                        <span style="font-size: 0.775rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Failed</span>
-                        <h4 style="font-size: 1.5rem; font-weight: 800; color: #dc2626; margin-top: 0.15rem;">{{ $classStats['failed_count'] }}</h4>
+                        <span
+                            style="font-size: 0.775rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Failed</span>
+                        <h4 style="font-size: 1.5rem; font-weight: 800; color: #dc2626; margin-top: 0.15rem;">
+                            {{ $classStats['failed_count'] }}</h4>
                     </div>
                     <div class="stat-icon" style="background: #fee2e2; color: #dc2626;">
                         <i class="fa-solid fa-circle-xmark"></i>
@@ -219,15 +238,17 @@
             </div>
 
             <!-- Grades Matrix Card -->
-            <div style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: var(--shadow-sm);">
+            <div
+                style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: var(--shadow-sm);">
                 <div class="table-responsive">
                     <table class="grade-matrix-table">
                         <thead>
                             <tr>
-                                <th style="text-align: left; position: sticky; left: 0; background: #f8fafc; z-index: 5;">Student Name</th>
+                                <th style="text-align: left; position: sticky; left: 0; background: #f8fafc; z-index: 5;">
+                                    Student Name</th>
                                 @foreach ($sectionSubjects as $css)
                                     <th style="text-align: center;">
-                                        {{ $css->subject ? ($css->subject->subject_code ?? $css->subject->code) : 'SUBJ' }}
+                                        {{ $css->subject ? $css->subject->subject_code ?? $css->subject->code : 'SUBJ' }}
                                     </th>
                                 @endforeach
                                 <th style="text-align: center; background: #e0e7ff; color: #3730a3;">General Average</th>
@@ -238,11 +259,15 @@
                         <tbody>
                             @forelse ($enrolledStudents as $student)
                                 @php
-                                    $summary = $studentSummaries[$student->id] ?? ['general_average' => null, 'remarks' => 'PENDING'];
+                                    $summary = $studentSummaries[$student->id] ?? [
+                                        'general_average' => null,
+                                        'remarks' => 'PENDING',
+                                    ];
                                 @endphp
                                 <tr>
-                                    <td style="position: sticky; left: 0; background: #ffffff; z-index: 5; font-weight: 700; color: #0f172a;">
-                                        {{ $student->last_name }}, {{ $student->first_name }}
+                                    <td
+                                        style="position: sticky; left: 0; background: #ffffff; z-index: 5; font-weight: 700; color: #0f172a;">
+                                        {{ trim(($student->last_name ? $student->last_name . ', ' : '') . $student->first_name . ($student->middle_name ? ' ' . $student->middle_name : '') . ($student->extension_name ? ' ' . $student->extension_name : '')) }}
                                     </td>
                                     @foreach ($sectionSubjects as $css)
                                         @php
@@ -250,26 +275,31 @@
                                         @endphp
                                         <td style="text-align: center; font-weight: 700;">
                                             @if ($gVal)
-                                                <span style="{{ $gVal < 75 ? 'color: #dc2626;' : 'color: #0f172a;' }}">{{ number_format($gVal, 2) }}</span>
+                                                <span
+                                                    style="{{ $gVal < 75 ? 'color: #dc2626;' : 'color: #0f172a;' }}">{{ number_format($gVal, 2) }}</span>
                                             @else
                                                 <span style="color: #cbd5e1;">-</span>
                                             @endif
                                         </td>
                                     @endforeach
-                                    <td style="text-align: center; font-weight: 800; font-size: 0.9rem; color: #1e1b4b; background: #f8fafc;">
+                                    <td
+                                        style="text-align: center; font-weight: 800; font-size: 0.9rem; color: #1e1b4b; background: #f8fafc;">
                                         {{ $summary['general_average'] ? number_format($summary['general_average'], 2) : '-' }}
                                     </td>
                                     <td style="text-align: center; background: #f8fafc;">
                                         @if ($summary['remarks'] === 'PASSED')
-                                            <span style="background: #d1fae5; color: #065f46; padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 800; font-size: 0.75rem;">PASSED</span>
+                                            <span
+                                                style="background: #d1fae5; color: #065f46; padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 800; font-size: 0.75rem;">PASSED</span>
                                         @elseif ($summary['remarks'] === 'FAILED')
-                                            <span style="background: #fee2e2; color: #991b1b; padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 800; font-size: 0.75rem;">FAILED</span>
+                                            <span
+                                                style="background: #fee2e2; color: #991b1b; padding: 0.2rem 0.55rem; border-radius: 4px; font-weight: 800; font-size: 0.75rem;">FAILED</span>
                                         @else
                                             <span style="color: #94a3b8; font-size: 0.75rem;">PENDING</span>
                                         @endif
                                     </td>
                                     <td style="text-align: center;">
-                                        <a href="{{ route('senior_high_school.grades.print_card', $student->id) }}" target="_blank"
+                                        <a href="{{ route('senior_high_school.grades.print_card', $student->id) }}"
+                                            target="_blank"
                                             style="padding: 0.35rem 0.65rem; background: #fee2e2; color: #991b1b; border-radius: 0.375rem; font-size: 0.775rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;">
                                             <i class="fa-solid fa-print"></i> Report Card
                                         </a>
@@ -288,10 +318,12 @@
             </div>
         @endif
     @else
-        <div style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 3rem; text-align: center; color: #64748b;">
+        <div
+            style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 3rem; text-align: center; color: #64748b;">
             <i class="fa-solid fa-user-shield" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
             <h3>No Advisory Section Assigned</h3>
-            <p style="font-size: 0.875rem; margin-top: 0.25rem;">You are not currently assigned as class adviser for any section in Senior High School for this active school year.</p>
+            <p style="font-size: 0.875rem; margin-top: 0.25rem;">You are not currently assigned as class adviser for any
+                section in Senior High School for this active school year.</p>
         </div>
     @endif
 @endsection

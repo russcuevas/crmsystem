@@ -126,7 +126,7 @@ class SeniorHighSchoolGradeController extends Controller
             // Enrolled students in section
             $enrolledStudents = Student::whereHas('enrollments', function ($q) use ($classSectionId, $activeSchoolYear) {
                 $q->where('class_section_id', $classSectionId)
-                  ->where('status', 'enrolled');
+                  ->whereIn('status', ['enrolled', 'active']);
                 if ($activeSchoolYear) {
                     $q->where('school_year_id', $activeSchoolYear->id);
                 }
@@ -294,7 +294,7 @@ class SeniorHighSchoolGradeController extends Controller
 
             $enrolledStudents = Student::whereHas('enrollments', function ($q) use ($currentSection, $activeSchoolYear) {
                 $q->where('class_section_id', $currentSection->id)
-                  ->where('status', 'enrolled');
+                  ->whereIn('status', ['enrolled', 'active']);
                 if ($activeSchoolYear) {
                     $q->where('school_year_id', $activeSchoolYear->id);
                 }
@@ -398,8 +398,9 @@ class SeniorHighSchoolGradeController extends Controller
             ->get();
 
         $allSectionSubjectIds = ClassSectionSubject::where('class_section_id', $classSection->id)->pluck('id');
+        $studentEnrollmentIds = Enrollment::where('student_id', $student->id)->pluck('id');
 
-        $grades = Grade::where('student_id', $student->id)
+        $grades = Grade::whereIn('enrollment_id', $studentEnrollmentIds)
             ->whereIn('class_section_subject_id', $allSectionSubjectIds)
             ->get();
 
@@ -414,7 +415,7 @@ class SeniorHighSchoolGradeController extends Controller
             $subjectGrades = [];
             foreach ($periods as $p) {
                 $g = $grades->where('class_section_subject_id', $css->id)->where('academic_period', $p)->first();
-                $subjectGrades[$p] = $g ? floatval($g->final_quarter_grade) : null;
+                $subjectGrades[$p] = ($g && $g->final_grade !== null) ? floatval($g->final_grade) : null;
             }
 
             $prelim = $subjectGrades['Prelim'];
@@ -592,7 +593,7 @@ class SeniorHighSchoolGradeController extends Controller
 
         $enrolledStudents = Student::whereHas('enrollments', function ($q) use ($css, $activeSchoolYear) {
             $q->where('class_section_id', $css->class_section_id)
-              ->where('status', 'enrolled');
+              ->whereIn('status', ['enrolled', 'active']);
             if ($activeSchoolYear) {
                 $q->where('school_year_id', $activeSchoolYear->id);
             }
@@ -625,8 +626,22 @@ class SeniorHighSchoolGradeController extends Controller
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
             'academic_period' => 'required|string',
             'attendance_date' => 'required|date',
-            'status' => 'required|in:Present,Late,Absent,Excused',
+            'status' => 'required|in:Present,Late,Absent,Excused,P,L,A,E,AEL,C',
         ]);
+
+        $statusMap = [
+            'P' => 'Present',
+            'L' => 'Late',
+            'A' => 'Absent',
+            'E' => 'Excused',
+            'AEL' => 'Excused',
+            'C' => 'Absent',
+            'Present' => 'Present',
+            'Late' => 'Late',
+            'Absent' => 'Absent',
+            'Excused' => 'Excused',
+        ];
+        $finalStatus = $statusMap[$validated['status']] ?? 'Present';
 
         $activeSyId = session('active_school_year_id');
         $activeSchoolYear = $activeSyId ? SchoolYear::find($activeSyId) : SchoolYear::where('is_active', true)->first();
@@ -649,7 +664,7 @@ class SeniorHighSchoolGradeController extends Controller
             'attendance_date' => $validated['attendance_date'],
             'enrollment_id' => $enrollment->id,
         ], [
-            'status' => $validated['status']
+            'status' => $finalStatus
         ]);
 
         return response()->json(['success' => true, 'message' => 'Attendance status updated.', 'status' => $att->status]);

@@ -1,6 +1,6 @@
 @extends('layouts.senior_high_school')
 
-@section('title', 'GNHS - SHS Teacher Dashboard')
+@section('title', 'GNHS-P - SHS Teacher Dashboard')
 @section('header_title', 'Dashboard Overview')
 
 @section('content')
@@ -16,7 +16,8 @@
                 Welcome, {{ $teacher->first_name }} {{ $teacher->last_name }}!
             </h2>
             <p style="color: #fecdd3; font-size: 0.95rem;">
-                Manage your handled class sections, strands, subject records, student enrollments, and grades for Senior High School.
+                Manage your handled class sections, strands, subject records, student enrollments, and grades for Senior
+                High School.
             </p>
         </div>
     </div>

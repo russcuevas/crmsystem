@@ -373,7 +373,7 @@
             <div class="sidebar-header">
                 <img src="{{ asset('assets/images/home/logo-school.png') }}" alt="GNHS Logo" class="sidebar-logo">
                 <div class="brand-details">
-                    <h2>GNHS SHS</h2>
+                    <h2>GNHS-P SHS</h2>
                     <span>Teacher Portal</span>
                 </div>
             </div>
@@ -436,12 +436,16 @@
                         <i class="fa-solid fa-bars" id="sidebarToggleIcon"></i>
                     </button>
                     <h1>@yield('header_title', 'Senior High School Portal')</h1>
-                    <span class="level-badge">Grade 11 - Grade 12</span>
                 </div>
 
                 <div class="header-actions">
                     @php
-                        $teacherObj = isset($teacher) && $teacher ? $teacher : (Auth::check() && Auth::user()->teacher ? Auth::user()->teacher : null);
+                        $teacherObj =
+                            isset($teacher) && $teacher
+                                ? $teacher
+                                : (Auth::check() && Auth::user()->teacher
+                                    ? Auth::user()->teacher
+                                    : null);
                     @endphp
 
                     @if ($teacherObj)
@@ -450,7 +454,8 @@
                                 {{ strtoupper(substr($teacherObj->first_name ?? 'T', 0, 1) . substr($teacherObj->last_name ?? 'C', 0, 1)) }}
                             </div>
                             <div class="user-details">
-                                <span class="name">{{ $teacherObj->first_name ?? '' }} {{ $teacherObj->last_name ?? 'Teacher' }}</span>
+                                <span class="name">{{ $teacherObj->first_name ?? '' }}
+                                    {{ $teacherObj->last_name ?? 'Teacher' }}</span>
                                 <span class="sub">ID: {{ $teacherObj->teacher_id ?? 'N/A' }}</span>
                             </div>
                         </div>

@@ -1,6 +1,6 @@
 @extends('layouts.junior_high_school')
 
-@section('title', 'GNHS - Advisory Class Grades Summary')
+@section('title', 'GNHS-P - Advisory Class Grades Summary')
 @section('header_title', 'Advisory Class Grades Summary')
 
 @push('styles')
@@ -441,10 +441,7 @@
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
                                         <td style="text-align: left; font-weight: 700; color: #0f172a;">
-                                            {{ $student->last_name }}, {{ $student->first_name }}
-                                            @if ($student->middle_name)
-                                                {{ substr($student->middle_name, 0, 1) }}.
-                                            @endif
+                                            {{ trim(($student->last_name ? $student->last_name . ', ' : '') . $student->first_name . ($student->middle_name ? ' ' . $student->middle_name : '') . ($student->extension_name ? ' ' . $student->extension_name : '')) }}
                                         </td>
                                         <td style="font-weight: 600; color: #475569; font-size: 0.8rem;">
                                             {{ $student->lrn ?? ($student->student_number ?? 'N/A') }}

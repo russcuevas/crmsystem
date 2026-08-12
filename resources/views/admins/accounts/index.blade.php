@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'GNHS - Accounts Management')
+@section('title', 'GNHS-P - Accounts Management')
 
 @push('styles')
     <!-- jQuery & DataTables CSS -->
@@ -349,9 +349,11 @@
                                 </td>
                                 <td>{{ $user->last_login_at ? $user->last_login_at->diffForHumans() : 'Never' }}</td>
                                 <td style="text-align: center;">
-                                    <button type="button" class="btn-action-icon" title="Edit Account (Name, Email, Password, Status)"
+                                    <button type="button" class="btn-action-icon"
+                                        title="Edit Account (Name, Email, Password, Status)"
                                         onclick='openEditAccountModal(@json($user))'>
-                                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
@@ -370,23 +372,28 @@
         <div class="modal-card">
             <div class="modal-header">
                 <h3 style="font-size: 1.1rem; font-weight: 800;">Edit Account Credentials</h3>
-                <button type="button" onclick="closeEditAccountModal()" style="background: none; border: none; color: #ffffff; font-size: 1.4rem; cursor: pointer;">&times;</button>
+                <button type="button" onclick="closeEditAccountModal()"
+                    style="background: none; border: none; color: #ffffff; font-size: 1.4rem; cursor: pointer;">&times;</button>
             </div>
             <form id="editAccountForm" method="POST">
                 @csrf
                 <div class="modal-body">
-                    <div style="margin-bottom: 1rem; padding: 0.65rem 0.85rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.8rem; color: #475569; display: flex; align-items: center; justify-content: space-between;">
-                        <span>Account Role: <strong id="modal_account_role" style="text-transform: capitalize; color: #0f172a;">-</strong></span>
+                    <div
+                        style="margin-bottom: 1rem; padding: 0.65rem 0.85rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.8rem; color: #475569; display: flex; align-items: center; justify-content: space-between;">
+                        <span>Account Role: <strong id="modal_account_role"
+                                style="text-transform: capitalize; color: #0f172a;">-</strong></span>
                     </div>
 
                     <div class="form-group">
                         <label>Full Name <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="name" id="edit_account_name" class="form-control-custom" required placeholder="Enter full name">
+                        <input type="text" name="name" id="edit_account_name" class="form-control-custom" required
+                            placeholder="Enter full name">
                     </div>
 
                     <div class="form-group">
                         <label>Email Address <span style="color: #ef4444;">*</span></label>
-                        <input type="email" name="email" id="edit_account_email" class="form-control-custom" required placeholder="Enter email address">
+                        <input type="email" name="email" id="edit_account_email" class="form-control-custom" required
+                            placeholder="Enter email address">
                     </div>
 
                     <div class="form-group">
@@ -398,14 +405,18 @@
                     </div>
 
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label>New Password <span style="font-size: 0.72rem; text-transform: none; color: #64748b; font-weight: 500;">(Leave blank to keep current password)</span></label>
-                        <input type="password" name="password" id="edit_account_password" class="form-control-custom" placeholder="Enter new password (min. 6 characters)">
+                        <label>New Password <span
+                                style="font-size: 0.72rem; text-transform: none; color: #64748b; font-weight: 500;">(Leave
+                                blank to keep current password)</span></label>
+                        <input type="password" name="password" id="edit_account_password" class="form-control-custom"
+                            placeholder="Enter new password (min. 6 characters)">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeEditAccountModal()">
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
                         </svg>
                         Cancel
                     </button>

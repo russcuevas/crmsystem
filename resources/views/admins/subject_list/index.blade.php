@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'GNHS - Subject Catalog List')
+@section('title', 'GNHS-P - Subject Catalog List')
 
 @push('styles')
     <!-- jQuery & DataTables CSS -->
@@ -403,13 +403,16 @@
                             @php
                                 $lvlCode = strtoupper($subject->educationLevel->code ?? '');
                                 $isJhsOrBed = in_array($lvlCode, ['JHS', 'BED']);
-                                $hasSub = $subject->is_parent || ($subject->subSubjects && $subject->subSubjects->isNotEmpty());
+                                $hasSub =
+                                    $subject->is_parent ||
+                                    ($subject->subSubjects && $subject->subSubjects->isNotEmpty());
                             @endphp
                             <tr class="{{ $hasSub ? 'parent-row' : '' }}">
                                 <td><strong>{{ $subject->subject_code }}</strong></td>
                                 <td>
                                     @if ($hasSub)
-                                        <button type="button" class="btn-toggle-sub" onclick="toggleSubRows({{ $subject->id }}, this)"
+                                        <button type="button" class="btn-toggle-sub"
+                                            onclick="toggleSubRows({{ $subject->id }}, this)"
                                             title="Click to view sub-subjects"
                                             style="background: #0f172a; color: #ffffff; border: none; border-radius: 6px; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; cursor: pointer; margin-right: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: all 0.2s;">
                                             <span id="icon-sub-{{ $subject->id }}" style="line-height: 1;">+</span>
@@ -417,7 +420,9 @@
                                     @endif
                                     <strong>{{ $subject->subject_name }}</strong>
                                     @if ($subject->is_parent)
-                                        <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-size: 0.7rem; margin-left: 6px; font-weight: 700;">Parent Subject</span>
+                                        <span class="badge"
+                                            style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-size: 0.7rem; margin-left: 6px; font-weight: 700;">Parent
+                                            Subject</span>
                                     @endif
                                 </td>
                                 <td>
@@ -450,8 +455,8 @@
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </button>
-                                        <form action="{{ route('admin.subjects.destroy', $subject->id) }}"
-                                            method="POST" style="display: inline;"
+                                        <form action="{{ route('admin.subjects.destroy', $subject->id) }}" method="POST"
+                                            style="display: inline;"
                                             onsubmit="return confirm('Are you sure you want to delete this subject catalog entry?');">
                                             @csrf
                                             @method('DELETE')
@@ -471,7 +476,8 @@
                                     <tr class="sub-row-{{ $subject->id }}" style="display: none; background: #f8fafc;">
                                         <td style="padding-left: 2rem;"><strong>{{ $sub->subject_code }}</strong></td>
                                         <td style="padding-left: 2rem; color: #334155;">
-                                            <i class="fa-solid fa-arrow-turn-up fa-rotate-90" style="color: #94a3b8; margin-right: 8px;"></i>
+                                            <i class="fa-solid fa-arrow-turn-up fa-rotate-90"
+                                                style="color: #94a3b8; margin-right: 8px;"></i>
                                             {{ $sub->subject_name }}
                                         </td>
                                         <td>
@@ -490,16 +496,25 @@
                                             <div class="action-btn-group" style="justify-content: center;">
                                                 <button type="button" class="btn-action-icon" title="Edit Sub-Subject"
                                                     onclick='openEditSubjectModal(@json($sub))'>
-                                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                     </svg>
                                                 </button>
-                                                <form action="{{ route('admin.subjects.destroy', $sub->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this sub-subject?');">
+                                                <form action="{{ route('admin.subjects.destroy', $sub->id) }}"
+                                                    method="POST" style="display: inline;"
+                                                    onsubmit="return confirm('Delete this sub-subject?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn-action-icon danger" title="Delete Sub-Subject">
-                                                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    <button type="submit" class="btn-action-icon danger"
+                                                        title="Delete Sub-Subject">
+                                                        <svg width="14" height="14" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                         </svg>
                                                     </button>
                                                 </form>
@@ -605,7 +620,8 @@
                             <select name="parent_subject_id" id="add_parent_subject_id" class="form-control-custom">
                                 <option value="">None (Standalone Subject)</option>
                                 @foreach ($parentSubjects as $pSub)
-                                    <option value="{{ $pSub->id }}">{{ $pSub->subject_name }} ({{ $pSub->subject_code }})</option>
+                                    <option value="{{ $pSub->id }}">{{ $pSub->subject_name }}
+                                        ({{ $pSub->subject_code }})</option>
                                 @endforeach
                             </select>
                         </div>
@@ -720,7 +736,8 @@
                             <select name="parent_subject_id" id="edit_parent_subject_id" class="form-control-custom">
                                 <option value="">None (Standalone Subject)</option>
                                 @foreach ($parentSubjects as $pSub)
-                                    <option value="{{ $pSub->id }}">{{ $pSub->subject_name }} ({{ $pSub->subject_code }})</option>
+                                    <option value="{{ $pSub->id }}">{{ $pSub->subject_name }}
+                                        ({{ $pSub->subject_code }})</option>
                                 @endforeach
                             </select>
                         </div>

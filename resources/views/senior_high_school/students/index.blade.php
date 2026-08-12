@@ -1,6 +1,6 @@
 @extends('layouts.senior_high_school')
 
-@section('title', 'GNHS - My Handled Students (SHS)')
+@section('title', 'GNHS-P - My Handled Students (SHS)')
 @section('header_title', 'My Handled Students')
 
 @push('styles')
@@ -98,7 +98,8 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
         <div>
             <h2 style="font-size: 1.35rem; font-weight: 800; color: #0f172a;">Handled Students Registry</h2>
-            <p style="font-size: 0.85rem; color: #64748b;">Senior High School Students enrolled in your Advisory and Subject Sections.</p>
+            <p style="font-size: 0.85rem; color: #64748b;">Senior High School Students enrolled in your Advisory and Subject
+                Sections.</p>
         </div>
         <button onclick="openModal('addStudentModal')"
             style="background: #7f1d1d; color: #ffffff; padding: 0.65rem 1.15rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 10px rgba(127, 29, 29, 0.25);">
@@ -107,7 +108,8 @@
     </div>
 
     <!-- Table Card -->
-    <div style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: var(--shadow-sm);">
+    <div
+        style="background: #ffffff; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: var(--shadow-sm);">
         <table id="studentsTable" class="display" style="width:100%">
             <thead>
                 <tr style="background: #f8fafc; text-align: left;">
@@ -123,38 +125,49 @@
                 @foreach ($students as $student)
                     @php
                         $isAdvisory = in_array($student->id, $advisoryStudentIds);
-                        $fullName = trim($student->last_name . ', ' . $student->first_name . ' ' . ($student->middle_name ?? ''));
+                        $fullName = trim(
+                            $student->last_name . ', ' . $student->first_name . ' ' . ($student->middle_name ?? ''),
+                        );
                     @endphp
                     <tr>
                         <td style="font-weight: 700; color: #7f1d1d;">{{ $student->student_number }}</td>
                         <td>{{ $student->lrn ?? 'N/A' }}</td>
                         <td style="font-weight: 600;">{{ $fullName }}</td>
                         <td>
-                            <span style="background: #fee2e2; color: #991b1b; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">
+                            <span
+                                style="background: #fee2e2; color: #991b1b; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">
                                 {{ $student->gradeLevel ? $student->gradeLevel->name : 'N/A' }}
                             </span>
                             @if ($student->course)
-                                <span style="background: #fef3c7; color: #92400e; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-left: 0.25rem;">
+                                <span
+                                    style="background: #fef3c7; color: #92400e; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-left: 0.25rem;">
                                     {{ $student->course->course_code }}
                                 </span>
                             @endif
                         </td>
                         <td>
                             @if ($isAdvisory)
-                                <span style="background: #d1fae5; color: #065f46; padding: 0.2rem 0.55rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Advisory Student</span>
+                                <span
+                                    style="background: #d1fae5; color: #065f46; padding: 0.2rem 0.55rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Advisory
+                                    Student</span>
                             @else
-                                <span style="background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.55rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Subject Student</span>
+                                <span
+                                    style="background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.55rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">Subject
+                                    Student</span>
                             @endif
                         </td>
                         <td>
                             <div style="display: flex; gap: 0.35rem;">
-                                <a href="{{ route('senior_high_school.students.show', $student->id) }}" class="btn-action btn-view" title="View Profile">
+                                <a href="{{ route('senior_high_school.students.show', $student->id) }}"
+                                    class="btn-action btn-view" title="View Profile">
                                     <i class="fa-solid fa-eye"></i> View
                                 </a>
-                                <button onclick="openEditModal({{ json_encode($student) }})" class="btn-action btn-edit" title="Edit Student">
+                                <button onclick="openEditModal({{ json_encode($student) }})" class="btn-action btn-edit"
+                                    title="Edit Student">
                                     <i class="fa-solid fa-pen-to-square"></i> Edit
                                 </button>
-                                <button onclick="confirmDelete({{ $student->id }}, '{{ addslashes($fullName) }}')" class="btn-action btn-delete" title="Delete Student">
+                                <button onclick="confirmDelete({{ $student->id }}, '{{ addslashes($fullName) }}')"
+                                    class="btn-action btn-delete" title="Delete Student">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
@@ -170,58 +183,68 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3 style="font-size: 1.1rem; font-weight: 800;">Add New Senior High Student</h3>
-                <button type="button" onclick="closeModal('addStudentModal')" style="background: transparent; border: none; color: #ffffff; font-size: 1.2rem; cursor: pointer;">&times;</button>
+                <button type="button" onclick="closeModal('addStudentModal')"
+                    style="background: transparent; border: none; color: #ffffff; font-size: 1.2rem; cursor: pointer;">&times;</button>
             </div>
             <form action="{{ route('senior_high_school.students.store') }}" method="POST" class="modal-body">
                 @csrf
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">First Name *</label>
-                        <input type="text" name="first_name" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" name="first_name" required
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Last Name *</label>
-                        <input type="text" name="last_name" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" name="last_name" required
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Middle Name</label>
-                        <input type="text" name="middle_name" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" name="middle_name"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Extension Name</label>
-                        <input type="text" name="extension_name" placeholder="Jr., III" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" name="extension_name" placeholder="Jr., III"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Email Address *</label>
-                        <input type="email" name="email" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="email" name="email" required
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Password *</label>
-                        <input type="password" name="password" required minlength="6" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="password" name="password" required minlength="6"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Student Number</label>
-                        <input type="text" name="student_number" value="{{ $nextStudentId }}" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" name="student_number" value="{{ $nextStudentId }}"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">LRN</label>
-                        <input type="text" name="lrn" placeholder="12-Digit LRN" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" name="lrn" placeholder="12-Digit LRN"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Grade Level *</label>
-                        <select name="grade_level_id" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <select name="grade_level_id" required
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                             @foreach ($allGradeLevels as $gl)
                                 <option value="{{ $gl->id }}">{{ $gl->name }}</option>
                             @endforeach
@@ -229,18 +252,23 @@
                     </div>
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Track / Strand</label>
-                        <select name="course_id" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <select name="course_id"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                             <option value="">Select Strand</option>
                             @foreach ($allStrands as $strand)
-                                <option value="{{ $strand->id }}">{{ $strand->course_code }} - {{ $strand->course_name }}</option>
+                                <option value="{{ $strand->id }}">{{ $strand->course_code }} -
+                                    {{ $strand->course_name }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
-                    <button type="button" onclick="closeModal('addStudentModal')" style="padding: 0.5rem 1rem; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer;">Cancel</button>
-                    <button type="submit" style="padding: 0.5rem 1.25rem; background: #7f1d1d; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">Save Student</button>
+                    <button type="button" onclick="closeModal('addStudentModal')"
+                        style="padding: 0.5rem 1rem; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer;">Cancel</button>
+                    <button type="submit"
+                        style="padding: 0.5rem 1.25rem; background: #7f1d1d; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">Save
+                        Student</button>
                 </div>
             </form>
         </div>
@@ -251,58 +279,69 @@
         <div class="modal-box">
             <div class="modal-header">
                 <h3 style="font-size: 1.1rem; font-weight: 800;">Edit Student Profile</h3>
-                <button type="button" onclick="closeModal('editStudentModal')" style="background: transparent; border: none; color: #ffffff; font-size: 1.2rem; cursor: pointer;">&times;</button>
+                <button type="button" onclick="closeModal('editStudentModal')"
+                    style="background: transparent; border: none; color: #ffffff; font-size: 1.2rem; cursor: pointer;">&times;</button>
             </div>
             <form id="editStudentForm" method="POST" class="modal-body">
                 @csrf
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">First Name *</label>
-                        <input type="text" id="edit_first_name" name="first_name" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" id="edit_first_name" name="first_name" required
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Last Name *</label>
-                        <input type="text" id="edit_last_name" name="last_name" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" id="edit_last_name" name="last_name" required
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Middle Name</label>
-                        <input type="text" id="edit_middle_name" name="middle_name" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" id="edit_middle_name" name="middle_name"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Extension Name</label>
-                        <input type="text" id="edit_extension_name" name="extension_name" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" id="edit_extension_name" name="extension_name"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Email Address *</label>
-                        <input type="email" id="edit_email" name="email" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="email" id="edit_email" name="email" required
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                     <div>
-                        <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Password (Leave blank to keep current)</label>
-                        <input type="password" name="password" minlength="6" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Password (Leave blank to keep
+                            current)</label>
+                        <input type="password" name="password" minlength="6"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Student Number *</label>
-                        <input type="text" id="edit_student_number" name="student_number" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" id="edit_student_number" name="student_number" required
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">LRN</label>
-                        <input type="text" id="edit_lrn" name="lrn" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <input type="text" id="edit_lrn" name="lrn"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Grade Level *</label>
-                        <select id="edit_grade_level_id" name="grade_level_id" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <select id="edit_grade_level_id" name="grade_level_id" required
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                             @foreach ($allGradeLevels as $gl)
                                 <option value="{{ $gl->id }}">{{ $gl->name }}</option>
                             @endforeach
@@ -310,18 +349,23 @@
                     </div>
                     <div>
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Track / Strand</label>
-                        <select id="edit_course_id" name="course_id" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
+                        <select id="edit_course_id" name="course_id"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px; margin-top: 0.25rem;">
                             <option value="">Select Strand</option>
                             @foreach ($allStrands as $strand)
-                                <option value="{{ $strand->id }}">{{ $strand->course_code }} - {{ $strand->course_name }}</option>
+                                <option value="{{ $strand->id }}">{{ $strand->course_code }} -
+                                    {{ $strand->course_name }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
-                    <button type="button" onclick="closeModal('editStudentModal')" style="padding: 0.5rem 1rem; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer;">Cancel</button>
-                    <button type="submit" style="padding: 0.5rem 1.25rem; background: #7f1d1d; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">Update Student</button>
+                    <button type="button" onclick="closeModal('editStudentModal')"
+                        style="padding: 0.5rem 1rem; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; cursor: pointer;">Cancel</button>
+                    <button type="submit"
+                        style="padding: 0.5rem 1.25rem; background: #7f1d1d; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">Update
+                        Student</button>
                 </div>
             </form>
         </div>
@@ -342,7 +386,9 @@
             $('#studentsTable').DataTable({
                 pageLength: 10,
                 responsive: true,
-                order: [[2, 'asc']]
+                order: [
+                    [2, 'asc']
+                ]
             });
         });
 

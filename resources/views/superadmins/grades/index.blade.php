@@ -1,6 +1,6 @@
 @extends('layouts.superadmin')
 
-@section('title', 'GNHS - Class Record & Grading Management')
+@section('title', 'GNHS-P - Class Record & Grading Management')
 
 @section('content')
     <style>
@@ -348,9 +348,18 @@
             $currLvlCode = $currentSectionSubject->classSection->gradeLevel->educationLevel->code ?? '';
             $currGradeLevelName = $currentSectionSubject->classSection->gradeLevel->name ?? 'N/A';
             $currIsSemestral = in_array($currLvlCode, ['SHS', 'COLLEGE']);
-            $targetSecSubId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : ($currentSectionSubject->id ?? '');
-            $targetSecSubName = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->subject->subject_name : ($currentSectionSubject->subject->subject_name ?? '');
-            $targetSecSubCode = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? ($activeSubSectionSubject->subject->subject_code ?? '') : ($currentSectionSubject->subject->subject_code ?? '');
+            $targetSecSubId =
+                isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)
+                    ? $activeSubSectionSubject->id
+                    : $currentSectionSubject->id ?? '';
+            $targetSecSubName =
+                isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)
+                    ? $activeSubSectionSubject->subject->subject_name
+                    : $currentSectionSubject->subject->subject_name ?? '';
+            $targetSecSubCode =
+                isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)
+                    ? $activeSubSectionSubject->subject->subject_code ?? ''
+                    : $currentSectionSubject->subject->subject_code ?? '';
         @endphp
 
         <!-- Academic Period Filter Pills (Prelim, Midterm, Finals vs 1st-4th Quarters) -->
@@ -443,20 +452,32 @@
 
         @if (isset($isParentSubject) && $isParentSubject)
             <!-- MAPEH / Parent Subject Subcomponent Tabs -->
-            <div style="background: #ffffff; padding: 0.85rem 1.25rem; border-radius: 14px; border: 1px solid #cbd5e1; margin-bottom: 1.5rem; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
-                <div style="font-size: 0.78rem; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 0.6rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.4rem;">
-                    <i class="fa-solid fa-cubes" style="color: #4f46e5;"></i> {{ $currentSectionSubject->subject->subject_name }} Component Tabs & Attendance:
+            <div
+                style="background: #ffffff; padding: 0.85rem 1.25rem; border-radius: 14px; border: 1px solid #cbd5e1; margin-bottom: 1.5rem; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                <div
+                    style="font-size: 0.78rem; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 0.6rem; letter-spacing: 0.5px; display: flex; align-items: center; gap: 0.4rem;">
+                    <i class="fa-solid fa-cubes" style="color: #4f46e5;"></i>
+                    {{ $currentSectionSubject->subject->subject_name }} Component Tabs & Attendance:
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
                     @foreach ($subSectionSubjects as $subSec)
                         @php
-                            $isSubActive = is_object($activeSubSectionSubject) && $activeSubSectionSubject->id == $subSec->id;
+                            $isSubActive =
+                                is_object($activeSubSectionSubject) && $activeSubSectionSubject->id == $subSec->id;
                             $sName = $subSec->subject->subject_name ?? '';
                             $iconClass = 'fa-book';
-                            if (str_contains(strtolower($sName), 'music')) $iconClass = 'fa-music';
-                            elseif (str_contains(strtolower($sName), 'art')) $iconClass = 'fa-palette';
-                            elseif (str_contains(strtolower($sName), 'pe') || str_contains(strtolower($sName), 'physical')) $iconClass = 'fa-futbol';
-                            elseif (str_contains(strtolower($sName), 'health')) $iconClass = 'fa-heart-pulse';
+                            if (str_contains(strtolower($sName), 'music')) {
+                                $iconClass = 'fa-music';
+                            } elseif (str_contains(strtolower($sName), 'art')) {
+                                $iconClass = 'fa-palette';
+                            } elseif (
+                                str_contains(strtolower($sName), 'pe') ||
+                                str_contains(strtolower($sName), 'physical')
+                            ) {
+                                $iconClass = 'fa-futbol';
+                            } elseif (str_contains(strtolower($sName), 'health')) {
+                                $iconClass = 'fa-heart-pulse';
+                            }
                         @endphp
                         <a href="{{ route('superadmin.grades.page', array_filter(['level' => $selectedLevel, 'section_subject_id' => $currentSectionSubject->id, 'academic_period' => $selectedPeriod, 'semester' => request('semester'), 'sub_subject_id' => $subSec->id])) }}"
                             style="padding: 0.55rem 1.1rem; border-radius: 10px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.45rem; transition: all 0.2s; {{ $isSubActive ? 'background: #4f46e5; color: #ffffff; box-shadow: 0 3px 8px rgba(79, 70, 229, 0.3);' : 'background: #f8fafc; color: #334155; border: 1.5px solid #cbd5e1;' }}">
@@ -477,7 +498,8 @@
                     <div class="card-header" style="background: #ecfdf5; border-bottom: 1.5px solid #a7f3d0;">
                         <div class="card-title" style="color: #065f46; font-weight: 800;">
                             <i class="fa-solid fa-chart-pie" style="color: #059669; margin-right: 6px;"></i>
-                            {{ $currentSectionSubject->subject->subject_name }} {{ $selectedPeriod }} Overall Component Summary
+                            {{ $currentSectionSubject->subject->subject_name }} {{ $selectedPeriod }} Overall Component
+                            Summary
                         </div>
                     </div>
                     <div class="card-body">
@@ -491,7 +513,9 @@
                                         @foreach ($subSectionSubjects as $subSec)
                                             <th style="text-align: center;">{{ $subSec->subject->subject_name }}</th>
                                         @endforeach
-                                        <th style="text-align: center; background: #dcfce7; color: #15803d; font-weight: 800;">{{ $currentSectionSubject->subject->subject_name }} Grade</th>
+                                        <th
+                                            style="text-align: center; background: #dcfce7; color: #15803d; font-weight: 800;">
+                                            {{ $currentSectionSubject->subject->subject_name }} Grade</th>
                                         <th style="text-align: center;">Remarks</th>
                                     </tr>
                                 </thead>
@@ -501,21 +525,29 @@
                                             $student = $enrollment->student;
                                             $subGradesList = [];
                                             foreach ($subSectionSubjects as $subSec) {
-                                                $g = $mapehSummaryGrades->where('enrollment_id', $enrollment->id)->where('class_section_subject_id', $subSec->id)->first();
+                                                $g = $mapehSummaryGrades
+                                                    ->where('enrollment_id', $enrollment->id)
+                                                    ->where('class_section_subject_id', $subSec->id)
+                                                    ->first();
                                                 $subGradesList[$subSec->id] = $g ? $g->final_grade : null;
                                             }
-                                            $parentG = $mapehSummaryGrades->where('enrollment_id', $enrollment->id)->where('class_section_subject_id', $currentSectionSubject->id)->first();
+                                            $parentG = $mapehSummaryGrades
+                                                ->where('enrollment_id', $enrollment->id)
+                                                ->where('class_section_subject_id', $currentSectionSubject->id)
+                                                ->first();
                                             $parentGradeVal = $parentG ? $parentG->final_grade : null;
                                             $parentRemarks = $parentG ? $parentG->remarks : 'Pending';
                                         @endphp
                                         <tr>
                                             <td>{{ $idx + 1 }}</td>
                                             <td><strong>{{ $student->lrn ?? 'N/A' }}</strong></td>
-                                            <td><strong>{{ $student->last_name }}, {{ $student->first_name }} {{ $student->middle_name }}</strong></td>
+                                            <td><strong>{{ trim($student->last_name . ', ' . $student->first_name . ($student->middle_name ? ' ' . $student->middle_name : '') . ($student->extension_name ? ' ' . $student->extension_name : '')) }}</strong>
+                                            </td>
                                             @foreach ($subSectionSubjects as $subSec)
                                                 <td style="text-align: center;">
                                                     @if ($subGradesList[$subSec->id] !== null)
-                                                        <span style="font-weight: 800; font-size: 0.9rem; color: #0f172a;">{{ number_format($subGradesList[$subSec->id], 0) }}</span>
+                                                        <span
+                                                            style="font-weight: 800; font-size: 0.9rem; color: #0f172a;">{{ number_format($subGradesList[$subSec->id], 0) }}</span>
                                                     @else
                                                         <span style="color: #94a3b8; font-style: italic;">-</span>
                                                     @endif
@@ -523,18 +555,22 @@
                                             @endforeach
                                             <td style="text-align: center; background: #f0fdf4;">
                                                 @if ($parentGradeVal !== null)
-                                                    <span style="font-weight: 800; font-size: 0.95rem; color: #047857;">{{ number_format($parentGradeVal, 0) }}</span>
+                                                    <span
+                                                        style="font-weight: 800; font-size: 0.95rem; color: #047857;">{{ number_format($parentGradeVal, 0) }}</span>
                                                 @else
                                                     <span style="color: #94a3b8; font-style: italic;">-</span>
                                                 @endif
                                             </td>
                                             <td style="text-align: center;">
                                                 @if ($parentRemarks == 'Passed')
-                                                    <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-weight: 700;">Passed</span>
+                                                    <span class="badge"
+                                                        style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-weight: 700;">Passed</span>
                                                 @elseif($parentRemarks == 'Failed')
-                                                    <span class="badge" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; font-weight: 700;">Failed</span>
+                                                    <span class="badge"
+                                                        style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; font-weight: 700;">Failed</span>
                                                 @else
-                                                    <span class="badge" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; font-weight: 700;">Pending</span>
+                                                    <span class="badge"
+                                                        style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; font-weight: 700;">Pending</span>
                                                 @endif
                                             </td>
                                         </tr>
@@ -548,718 +584,295 @@
         @endif
 
         @if ($activeSubSectionSubject !== 'summary')
-        <!-- Toggle Button for Categories & Tasks Breakdown -->
-        <div style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
-            <button type="button" class="btn-secondary" id="toggleBreakdownBtn" onclick="toggleCategoryBreakdown()"
-                style="border-radius: 12px; font-size: 0.85rem; font-weight: 700; padding: 0.55rem 1.1rem; display: inline-flex; align-items: center; gap: 0.55rem; background: #ffffff; border: 1.5px solid #cbd5e1; color: var(--primary-navy, #0f172a); box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s ease;">
-                <svg id="toggleBreakdownIcon" width="16" height="16" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" style="transition: transform 0.25s ease;">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-                <span id="toggleBreakdownText">Show Grading Categories & Tasks Breakdown
-                    ({{ $categories->count() }})</span>
-            </button>
-        </div>
+            <!-- Toggle Button for Categories & Tasks Breakdown -->
+            <div style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+                <button type="button" class="btn-secondary" id="toggleBreakdownBtn" onclick="toggleCategoryBreakdown()"
+                    style="border-radius: 12px; font-size: 0.85rem; font-weight: 700; padding: 0.55rem 1.1rem; display: inline-flex; align-items: center; gap: 0.55rem; background: #ffffff; border: 1.5px solid #cbd5e1; color: var(--primary-navy, #0f172a); box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s ease;">
+                    <svg id="toggleBreakdownIcon" width="16" height="16" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" style="transition: transform 0.25s ease;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                    <span id="toggleBreakdownText">Show Grading Categories & Tasks Breakdown
+                        ({{ $categories->count() }})</span>
+                </button>
+            </div>
 
-        <!-- Grading Categories & Tasks Breakdown Wrapper (Hidden by default) -->
-        <div id="categoryBreakdownWrapper" style="display: none; margin-bottom: 1.5rem;">
-            @php
-                $hasLabSubject =
-                    $currentSectionSubject &&
-                    $currentSectionSubject->subject &&
-                    $currentSectionSubject->subject->has_lab;
-                if ($hasLabSubject) {
-                    $lecCategoriesGroup = $categories->filter(fn($c) => $c->component_type !== 'laboratory');
-                    $labCategoriesGroup = $categories->filter(fn($c) => $c->component_type === 'laboratory');
-                } else {
-                    $lecCategoriesGroup = $categories;
-                    $labCategoriesGroup = collect();
-                }
-            @endphp
+            <!-- Grading Categories & Tasks Breakdown Wrapper (Hidden by default) -->
+            <div id="categoryBreakdownWrapper" style="display: none; margin-bottom: 1.5rem;">
+                @php
+                    $hasLabSubject =
+                        $currentSectionSubject &&
+                        $currentSectionSubject->subject &&
+                        $currentSectionSubject->subject->has_lab;
+                    if ($hasLabSubject) {
+                        $lecCategoriesGroup = $categories->filter(fn($c) => $c->component_type !== 'laboratory');
+                        $labCategoriesGroup = $categories->filter(fn($c) => $c->component_type === 'laboratory');
+                    } else {
+                        $lecCategoriesGroup = $categories;
+                        $labCategoriesGroup = collect();
+                    }
+                @endphp
 
-            @if ($hasLabSubject)
-                <!-- 2-COLUMN SIDE-BY-SIDE GRID FOR LECTURE AND LABORATORY CATEGORIES -->
-                <div
-                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; align-items: start;">
-                    <!-- LEFT COLUMN: LECTURE COMPONENT SECTION -->
-                    <div>
-                        <div
-                            style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.15rem; background: linear-gradient(90deg, rgba(59, 130, 246, 0.12) 0%, rgba(239, 246, 255, 0.5) 100%); border-left: 4px solid #3b82f6; border-radius: 12px; margin-bottom: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                            <div style="display: flex; align-items: center; gap: 0.55rem;">
-                                <span style="font-size: 1.2rem;">📘</span>
-                                <div>
-                                    <h3
-                                        style="font-size: 1rem; font-weight: 800; color: #1e40af; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
-                                        Lecture Categories
-                                        <span class="badge"
-                                            style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.7rem; font-weight: 800; padding: 0.12rem 0.5rem; border-radius: 12px;">
-                                            Ratio: {{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%
-                                        </span>
-                                    </h3>
-                                    <div style="font-size: 0.73rem; color: #3b82f6; font-weight: 600; margin-top: 2px;">
-                                        Assigned Categories & Tasks for Lecture
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="text-align: right;">
-                                <span class="badge"
-                                    style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 0.78rem; font-weight: 800; padding: 0.3rem 0.65rem; border-radius: 20px;">
-                                    Weight: {{ number_format($lecCategoriesGroup->sum('weight'), 0) }}%
-                                </span>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            @forelse($lecCategoriesGroup as $cat)
-                                <div class="card"
-                                    style="border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04); overflow: hidden; border-top: 3.5px solid #3b82f6;">
-                                    <div class="card-header"
-                                        style="background: #ffffff; padding: 0.9rem 1.1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">
-                                        <div>
-                                            <div class="card-title"
-                                                style="font-size: 0.95rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
-                                                {{ $cat->name }}
-                                                <button class="btn-icon-action" title="Edit Category"
-                                                    onclick="openModal('editCategoryModal_{{ $cat->id }}')">
-                                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                </button>
-                                                <form action="{{ route('superadmin.grades.category.destroy', $cat->id) }}"
-                                                    method="POST" style="display: inline;"
-                                                    onsubmit="return confirm('Are you sure you want to delete this category?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn-icon-action danger"
-                                                        title="Delete Category">
-                                                        <svg width="14" height="14" fill="none"
-                                                            viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                            <div
-                                                style="font-size: 0.72rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 0.4rem;">
-                                                <span>Period: <strong>{{ $cat->academic_period }}</strong></span>
-                                                <span>&bull;</span>
-                                                <span class="badge"
-                                                    style="font-size: 0.65rem; padding: 0.12rem 0.45rem; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-weight: 800; border-radius: 6px;">
-                                                    📘 LECTURE
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <span class="badge"
-                                            style="font-size: 0.82rem; font-weight: 800; padding: 0.35rem 0.7rem; border-radius: 20px; background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;">
-                                            Weight: {{ number_format($cat->weight, 0) }}%
-                                        </span>
-                                    </div>
-                                    <div class="card-body" style="padding: 0.85rem 1.1rem; background: #ffffff;">
-                                        @forelse($cat->gradingTasks as $task)
-                                            <div
-                                                style="display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px dashed #e2e8f0;">
-                                                <div>
-                                                    <div
-                                                        style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.35rem;">
-                                                        <span>📝</span>
-                                                        {{ $task->task_name }}
-                                                        <button class="btn-icon-action" title="Edit Task"
-                                                            onclick="openModal('editTaskModal_{{ $task->id }}')">
-                                                            <svg width="13" height="13" fill="none"
-                                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                            </svg>
-                                                        </button>
-                                                        <form
-                                                            action="{{ route('superadmin.grades.task.destroy', $task->id) }}"
-                                                            method="POST" style="display: inline;"
-                                                            onsubmit="return confirm('Are you sure you want to delete this task?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn-icon-action danger"
-                                                                title="Delete Task">
-                                                                <svg width="13" height="13" fill="none"
-                                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                </svg>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                    <div
-                                                        style="font-size: 0.72rem; color: #94a3b8; margin-left: 1.35rem; margin-top: 2px;">
-                                                        {{ $task->task_date ? $task->task_date->format('M d, Y') : 'No Date' }}
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <span class="badge"
-                                                        style="font-size: 0.75rem; font-weight: 700; background: #f1f5f9; color: #334155; padding: 0.22rem 0.55rem; border-radius: 12px;">
-                                                        Max: {{ number_format($task->max_score, 0) }} pts
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <!-- Edit Task Modal -->
-                                            <div class="modal-overlay" id="editTaskModal_{{ $task->id }}">
-                                                <div class="modal-card">
-                                                    <div class="modal-header">
-                                                        <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit
-                                                            Grading Task</h3>
-                                                        <button type="button" class="btn-icon-action"
-                                                            style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
-                                                            onclick="closeModal('editTaskModal_{{ $task->id }}')">&times;</button>
-                                                    </div>
-                                                    <form action="{{ route('superadmin.grades.task.update', $task->id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        <div class="modal-body">
-                                                            <div class="form-group">
-                                                                <label>Grading Category</label>
-                                                                <select name="grading_category_id" class="form-control"
-                                                                    required>
-                                                                    @foreach ($categories as $cOption)
-                                                                        <option value="{{ $cOption->id }}"
-                                                                            {{ $cOption->id == $task->grading_category_id ? 'selected' : '' }}>
-                                                                            {{ $cOption->academic_period }} -
-                                                                            {{ $cOption->name }}
-                                                                            ({{ number_format($cOption->weight, 0) }}%)
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <label>Task Name</label>
-                                                                <input type="text" name="task_name"
-                                                                    class="form-control" value="{{ $task->task_name }}"
-                                                                    required>
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <label>Max Score (Points)</label>
-                                                                <input type="number" name="max_score"
-                                                                    class="form-control"
-                                                                    value="{{ number_format($task->max_score, 0) }}"
-                                                                    min="1" required>
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <label>Task Date</label>
-                                                                <input type="date" name="task_date"
-                                                                    class="form-control"
-                                                                    value="{{ $task->task_date ? $task->task_date->format('Y-m-d') : '' }}">
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn-secondary"
-                                                                onclick="closeModal('editTaskModal_{{ $task->id }}')">
-                                                                Cancel
-                                                            </button>
-                                                            <button type="submit" class="btn-primary">Save
-                                                                Changes</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        @empty
-                                            <div
-                                                style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 0.75rem 0;">
-                                                No tasks created for {{ $cat->academic_period }} {{ $cat->name }}.
-                                            </div>
-                                        @endforelse
-                                    </div>
-                                </div>
-
-                                <!-- Edit Category Modal -->
-                                <div class="modal-overlay" id="editCategoryModal_{{ $cat->id }}">
-                                    <div class="modal-card">
-                                        <div class="modal-header">
-                                            <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading Category
-                                            </h3>
-                                            <button type="button" class="btn-icon-action"
-                                                style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
-                                                onclick="closeModal('editCategoryModal_{{ $cat->id }}')">&times;</button>
-                                        </div>
-                                        <form action="{{ route('superadmin.grades.category.update', $cat->id) }}"
-                                            method="POST">
-                                            @csrf
-                                            <div class="modal-body">
-                                                <div class="form-group">
-                                                    <label>Academic Period</label>
-                                                    <select name="academic_period" class="form-control" required>
-                                                        @foreach ($availablePeriods as $pOpt)
-                                                            <option value="{{ $pOpt }}"
-                                                                {{ $pOpt == $cat->academic_period ? 'selected' : '' }}>
-                                                                {{ $pOpt }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Category Name</label>
-                                                    <input type="text" name="name" class="form-control"
-                                                        value="{{ $cat->name }}" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Subject Component Type <span
-                                                            style="color: #ef4444;">*</span></label>
-                                                    <select name="component_type" class="form-control" required>
-                                                        <option value="lecture"
-                                                            {{ $cat->component_type === 'lecture' ? 'selected' : '' }}>
-                                                            Lecture Component (Lec
-                                                            {{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%
-                                                            ratio)
-                                                        </option>
-                                                        <option value="laboratory"
-                                                            {{ $cat->component_type === 'laboratory' ? 'selected' : '' }}>
-                                                            Laboratory Component (Lab
-                                                            {{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%
-                                                            ratio)
-                                                        </option>
-                                                    </select>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Weight Percentage (%)</label>
-                                                    <input type="number" name="weight" class="form-control"
-                                                        value="{{ number_format($cat->weight, 0) }}" min="0"
-                                                        max="100" required>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn-secondary"
-                                                    onclick="closeModal('editCategoryModal_{{ $cat->id }}')">
-                                                    Cancel
-                                                </button>
-                                                <button type="submit" class="btn-primary">Save Changes</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="card" style="border-radius: 12px;">
-                                    <div class="card-body"
-                                        style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
-                                        No Lecture categories configured for
-                                        {{ $selectedPeriod ? $selectedPeriod : 'this period' }} yet.
-                                    </div>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-
-                    <!-- RIGHT COLUMN: LABORATORY COMPONENT SECTION -->
-                    <div>
-                        <div
-                            style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.15rem; background: linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, rgba(236, 253, 245, 0.5) 100%); border-left: 4px solid #10b981; border-radius: 12px; margin-bottom: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                            <div style="display: flex; align-items: center; gap: 0.55rem;">
-                                <span style="font-size: 1.2rem;">🔬</span>
-                                <div>
-                                    <h3
-                                        style="font-size: 1rem; font-weight: 800; color: #065f46; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
-                                        Laboratory Categories
-                                        <span class="badge"
-                                            style="background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.7rem; font-weight: 800; padding: 0.12rem 0.5rem; border-radius: 12px;">
-                                            Ratio: {{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%
-                                        </span>
-                                    </h3>
-                                    <div style="font-size: 0.73rem; color: #10b981; font-weight: 600; margin-top: 2px;">
-                                        Assigned Categories & Tasks for Laboratory
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="text-align: right;">
-                                <span class="badge"
-                                    style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 0.78rem; font-weight: 800; padding: 0.3rem 0.65rem; border-radius: 20px;">
-                                    Weight: {{ number_format($labCategoriesGroup->sum('weight'), 0) }}%
-                                </span>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            @forelse($labCategoriesGroup as $cat)
-                                <div class="card"
-                                    style="border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04); overflow: hidden; border-top: 3.5px solid #10b981;">
-                                    <div class="card-header"
-                                        style="background: #ffffff; padding: 0.9rem 1.1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">
-                                        <div>
-                                            <div class="card-title"
-                                                style="font-size: 0.95rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
-                                                {{ $cat->name }}
-                                                <button class="btn-icon-action" title="Edit Category"
-                                                    onclick="openModal('editCategoryModal_{{ $cat->id }}')">
-                                                    <svg width="14" height="14" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                </button>
-                                                <form action="{{ route('superadmin.grades.category.destroy', $cat->id) }}"
-                                                    method="POST" style="display: inline;"
-                                                    onsubmit="return confirm('Are you sure you want to delete this category?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn-icon-action danger"
-                                                        title="Delete Category">
-                                                        <svg width="14" height="14" fill="none"
-                                                            viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                            <div
-                                                style="font-size: 0.72rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 0.4rem;">
-                                                <span>Period: <strong>{{ $cat->academic_period }}</strong></span>
-                                                <span>&bull;</span>
-                                                <span class="badge"
-                                                    style="font-size: 0.65rem; padding: 0.12rem 0.45rem; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 800; border-radius: 6px;">
-                                                    🔬 LABORATORY
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <span class="badge"
-                                            style="font-size: 0.82rem; font-weight: 800; padding: 0.35rem 0.7rem; border-radius: 20px; background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;">
-                                            Weight: {{ number_format($cat->weight, 0) }}%
-                                        </span>
-                                    </div>
-                                    <div class="card-body" style="padding: 0.85rem 1.1rem; background: #ffffff;">
-                                        @forelse($cat->gradingTasks as $task)
-                                            <div
-                                                style="display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px dashed #e2e8f0;">
-                                                <div>
-                                                    <div
-                                                        style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.35rem;">
-                                                        <span>🔬</span>
-                                                        {{ $task->task_name }}
-                                                        <button class="btn-icon-action" title="Edit Task"
-                                                            onclick="openModal('editTaskModal_{{ $task->id }}')">
-                                                            <svg width="13" height="13" fill="none"
-                                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                            </svg>
-                                                        </button>
-                                                        <form
-                                                            action="{{ route('superadmin.grades.task.destroy', $task->id) }}"
-                                                            method="POST" style="display: inline;"
-                                                            onsubmit="return confirm('Are you sure you want to delete this task?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn-icon-action danger"
-                                                                title="Delete Task">
-                                                                <svg width="13" height="13" fill="none"
-                                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                </svg>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                    <div
-                                                        style="font-size: 0.72rem; color: #94a3b8; margin-left: 1.35rem; margin-top: 2px;">
-                                                        {{ $task->task_date ? $task->task_date->format('M d, Y') : 'No Date' }}
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <span class="badge"
-                                                        style="font-size: 0.75rem; font-weight: 700; background: #f1f5f9; color: #334155; padding: 0.22rem 0.55rem; border-radius: 12px;">
-                                                        Max: {{ number_format($task->max_score, 0) }} pts
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <!-- Edit Task Modal -->
-                                            <div class="modal-overlay" id="editTaskModal_{{ $task->id }}">
-                                                <div class="modal-card">
-                                                    <div class="modal-header">
-                                                        <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit
-                                                            Grading Task</h3>
-                                                        <button type="button" class="btn-icon-action"
-                                                            style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
-                                                            onclick="closeModal('editTaskModal_{{ $task->id }}')">&times;</button>
-                                                    </div>
-                                                    <form action="{{ route('superadmin.grades.task.update', $task->id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        <div class="modal-body">
-                                                            <div class="form-group">
-                                                                <label>Grading Category</label>
-                                                                <select name="grading_category_id" class="form-control"
-                                                                    required>
-                                                                    @foreach ($categories as $cOption)
-                                                                        <option value="{{ $cOption->id }}"
-                                                                            {{ $cOption->id == $task->grading_category_id ? 'selected' : '' }}>
-                                                                            {{ $cOption->academic_period }} -
-                                                                            {{ $cOption->name }}
-                                                                            ({{ number_format($cOption->weight, 0) }}%)
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <label>Task Name</label>
-                                                                <input type="text" name="task_name"
-                                                                    class="form-control" value="{{ $task->task_name }}"
-                                                                    required>
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <label>Max Score (Points)</label>
-                                                                <input type="number" name="max_score"
-                                                                    class="form-control"
-                                                                    value="{{ number_format($task->max_score, 0) }}"
-                                                                    min="1" required>
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <label>Task Date</label>
-                                                                <input type="date" name="task_date"
-                                                                    class="form-control"
-                                                                    value="{{ $task->task_date ? $task->task_date->format('Y-m-d') : '' }}">
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn-secondary"
-                                                                onclick="closeModal('editTaskModal_{{ $task->id }}')">
-                                                                Cancel
-                                                            </button>
-                                                            <button type="submit" class="btn-primary">Save
-                                                                Changes</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        @empty
-                                            <div
-                                                style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 0.75rem 0;">
-                                                No tasks created for {{ $cat->academic_period }} {{ $cat->name }}.
-                                            </div>
-                                        @endforelse
-                                    </div>
-                                </div>
-
-                                <!-- Edit Category Modal -->
-                                <div class="modal-overlay" id="editCategoryModal_{{ $cat->id }}">
-                                    <div class="modal-card">
-                                        <div class="modal-header">
-                                            <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading Category
-                                            </h3>
-                                            <button type="button" class="btn-icon-action"
-                                                style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
-                                                onclick="closeModal('editCategoryModal_{{ $cat->id }}')">&times;</button>
-                                        </div>
-                                        <form action="{{ route('superadmin.grades.category.update', $cat->id) }}"
-                                            method="POST">
-                                            @csrf
-                                            <div class="modal-body">
-                                                <div class="form-group">
-                                                    <label>Academic Period</label>
-                                                    <select name="academic_period" class="form-control" required>
-                                                        @foreach ($availablePeriods as $pOpt)
-                                                            <option value="{{ $pOpt }}"
-                                                                {{ $pOpt == $cat->academic_period ? 'selected' : '' }}>
-                                                                {{ $pOpt }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Category Name</label>
-                                                    <input type="text" name="name" class="form-control"
-                                                        value="{{ $cat->name }}" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Subject Component Type <span
-                                                            style="color: #ef4444;">*</span></label>
-                                                    <select name="component_type" class="form-control" required>
-                                                        <option value="lecture"
-                                                            {{ $cat->component_type === 'lecture' ? 'selected' : '' }}>
-                                                            Lecture Component (Lec
-                                                            {{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%
-                                                            ratio)
-                                                        </option>
-                                                        <option value="laboratory"
-                                                            {{ $cat->component_type === 'laboratory' ? 'selected' : '' }}>
-                                                            Laboratory Component (Lab
-                                                            {{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%
-                                                            ratio)
-                                                        </option>
-                                                    </select>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label>Weight Percentage (%)</label>
-                                                    <input type="number" name="weight" class="form-control"
-                                                        value="{{ number_format($cat->weight, 0) }}" min="0"
-                                                        max="100" required>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn-secondary"
-                                                    onclick="closeModal('editCategoryModal_{{ $cat->id }}')">
-                                                    Cancel
-                                                </button>
-                                                <button type="submit" class="btn-primary">Save Changes</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="card" style="border-radius: 12px;">
-                                    <div class="card-body"
-                                        style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
-                                        No Laboratory categories configured for
-                                        {{ $selectedPeriod ? $selectedPeriod : 'this period' }} yet.
-                                    </div>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                </div>
-            @else
-                <!-- STANDARD SUBJECT CATEGORIES SECTION -->
-                <div
-                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
-                    @forelse($categories as $cat)
-                        <div class="card"
-                            style="border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04); overflow: hidden; border-top: 3.5px solid var(--primary-navy, #0f172a);">
-                            <div class="card-header"
-                                style="background: #ffffff; padding: 1rem 1.15rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">
-                                <div>
-                                    <div class="card-title"
-                                        style="font-size: 0.95rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
-                                        {{ $cat->name }}
-                                        <button class="btn-icon-action" title="Edit Category"
-                                            onclick="openModal('editCategoryModal_{{ $cat->id }}')">
-                                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </button>
-                                        <form action="{{ route('superadmin.grades.category.destroy', $cat->id) }}"
-                                            method="POST" style="display: inline;"
-                                            onsubmit="return confirm('Are you sure you want to delete this category?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn-icon-action danger"
-                                                title="Delete Category">
-                                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </form>
-                                    </div>
-                                    <div style="font-size: 0.72rem; color: #64748b; margin-top: 3px;">
-                                        Period: <strong>{{ $cat->academic_period }}</strong>
-                                    </div>
-                                </div>
-                                <span class="badge badge-active"
-                                    style="font-size: 0.82rem; font-weight: 800; padding: 0.35rem 0.7rem; border-radius: 20px;">
-                                    Weight: {{ number_format($cat->weight, 0) }}%
-                                </span>
-                            </div>
-                            <div class="card-body" style="padding: 0.85rem 1.15rem; background: #ffffff;">
-                                @forelse($cat->gradingTasks as $task)
-                                    <div
-                                        style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px dashed #e2e8f0;">
-                                        <div>
-                                            <div
-                                                style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.35rem;">
-                                                <span>📝</span>
-                                                {{ $task->task_name }}
-                                                <button class="btn-icon-action" title="Edit Task"
-                                                    onclick="openModal('editTaskModal_{{ $task->id }}')">
-                                                    <svg width="13" height="13" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                </button>
-                                                <form action="{{ route('superadmin.grades.task.destroy', $task->id) }}"
-                                                    method="POST" style="display: inline;"
-                                                    onsubmit="return confirm('Are you sure you want to delete this task?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn-icon-action danger"
-                                                        title="Delete Task">
-                                                        <svg width="13" height="13" fill="none"
-                                                            viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                            <div
-                                                style="font-size: 0.72rem; color: #94a3b8; margin-left: 1.35rem; margin-top: 2px;">
-                                                {{ $task->task_date ? $task->task_date->format('M d, Y') : 'No Date' }}
-                                            </div>
-                                        </div>
-                                        <div>
+                @if ($hasLabSubject)
+                    <!-- 2-COLUMN SIDE-BY-SIDE GRID FOR LECTURE AND LABORATORY CATEGORIES -->
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; align-items: start;">
+                        <!-- LEFT COLUMN: LECTURE COMPONENT SECTION -->
+                        <div>
+                            <div
+                                style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.15rem; background: linear-gradient(90deg, rgba(59, 130, 246, 0.12) 0%, rgba(239, 246, 255, 0.5) 100%); border-left: 4px solid #3b82f6; border-radius: 12px; margin-bottom: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                <div style="display: flex; align-items: center; gap: 0.55rem;">
+                                    <span style="font-size: 1.2rem;">📘</span>
+                                    <div>
+                                        <h3
+                                            style="font-size: 1rem; font-weight: 800; color: #1e40af; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                                            Lecture Categories
                                             <span class="badge"
-                                                style="font-size: 0.75rem; font-weight: 700; background: #f1f5f9; color: #334155; padding: 0.25rem 0.6rem; border-radius: 12px;">
-                                                Max: {{ number_format($task->max_score, 0) }} pts
+                                                style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.7rem; font-weight: 800; padding: 0.12rem 0.5rem; border-radius: 12px;">
+                                                Ratio:
+                                                {{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%
+                                            </span>
+                                        </h3>
+                                        <div
+                                            style="font-size: 0.73rem; color: #3b82f6; font-weight: 600; margin-top: 2px;">
+                                            Assigned Categories & Tasks for Lecture
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="badge"
+                                        style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 0.78rem; font-weight: 800; padding: 0.3rem 0.65rem; border-radius: 20px;">
+                                        Weight: {{ number_format($lecCategoriesGroup->sum('weight'), 0) }}%
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                @forelse($lecCategoriesGroup as $cat)
+                                    <div class="card"
+                                        style="border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04); overflow: hidden; border-top: 3.5px solid #3b82f6;">
+                                        <div class="card-header"
+                                            style="background: #ffffff; padding: 0.9rem 1.1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">
+                                            <div>
+                                                <div class="card-title"
+                                                    style="font-size: 0.95rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
+                                                    {{ $cat->name }}
+                                                    <button class="btn-icon-action" title="Edit Category"
+                                                        onclick="openModal('editCategoryModal_{{ $cat->id }}')">
+                                                        <svg width="14" height="14" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                    </button>
+                                                    <form
+                                                        action="{{ route('superadmin.grades.category.destroy', $cat->id) }}"
+                                                        method="POST" style="display: inline;"
+                                                        onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn-icon-action danger"
+                                                            title="Delete Category">
+                                                            <svg width="14" height="14" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                                <div
+                                                    style="font-size: 0.72rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 0.4rem;">
+                                                    <span>Period: <strong>{{ $cat->academic_period }}</strong></span>
+                                                    <span>&bull;</span>
+                                                    <span class="badge"
+                                                        style="font-size: 0.65rem; padding: 0.12rem 0.45rem; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-weight: 800; border-radius: 6px;">
+                                                        📘 LECTURE
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <span class="badge"
+                                                style="font-size: 0.82rem; font-weight: 800; padding: 0.35rem 0.7rem; border-radius: 20px; background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;">
+                                                Weight: {{ number_format($cat->weight, 0) }}%
                                             </span>
                                         </div>
+                                        <div class="card-body" style="padding: 0.85rem 1.1rem; background: #ffffff;">
+                                            @forelse($cat->gradingTasks as $task)
+                                                <div
+                                                    style="display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px dashed #e2e8f0;">
+                                                    <div>
+                                                        <div
+                                                            style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.35rem;">
+                                                            <span>📝</span>
+                                                            {{ $task->task_name }}
+                                                            <button class="btn-icon-action" title="Edit Task"
+                                                                onclick="openModal('editTaskModal_{{ $task->id }}')">
+                                                                <svg width="13" height="13" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                </svg>
+                                                            </button>
+                                                            <form
+                                                                action="{{ route('superadmin.grades.task.destroy', $task->id) }}"
+                                                                method="POST" style="display: inline;"
+                                                                onsubmit="return confirm('Are you sure you want to delete this task?');">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn-icon-action danger"
+                                                                    title="Delete Task">
+                                                                    <svg width="13" height="13" fill="none"
+                                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path stroke-linecap="round"
+                                                                            stroke-linejoin="round" stroke-width="2"
+                                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                    </svg>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                        <div
+                                                            style="font-size: 0.72rem; color: #94a3b8; margin-left: 1.35rem; margin-top: 2px;">
+                                                            {{ $task->task_date ? $task->task_date->format('M d, Y') : 'No Date' }}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <span class="badge"
+                                                            style="font-size: 0.75rem; font-weight: 700; background: #f1f5f9; color: #334155; padding: 0.22rem 0.55rem; border-radius: 12px;">
+                                                            Max: {{ number_format($task->max_score, 0) }} pts
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Edit Task Modal -->
+                                                <div class="modal-overlay" id="editTaskModal_{{ $task->id }}">
+                                                    <div class="modal-card">
+                                                        <div class="modal-header">
+                                                            <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit
+                                                                Grading Task</h3>
+                                                            <button type="button" class="btn-icon-action"
+                                                                style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                                                                onclick="closeModal('editTaskModal_{{ $task->id }}')">&times;</button>
+                                                        </div>
+                                                        <form
+                                                            action="{{ route('superadmin.grades.task.update', $task->id) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            <div class="modal-body">
+                                                                <div class="form-group">
+                                                                    <label>Grading Category</label>
+                                                                    <select name="grading_category_id"
+                                                                        class="form-control" required>
+                                                                        @foreach ($categories as $cOption)
+                                                                            <option value="{{ $cOption->id }}"
+                                                                                {{ $cOption->id == $task->grading_category_id ? 'selected' : '' }}>
+                                                                                {{ $cOption->academic_period }} -
+                                                                                {{ $cOption->name }}
+                                                                                ({{ number_format($cOption->weight, 0) }}%)
+                                                                            </option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Task Name</label>
+                                                                    <input type="text" name="task_name"
+                                                                        class="form-control"
+                                                                        value="{{ $task->task_name }}" required>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Max Score (Points)</label>
+                                                                    <input type="number" name="max_score"
+                                                                        class="form-control"
+                                                                        value="{{ number_format($task->max_score, 0) }}"
+                                                                        min="1" required>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Task Date</label>
+                                                                    <input type="date" name="task_date"
+                                                                        class="form-control"
+                                                                        value="{{ $task->task_date ? $task->task_date->format('Y-m-d') : '' }}">
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn-secondary"
+                                                                    onclick="closeModal('editTaskModal_{{ $task->id }}')">
+                                                                    Cancel
+                                                                </button>
+                                                                <button type="submit" class="btn-primary">Save
+                                                                    Changes</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            @empty
+                                                <div
+                                                    style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 0.75rem 0;">
+                                                    No tasks created for {{ $cat->academic_period }} {{ $cat->name }}.
+                                                </div>
+                                            @endforelse
+                                        </div>
                                     </div>
 
-                                    <!-- Edit Task Modal -->
-                                    <div class="modal-overlay" id="editTaskModal_{{ $task->id }}">
+                                    <!-- Edit Category Modal -->
+                                    <div class="modal-overlay" id="editCategoryModal_{{ $cat->id }}">
                                         <div class="modal-card">
                                             <div class="modal-header">
-                                                <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading Task
+                                                <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading
+                                                    Category
                                                 </h3>
                                                 <button type="button" class="btn-icon-action"
                                                     style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
-                                                    onclick="closeModal('editTaskModal_{{ $task->id }}')">&times;</button>
+                                                    onclick="closeModal('editCategoryModal_{{ $cat->id }}')">&times;</button>
                                             </div>
-                                            <form action="{{ route('superadmin.grades.task.update', $task->id) }}"
+                                            <form action="{{ route('superadmin.grades.category.update', $cat->id) }}"
                                                 method="POST">
                                                 @csrf
                                                 <div class="modal-body">
                                                     <div class="form-group">
-                                                        <label>Grading Category</label>
-                                                        <select name="grading_category_id" class="form-control" required>
-                                                            @foreach ($categories as $cOption)
-                                                                <option value="{{ $cOption->id }}"
-                                                                    {{ $cOption->id == $task->grading_category_id ? 'selected' : '' }}>
-                                                                    {{ $cOption->academic_period }} -
-                                                                    {{ $cOption->name }}
-                                                                    ({{ number_format($cOption->weight, 0) }}%)
-                                                                </option>
+                                                        <label>Academic Period</label>
+                                                        <select name="academic_period" class="form-control" required>
+                                                            @foreach ($availablePeriods as $pOpt)
+                                                                <option value="{{ $pOpt }}"
+                                                                    {{ $pOpt == $cat->academic_period ? 'selected' : '' }}>
+                                                                    {{ $pOpt }}</option>
                                                             @endforeach
                                                         </select>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label>Task Name</label>
-                                                        <input type="text" name="task_name" class="form-control"
-                                                            value="{{ $task->task_name }}" required>
+                                                        <label>Category Name</label>
+                                                        <input type="text" name="name" class="form-control"
+                                                            value="{{ $cat->name }}" required>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label>Max Score (Points)</label>
-                                                        <input type="number" name="max_score" class="form-control"
-                                                            value="{{ number_format($task->max_score, 0) }}"
-                                                            min="1" required>
+                                                        <label>Subject Component Type <span
+                                                                style="color: #ef4444;">*</span></label>
+                                                        <select name="component_type" class="form-control" required>
+                                                            <option value="lecture"
+                                                                {{ $cat->component_type === 'lecture' ? 'selected' : '' }}>
+                                                                Lecture Component (Lec
+                                                                {{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%
+                                                                ratio)
+                                                            </option>
+                                                            <option value="laboratory"
+                                                                {{ $cat->component_type === 'laboratory' ? 'selected' : '' }}>
+                                                                Laboratory Component (Lab
+                                                                {{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%
+                                                                ratio)
+                                                            </option>
+                                                        </select>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label>Task Date</label>
-                                                        <input type="date" name="task_date" class="form-control"
-                                                            value="{{ $task->task_date ? $task->task_date->format('Y-m-d') : '' }}">
+                                                        <label>Weight Percentage (%)</label>
+                                                        <input type="number" name="weight" class="form-control"
+                                                            value="{{ number_format($cat->weight, 0) }}" min="0"
+                                                            max="100" required>
                                                     </div>
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn-secondary"
-                                                        onclick="closeModal('editTaskModal_{{ $task->id }}')">
+                                                        onclick="closeModal('editCategoryModal_{{ $cat->id }}')">
                                                         Cancel
                                                     </button>
                                                     <button type="submit" class="btn-primary">Save Changes</button>
@@ -1268,762 +881,1225 @@
                                         </div>
                                     </div>
                                 @empty
-                                    <div style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1rem 0;">
-                                        No tasks created for {{ $cat->academic_period }} {{ $cat->name }}.
+                                    <div class="card" style="border-radius: 12px;">
+                                        <div class="card-body"
+                                            style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
+                                            No Lecture categories configured for
+                                            {{ $selectedPeriod ? $selectedPeriod : 'this period' }} yet.
+                                        </div>
                                     </div>
                                 @endforelse
                             </div>
                         </div>
 
-                        <!-- Edit Category Modal -->
-                        <div class="modal-overlay" id="editCategoryModal_{{ $cat->id }}">
-                            <div class="modal-card">
-                                <div class="modal-header">
-                                    <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading Category</h3>
-                                    <button type="button" class="btn-icon-action"
-                                        style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
-                                        onclick="closeModal('editCategoryModal_{{ $cat->id }}')">&times;</button>
+                        <!-- RIGHT COLUMN: LABORATORY COMPONENT SECTION -->
+                        <div>
+                            <div
+                                style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.15rem; background: linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, rgba(236, 253, 245, 0.5) 100%); border-left: 4px solid #10b981; border-radius: 12px; margin-bottom: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                <div style="display: flex; align-items: center; gap: 0.55rem;">
+                                    <span style="font-size: 1.2rem;">🔬</span>
+                                    <div>
+                                        <h3
+                                            style="font-size: 1rem; font-weight: 800; color: #065f46; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                                            Laboratory Categories
+                                            <span class="badge"
+                                                style="background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.7rem; font-weight: 800; padding: 0.12rem 0.5rem; border-radius: 12px;">
+                                                Ratio: {{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%
+                                            </span>
+                                        </h3>
+                                        <div
+                                            style="font-size: 0.73rem; color: #10b981; font-weight: 600; margin-top: 2px;">
+                                            Assigned Categories & Tasks for Laboratory
+                                        </div>
+                                    </div>
                                 </div>
-                                <form action="{{ route('superadmin.grades.category.update', $cat->id) }}"
-                                    method="POST">
-                                    @csrf
-                                    <div class="modal-body">
-                                        <div class="form-group">
-                                            <label>Academic Period</label>
-                                            <select name="academic_period" class="form-control" required>
-                                                @foreach ($availablePeriods as $pOpt)
-                                                    <option value="{{ $pOpt }}"
-                                                        {{ $pOpt == $cat->academic_period ? 'selected' : '' }}>
-                                                        {{ $pOpt }}</option>
-                                                @endforeach
-                                            </select>
+                                <div style="text-align: right;">
+                                    <span class="badge"
+                                        style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 0.78rem; font-weight: 800; padding: 0.3rem 0.65rem; border-radius: 20px;">
+                                        Weight: {{ number_format($labCategoriesGroup->sum('weight'), 0) }}%
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                @forelse($labCategoriesGroup as $cat)
+                                    <div class="card"
+                                        style="border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04); overflow: hidden; border-top: 3.5px solid #10b981;">
+                                        <div class="card-header"
+                                            style="background: #ffffff; padding: 0.9rem 1.1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">
+                                            <div>
+                                                <div class="card-title"
+                                                    style="font-size: 0.95rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
+                                                    {{ $cat->name }}
+                                                    <button class="btn-icon-action" title="Edit Category"
+                                                        onclick="openModal('editCategoryModal_{{ $cat->id }}')">
+                                                        <svg width="14" height="14" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                    </button>
+                                                    <form
+                                                        action="{{ route('superadmin.grades.category.destroy', $cat->id) }}"
+                                                        method="POST" style="display: inline;"
+                                                        onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn-icon-action danger"
+                                                            title="Delete Category">
+                                                            <svg width="14" height="14" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                                <div
+                                                    style="font-size: 0.72rem; color: #64748b; margin-top: 3px; display: flex; align-items: center; gap: 0.4rem;">
+                                                    <span>Period: <strong>{{ $cat->academic_period }}</strong></span>
+                                                    <span>&bull;</span>
+                                                    <span class="badge"
+                                                        style="font-size: 0.65rem; padding: 0.12rem 0.45rem; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 800; border-radius: 6px;">
+                                                        🔬 LABORATORY
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <span class="badge"
+                                                style="font-size: 0.82rem; font-weight: 800; padding: 0.35rem 0.7rem; border-radius: 20px; background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;">
+                                                Weight: {{ number_format($cat->weight, 0) }}%
+                                            </span>
                                         </div>
-                                        <div class="form-group">
-                                            <label>Category Name</label>
-                                            <input type="text" name="name" class="form-control"
-                                                value="{{ $cat->name }}" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Weight Percentage (%)</label>
-                                            <input type="number" name="weight" class="form-control"
-                                                value="{{ number_format($cat->weight, 0) }}" min="0"
-                                                max="100" required>
+                                        <div class="card-body" style="padding: 0.85rem 1.1rem; background: #ffffff;">
+                                            @forelse($cat->gradingTasks as $task)
+                                                <div
+                                                    style="display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px dashed #e2e8f0;">
+                                                    <div>
+                                                        <div
+                                                            style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.35rem;">
+                                                            <span>🔬</span>
+                                                            {{ $task->task_name }}
+                                                            <button class="btn-icon-action" title="Edit Task"
+                                                                onclick="openModal('editTaskModal_{{ $task->id }}')">
+                                                                <svg width="13" height="13" fill="none"
+                                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                </svg>
+                                                            </button>
+                                                            <form
+                                                                action="{{ route('superadmin.grades.task.destroy', $task->id) }}"
+                                                                method="POST" style="display: inline;"
+                                                                onsubmit="return confirm('Are you sure you want to delete this task?');">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn-icon-action danger"
+                                                                    title="Delete Task">
+                                                                    <svg width="13" height="13" fill="none"
+                                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path stroke-linecap="round"
+                                                                            stroke-linejoin="round" stroke-width="2"
+                                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                    </svg>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                        <div
+                                                            style="font-size: 0.72rem; color: #94a3b8; margin-left: 1.35rem; margin-top: 2px;">
+                                                            {{ $task->task_date ? $task->task_date->format('M d, Y') : 'No Date' }}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <span class="badge"
+                                                            style="font-size: 0.75rem; font-weight: 700; background: #f1f5f9; color: #334155; padding: 0.22rem 0.55rem; border-radius: 12px;">
+                                                            Max: {{ number_format($task->max_score, 0) }} pts
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Edit Task Modal -->
+                                                <div class="modal-overlay" id="editTaskModal_{{ $task->id }}">
+                                                    <div class="modal-card">
+                                                        <div class="modal-header">
+                                                            <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit
+                                                                Grading Task</h3>
+                                                            <button type="button" class="btn-icon-action"
+                                                                style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                                                                onclick="closeModal('editTaskModal_{{ $task->id }}')">&times;</button>
+                                                        </div>
+                                                        <form
+                                                            action="{{ route('superadmin.grades.task.update', $task->id) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            <div class="modal-body">
+                                                                <div class="form-group">
+                                                                    <label>Grading Category</label>
+                                                                    <select name="grading_category_id"
+                                                                        class="form-control" required>
+                                                                        @foreach ($categories as $cOption)
+                                                                            <option value="{{ $cOption->id }}"
+                                                                                {{ $cOption->id == $task->grading_category_id ? 'selected' : '' }}>
+                                                                                {{ $cOption->academic_period }} -
+                                                                                {{ $cOption->name }}
+                                                                                ({{ number_format($cOption->weight, 0) }}%)
+                                                                            </option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Task Name</label>
+                                                                    <input type="text" name="task_name"
+                                                                        class="form-control"
+                                                                        value="{{ $task->task_name }}" required>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Max Score (Points)</label>
+                                                                    <input type="number" name="max_score"
+                                                                        class="form-control"
+                                                                        value="{{ number_format($task->max_score, 0) }}"
+                                                                        min="1" required>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Task Date</label>
+                                                                    <input type="date" name="task_date"
+                                                                        class="form-control"
+                                                                        value="{{ $task->task_date ? $task->task_date->format('Y-m-d') : '' }}">
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn-secondary"
+                                                                    onclick="closeModal('editTaskModal_{{ $task->id }}')">
+                                                                    Cancel
+                                                                </button>
+                                                                <button type="submit" class="btn-primary">Save
+                                                                    Changes</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            @empty
+                                                <div
+                                                    style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 0.75rem 0;">
+                                                    No tasks created for {{ $cat->academic_period }}
+                                                    {{ $cat->name }}.
+                                                </div>
+                                            @endforelse
                                         </div>
                                     </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn-secondary"
-                                            onclick="closeModal('editCategoryModal_{{ $cat->id }}')">
-                                            Cancel
-                                        </button>
-                                        <button type="submit" class="btn-primary">Save Changes</button>
+
+                                    <!-- Edit Category Modal -->
+                                    <div class="modal-overlay" id="editCategoryModal_{{ $cat->id }}">
+                                        <div class="modal-card">
+                                            <div class="modal-header">
+                                                <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading
+                                                    Category
+                                                </h3>
+                                                <button type="button" class="btn-icon-action"
+                                                    style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                                                    onclick="closeModal('editCategoryModal_{{ $cat->id }}')">&times;</button>
+                                            </div>
+                                            <form action="{{ route('superadmin.grades.category.update', $cat->id) }}"
+                                                method="POST">
+                                                @csrf
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <label>Academic Period</label>
+                                                        <select name="academic_period" class="form-control" required>
+                                                            @foreach ($availablePeriods as $pOpt)
+                                                                <option value="{{ $pOpt }}"
+                                                                    {{ $pOpt == $cat->academic_period ? 'selected' : '' }}>
+                                                                    {{ $pOpt }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Category Name</label>
+                                                        <input type="text" name="name" class="form-control"
+                                                            value="{{ $cat->name }}" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Subject Component Type <span
+                                                                style="color: #ef4444;">*</span></label>
+                                                        <select name="component_type" class="form-control" required>
+                                                            <option value="lecture"
+                                                                {{ $cat->component_type === 'lecture' ? 'selected' : '' }}>
+                                                                Lecture Component (Lec
+                                                                {{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%
+                                                                ratio)
+                                                            </option>
+                                                            <option value="laboratory"
+                                                                {{ $cat->component_type === 'laboratory' ? 'selected' : '' }}>
+                                                                Laboratory Component (Lab
+                                                                {{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%
+                                                                ratio)
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Weight Percentage (%)</label>
+                                                        <input type="number" name="weight" class="form-control"
+                                                            value="{{ number_format($cat->weight, 0) }}" min="0"
+                                                            max="100" required>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn-secondary"
+                                                        onclick="closeModal('editCategoryModal_{{ $cat->id }}')">
+                                                        Cancel
+                                                    </button>
+                                                    <button type="submit" class="btn-primary">Save Changes</button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
-                                </form>
+                                @empty
+                                    <div class="card" style="border-radius: 12px;">
+                                        <div class="card-body"
+                                            style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
+                                            No Laboratory categories configured for
+                                            {{ $selectedPeriod ? $selectedPeriod : 'this period' }} yet.
+                                        </div>
+                                    </div>
+                                @endforelse
                             </div>
-                        </div>
-                    @empty
-                        <div class="card" style="grid-column: 1 / -1; border-radius: 12px;">
-                            <div class="card-body" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                                No grading categories configured for
-                                {{ $selectedPeriod ? $selectedPeriod : 'this period' }} yet.
-                            </div>
-                        </div>
-                    @endforelse
-                </div>
-            @endif
-        </div> <!-- End #categoryBreakdownWrapper -->
-
-        <!-- Sheet Tabs Navigation -->
-        <div class="sheet-tabs-nav">
-            <button type="button" id="tab-btn-grades" class="sheet-tab-btn active" onclick="switchSheetTab('grades')">
-                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Class Record & Grades
-            </button>
-            <button type="button" id="tab-btn-attendance" class="sheet-tab-btn" onclick="switchSheetTab('attendance')">
-                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Class Attendance Sheet
-            </button>
-        </div>
-
-        <!-- Panel 1: Student Scores Matrix Class Record Table (Editable Table) -->
-        <div id="sheet-grades-panel">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title"
-                        style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            Class Record Sheet
-                            @if ($selectedPeriod)
-                                &bull; {{ $selectedPeriod }} Period
-                            @endif
                         </div>
                     </div>
-                </div>
-                <div class="card-body">
-
-                    @php
-                        $hasLab = $currentSectionSubject->subject->has_lab ?? false;
-                        $lecWeightRatio = ($currentSectionSubject->subject->lecture_weight ?? 70) / 100;
-                        $labWeightRatio = ($currentSectionSubject->subject->lab_weight ?? 30) / 100;
-
-                        if ($hasLab) {
-                            $lecCategories = $categories->filter(fn($c) => $c->component_type !== 'laboratory');
-                            $labCategories = $categories->filter(fn($c) => $c->component_type === 'laboratory');
-                        } else {
-                            $lecCategories = $categories;
-                            $labCategories = collect();
-                        }
-
-                        $lecTotalWeight = $lecCategories->sum('weight');
-                        $labTotalWeight = $labCategories->sum('weight');
-                    @endphp
-
-                    <div class="table-responsive">
-                        <table class="custom-table" id="classRecordTable">
-                            <thead>
-                                <tr>
-                                    <th>Student ID</th>
-                                    <th>Student Name</th>
-                                    @if ($hasLab)
-                                        <th
-                                            style="text-align: center; background: rgba(59, 130, 246, 0.08); color: #1e40af;">
-                                            Lec Grade
-                                            <div style="font-size: 0.65rem; font-weight: 700; color: #2563eb;">
-                                                ({{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%)
-                                            </div>
-                                        </th>
-                                        <th
-                                            style="text-align: center; background: rgba(16, 185, 129, 0.08); color: #065f46;">
-                                            Lab Grade
-                                            <div style="font-size: 0.65rem; font-weight: 700; color: #059669;">
-                                                ({{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%)
-                                            </div>
-                                        </th>
-                                        <th
-                                            style="text-align: center; background: rgba(16, 185, 129, 0.18); color: #064e3b; font-weight: 800;">
-                                            {{ $selectedPeriod ? strtoupper($selectedPeriod) . ' GRADE' : 'FINAL GRADE' }}
-                                            <div style="font-size: 0.65rem; font-weight: 700; color: #047857;">
-                                                (Lec + Lab)
-                                            </div>
-                                        </th>
-                                    @else
-                                        <th
-                                            style="text-align: center; background: rgba(16, 185, 129, 0.12); color: #064e3b; font-weight: 800;">
-                                            {{ $selectedPeriod ? strtoupper($selectedPeriod) . ' GRADE' : 'FINAL GRADE' }}
-                                        </th>
-                                    @endif
-                                    <th style="text-align: center; width: 140px;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($enrolledStudents as $enrollment)
-                                    @php
-                                        $lecCategoryPctSum = 0;
-                                        $labCategoryPctSum = 0;
-                                        $generalCategoryPctSum = 0;
-
-                                        if ($hasLab) {
-                                            foreach ($lecCategories as $cat) {
-                                                $catEarned = 0;
-                                                $catMax = 0;
-                                                foreach ($cat->gradingTasks as $task) {
-                                                    $ts = $enrollment->taskScores
-                                                        ->where('grading_task_id', $task->id)
-                                                        ->first();
-                                                    if ($ts && $ts->score !== null) {
-                                                        $catEarned += $ts->score;
-                                                    }
-                                                    $catMax += $task->max_score;
-                                                }
-                                                $lecCategoryPctSum +=
-                                                    $catMax > 0 ? ($catEarned / $catMax) * $cat->weight : 0;
-                                            }
-
-                                            foreach ($labCategories as $cat) {
-                                                $catEarned = 0;
-                                                $catMax = 0;
-                                                foreach ($cat->gradingTasks as $task) {
-                                                    $ts = $enrollment->taskScores
-                                                        ->where('grading_task_id', $task->id)
-                                                        ->first();
-                                                    if ($ts && $ts->score !== null) {
-                                                        $catEarned += $ts->score;
-                                                    }
-                                                    $catMax += $task->max_score;
-                                                }
-                                                $labCategoryPctSum +=
-                                                    $catMax > 0 ? ($catEarned / $catMax) * $cat->weight : 0;
-                                            }
-
-                                            $lecSubtotal =
-                                                $lecTotalWeight > 0
-                                                    ? ($lecCategoryPctSum / $lecTotalWeight) * 100
-                                                    : $lecCategoryPctSum;
-                                            $lecWeightedShare = $lecSubtotal * $lecWeightRatio;
-
-                                            $labSubtotal =
-                                                $labTotalWeight > 0
-                                                    ? ($labCategoryPctSum / $labTotalWeight) * 100
-                                                    : $labCategoryPctSum;
-                                            $labWeightedShare = $labSubtotal * $labWeightRatio;
-
-                                            $totalFinalGrade =
-                                                $lecTotalWeight > 0 && $labTotalWeight > 0
-                                                    ? $lecWeightedShare + $labWeightedShare
-                                                    : $lecCategoryPctSum + $labCategoryPctSum;
-                                        } else {
-                                            foreach ($categories as $cat) {
-                                                $catEarned = 0;
-                                                $catMax = 0;
-                                                foreach ($cat->gradingTasks as $task) {
-                                                    $ts = $enrollment->taskScores
-                                                        ->where('grading_task_id', $task->id)
-                                                        ->first();
-                                                    if ($ts && $ts->score !== null) {
-                                                        $catEarned += $ts->score;
-                                                    }
-                                                    $catMax += $task->max_score;
-                                                }
-                                                $generalCategoryPctSum +=
-                                                    $catMax > 0 ? ($catEarned / $catMax) * $cat->weight : 0;
-                                            }
-                                            $totalFinalGrade = $generalCategoryPctSum;
-                                        }
-                                    @endphp
-                                    <tr data-student-row="{{ $enrollment->id }}"
-                                        data-has-lab="{{ $hasLab ? '1' : '0' }}"
-                                        data-lec-ratio="{{ $lecWeightRatio }}" data-lab-ratio="{{ $labWeightRatio }}">
-                                        <td><strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong></td>
-                                        <td>
-                                            <strong>{{ $enrollment->student->first_name ?? '' }}
-                                                {{ $enrollment->student->last_name ?? '' }}</strong>
-                                        </td>
-
-                                        @if ($hasLab)
-                                            {{-- LECTURE SUBTOTAL TD --}}
-                                            <td style="text-align: center; background: rgba(59, 130, 246, 0.04);"
-                                                data-lec-summary="{{ $enrollment->id }}">
-                                                <span class="badge"
-                                                    style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 0.85rem; padding: 0.28rem 0.65rem; border-radius: 8px;">
-                                                    <span
-                                                        class="lec-grade-val">{{ number_format($lecSubtotal, 2) }}</span>%
-                                                </span>
-                                                <div
-                                                    style="font-size: 0.68rem; color: #64748b; margin-top: 3px; font-weight: 600;">
-                                                    Share:
-                                                    <span
-                                                        class="lec-share-val">{{ number_format($lecWeightedShare, 2) }}</span>%
-                                                </div>
-                                            </td>
-
-                                            {{-- LABORATORY SUBTOTAL TD --}}
-                                            <td style="text-align: center; background: rgba(16, 185, 129, 0.04);"
-                                                data-lab-summary="{{ $enrollment->id }}">
-                                                <span class="badge"
-                                                    style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 0.85rem; padding: 0.28rem 0.65rem; border-radius: 8px;">
-                                                    <span
-                                                        class="lab-grade-val">{{ number_format($labSubtotal, 2) }}</span>%
-                                                </span>
-                                                <div
-                                                    style="font-size: 0.68rem; color: #64748b; margin-top: 3px; font-weight: 600;">
-                                                    Share:
-                                                    <span
-                                                        class="lab-share-val">{{ number_format($labWeightedShare, 2) }}</span>%
-                                                </div>
-                                            </td>
-
-                                            {{-- FINAL GRADE TD --}}
-                                            <td style="text-align: center; background: rgba(16, 185, 129, 0.12);"
-                                                data-final-summary="{{ $enrollment->id }}">
-                                                <span class="badge badge-active final-grade-badge"
-                                                    style="font-size: 0.9rem; padding: 0.35rem 0.8rem; background: #059669; color: #ffffff; border-radius: 8px;">
-                                                    <span
-                                                        class="final-grade-val">{{ number_format($totalFinalGrade, 2) }}</span>%
-                                                </span>
-                                            </td>
-                                        @else
-                                            <td style="text-align: center; background: rgba(16, 185, 129, 0.08);"
-                                                data-final-summary="{{ $enrollment->id }}">
-                                                <span class="badge badge-active final-grade-badge"
-                                                    style="font-size: 0.9rem; padding: 0.35rem 0.8rem; background: #059669; color: #ffffff; border-radius: 8px;">
-                                                    <span
-                                                        class="final-grade-val">{{ number_format($totalFinalGrade, 2) }}</span>%
-                                                </span>
-                                            </td>
-                                        @endif
-
-                                        <td style="text-align: center;">
-                                            <button type="button" class="btn-primary"
-                                                style="padding: 0.4rem 0.85rem; font-size: 0.82rem; font-weight: 700; border-radius: 8px; background: #2563eb; color: #ffffff; border: none; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; box-shadow: 0 2px 4px rgba(37,99,235,0.25);"
-                                                onclick="openModal('studentGradeModal_{{ $enrollment->id }}')">
+                @else
+                    <!-- STANDARD SUBJECT CATEGORIES SECTION -->
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+                        @forelse($categories as $cat)
+                            <div class="card"
+                                style="border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04); overflow: hidden; border-top: 3.5px solid var(--primary-navy, #0f172a);">
+                                <div class="card-header"
+                                    style="background: #ffffff; padding: 1rem 1.15rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">
+                                    <div>
+                                        <div class="card-title"
+                                            style="font-size: 0.95rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
+                                            {{ $cat->name }}
+                                            <button class="btn-icon-action" title="Edit Category"
+                                                onclick="openModal('editCategoryModal_{{ $cat->id }}')">
                                                 <svg width="14" height="14" fill="none" viewBox="0 0 24 24"
                                                     stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
-                                                Add Grades
                                             </button>
-                                        </td>
-                                        <!-- Student Grade Entry Modal -->
-                                        <div class="modal-overlay" id="studentGradeModal_{{ $enrollment->id }}">
-                                            <div class="modal-card"
-                                                style="max-width: {{ $hasLab ? '1200px' : '750px' }}; width: 95%;">
-                                                <div class="modal-header"
-                                                    style="background: linear-gradient(135deg, var(--primary-navy, #0f172a) 0%, #1e293b 100%); color: #ffffff; padding: 1.15rem 1.5rem;">
-                                                    <div>
-                                                        <h3
-                                                            style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #ffffff; display: flex; align-items: center; gap: 0.5rem;">
-                                                            📝 Grade Entry: {{ $enrollment->student->first_name ?? '' }}
-                                                            {{ $enrollment->student->last_name ?? '' }}
-                                                        </h3>
-                                                        <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">
-                                                            Student ID:
-                                                            <strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong>
-                                                            &bull;
-                                                            {{ $currentSectionSubject->subject->subject_code ?? '' }} -
-                                                            {{ $currentSectionSubject->subject->subject_name ?? '' }}
-                                                        </div>
-                                                    </div>
+                                            <form action="{{ route('superadmin.grades.category.destroy', $cat->id) }}"
+                                                method="POST" style="display: inline;"
+                                                onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn-icon-action danger"
+                                                    title="Delete Category">
+                                                    <svg width="14" height="14" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div style="font-size: 0.72rem; color: #64748b; margin-top: 3px;">
+                                            Period: <strong>{{ $cat->academic_period }}</strong>
+                                        </div>
+                                    </div>
+                                    <span class="badge badge-active"
+                                        style="font-size: 0.82rem; font-weight: 800; padding: 0.35rem 0.7rem; border-radius: 20px;">
+                                        Weight: {{ number_format($cat->weight, 0) }}%
+                                    </span>
+                                </div>
+                                <div class="card-body" style="padding: 0.85rem 1.15rem; background: #ffffff;">
+                                    @forelse($cat->gradingTasks as $task)
+                                        <div
+                                            style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px dashed #e2e8f0;">
+                                            <div>
+                                                <div
+                                                    style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.35rem;">
+                                                    <span>📝</span>
+                                                    {{ $task->task_name }}
+                                                    <button class="btn-icon-action" title="Edit Task"
+                                                        onclick="openModal('editTaskModal_{{ $task->id }}')">
+                                                        <svg width="13" height="13" fill="none"
+                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        </svg>
+                                                    </button>
+                                                    <form
+                                                        action="{{ route('superadmin.grades.task.destroy', $task->id) }}"
+                                                        method="POST" style="display: inline;"
+                                                        onsubmit="return confirm('Are you sure you want to delete this task?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn-icon-action danger"
+                                                            title="Delete Task">
+                                                            <svg width="13" height="13" fill="none"
+                                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                                <div
+                                                    style="font-size: 0.72rem; color: #94a3b8; margin-left: 1.35rem; margin-top: 2px;">
+                                                    {{ $task->task_date ? $task->task_date->format('M d, Y') : 'No Date' }}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="badge"
+                                                    style="font-size: 0.75rem; font-weight: 700; background: #f1f5f9; color: #334155; padding: 0.25rem 0.6rem; border-radius: 12px;">
+                                                    Max: {{ number_format($task->max_score, 0) }} pts
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Edit Task Modal -->
+                                        <div class="modal-overlay" id="editTaskModal_{{ $task->id }}">
+                                            <div class="modal-card">
+                                                <div class="modal-header">
+                                                    <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading
+                                                        Task
+                                                    </h3>
                                                     <button type="button" class="btn-icon-action"
                                                         style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
-                                                        onclick="closeModal('studentGradeModal_{{ $enrollment->id }}')">&times;</button>
+                                                        onclick="closeModal('editTaskModal_{{ $task->id }}')">&times;</button>
                                                 </div>
-
-                                                <div class="modal-body"
-                                                    style="max-height: 80vh; overflow-y: auto; padding: 1.5rem;">
-                                                    @if ($hasLab)
-                                                        <!-- 2-COLUMN GRID: LECTURE LEFT, LABORATORY RIGHT -->
-                                                        <div
-                                                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 1.5rem; align-items: start;">
-                                                            <!-- LEFT COLUMN: LECTURE TASKS & SCORES -->
-                                                            <div
-                                                                style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; border-top: 3.5px solid #3b82f6;">
-                                                                <div
-                                                                    style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; margin-bottom: 0.85rem; border-bottom: 1.5px solid #cbd5e1;">
-                                                                    <h4
-                                                                        style="font-size: 0.92rem; font-weight: 800; color: #1e40af; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
-                                                                        📘 Lecture Component
-                                                                    </h4>
-                                                                    <span class="badge"
-                                                                        style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.7rem; font-weight: 800; padding: 0.18rem 0.5rem; border-radius: 12px;">
-                                                                        Ratio:
-                                                                        {{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%
-                                                                    </span>
-                                                                </div>
-
-                                                                @forelse($lecCategories as $cat)
-                                                                    <div
-                                                                        style="margin-bottom: 1rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.75rem;">
-                                                                        <div
-                                                                            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px dashed #e2e8f0; padding-bottom: 0.35rem;">
-                                                                            <span
-                                                                                style="font-size: 0.85rem; font-weight: 800; color: #0f172a;">
-                                                                                {{ $cat->name }}
-                                                                                <small
-                                                                                    style="color: #64748b; font-weight: 600;">({{ number_format($cat->weight, 0) }}%)</small>
-                                                                            </span>
-                                                                            <span
-                                                                                style="font-size: 0.7rem; color: #64748b;">Period:
-                                                                                <strong>{{ $cat->academic_period }}</strong></span>
-                                                                        </div>
-
-                                                                        @forelse($cat->gradingTasks as $task)
-                                                                            @php
-                                                                                $taskScoreModel = $enrollment->taskScores
-                                                                                    ->where(
-                                                                                        'grading_task_id',
-                                                                                        $task->id,
-                                                                                    )
-                                                                                    ->first();
-                                                                                $scoreValue = $taskScoreModel
-                                                                                    ? $taskScoreModel->score
-                                                                                    : null;
-                                                                            @endphp
-                                                                            <div
-                                                                                style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9;">
-                                                                                <div>
-                                                                                    <div
-                                                                                        style="font-size: 0.82rem; font-weight: 700; color: #334155;">
-                                                                                        📝 {{ $task->task_name }}</div>
-                                                                                    <div
-                                                                                        style="font-size: 0.7rem; color: #94a3b8;">
-                                                                                        Max:
-                                                                                        {{ number_format($task->max_score, 0) }}
-                                                                                        pts</div>
-                                                                                </div>
-                                                                                <div>
-                                                                                    <input type="number" step="0.1"
-                                                                                        min="0"
-                                                                                        max="{{ $task->max_score }}"
-                                                                                        value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
-                                                                                        class="score-input-cell"
-                                                                                        data-task-id="{{ $task->id }}"
-                                                                                        data-enrollment-id="{{ $enrollment->id }}"
-                                                                                        data-max-score="{{ $task->max_score }}"
-                                                                                        data-cat-id="{{ $cat->id }}"
-                                                                                        data-cat-weight="{{ $cat->weight }}"
-                                                                                        data-cat-type="lecture"
-                                                                                        placeholder="-">
-                                                                                </div>
-                                                                            </div>
-                                                                        @empty
-                                                                            <div
-                                                                                style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 0.4rem 0;">
-                                                                                No tasks configured</div>
-                                                                        @endforelse
-                                                                    </div>
-                                                                @empty
-                                                                    <div
-                                                                        style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1rem 0;">
-                                                                        No Lecture categories</div>
-                                                                @endforelse
-                                                            </div>
-
-                                                            <!-- RIGHT COLUMN: LABORATORY TASKS & SCORES -->
-                                                            <div
-                                                                style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; border-top: 3.5px solid #10b981;">
-                                                                <div
-                                                                    style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; margin-bottom: 0.85rem; border-bottom: 1.5px solid #cbd5e1;">
-                                                                    <h4
-                                                                        style="font-size: 0.92rem; font-weight: 800; color: #065f46; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
-                                                                        🔬 Laboratory Component
-                                                                    </h4>
-                                                                    <span class="badge"
-                                                                        style="background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.7rem; font-weight: 800; padding: 0.18rem 0.5rem; border-radius: 12px;">
-                                                                        Ratio:
-                                                                        {{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%
-                                                                    </span>
-                                                                </div>
-
-                                                                @forelse($labCategories as $cat)
-                                                                    <div
-                                                                        style="margin-bottom: 1rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.75rem;">
-                                                                        <div
-                                                                            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px dashed #e2e8f0; padding-bottom: 0.35rem;">
-                                                                            <span
-                                                                                style="font-size: 0.85rem; font-weight: 800; color: #0f172a;">
-                                                                                {{ $cat->name }}
-                                                                                <small
-                                                                                    style="color: #64748b; font-weight: 600;">({{ number_format($cat->weight, 0) }}%)</small>
-                                                                            </span>
-                                                                            <span
-                                                                                style="font-size: 0.7rem; color: #64748b;">Period:
-                                                                                <strong>{{ $cat->academic_period }}</strong></span>
-                                                                        </div>
-
-                                                                        @forelse($cat->gradingTasks as $task)
-                                                                            @php
-                                                                                $taskScoreModel = $enrollment->taskScores
-                                                                                    ->where(
-                                                                                        'grading_task_id',
-                                                                                        $task->id,
-                                                                                    )
-                                                                                    ->first();
-                                                                                $scoreValue = $taskScoreModel
-                                                                                    ? $taskScoreModel->score
-                                                                                    : null;
-                                                                            @endphp
-                                                                            <div
-                                                                                style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9;">
-                                                                                <div>
-                                                                                    <div
-                                                                                        style="font-size: 0.82rem; font-weight: 700; color: #334155;">
-                                                                                        🔬 {{ $task->task_name }}</div>
-                                                                                    <div
-                                                                                        style="font-size: 0.7rem; color: #94a3b8;">
-                                                                                        Max:
-                                                                                        {{ number_format($task->max_score, 0) }}
-                                                                                        pts</div>
-                                                                                </div>
-                                                                                <div>
-                                                                                    <input type="number" step="0.1"
-                                                                                        min="0"
-                                                                                        max="{{ $task->max_score }}"
-                                                                                        value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
-                                                                                        class="score-input-cell"
-                                                                                        data-task-id="{{ $task->id }}"
-                                                                                        data-enrollment-id="{{ $enrollment->id }}"
-                                                                                        data-max-score="{{ $task->max_score }}"
-                                                                                        data-cat-id="{{ $cat->id }}"
-                                                                                        data-cat-weight="{{ $cat->weight }}"
-                                                                                        data-cat-type="laboratory"
-                                                                                        placeholder="-">
-                                                                                </div>
-                                                                            </div>
-                                                                        @empty
-                                                                            <div
-                                                                                style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 0.4rem 0;">
-                                                                                No tasks configured</div>
-                                                                        @endforelse
-                                                                    </div>
-                                                                @empty
-                                                                    <div
-                                                                        style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1rem 0;">
-                                                                        No Laboratory categories</div>
-                                                                @endforelse
-                                                            </div>
+                                                <form action="{{ route('superadmin.grades.task.update', $task->id) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    <div class="modal-body">
+                                                        <div class="form-group">
+                                                            <label>Grading Category</label>
+                                                            <select name="grading_category_id" class="form-control"
+                                                                required>
+                                                                @foreach ($categories as $cOption)
+                                                                    <option value="{{ $cOption->id }}"
+                                                                        {{ $cOption->id == $task->grading_category_id ? 'selected' : '' }}>
+                                                                        {{ $cOption->academic_period }} -
+                                                                        {{ $cOption->name }}
+                                                                        ({{ number_format($cOption->weight, 0) }}%)
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
                                                         </div>
-                                                    @else
-                                                        <!-- NON-LAB SUBJECT TASKS MATRIX -->
-                                                        <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                                            @forelse($categories as $cat)
-                                                                <div
-                                                                    style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 1rem;">
-                                                                    <div
-                                                                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem;">
-                                                                        <span
-                                                                            style="font-size: 0.9rem; font-weight: 800; color: #0f172a;">
-                                                                            {{ $cat->name }}
-                                                                            ({{ number_format($cat->weight, 0) }}%)
-                                                                        </span>
-                                                                        <span
-                                                                            style="font-size: 0.75rem; color: #64748b;">Period:
-                                                                            <strong>{{ $cat->academic_period }}</strong></span>
-                                                                    </div>
-
-                                                                    @forelse($cat->gradingTasks as $task)
-                                                                        @php
-                                                                            $taskScoreModel = $enrollment->taskScores
-                                                                                ->where('grading_task_id', $task->id)
-                                                                                ->first();
-                                                                            $scoreValue = $taskScoreModel
-                                                                                ? $taskScoreModel->score
-                                                                                : null;
-                                                                        @endphp
-                                                                        <div
-                                                                            style="display: flex; align-items: center; justify-content: space-between; padding: 0.45rem 0; border-bottom: 1px dashed #e2e8f0;">
-                                                                            <div>
-                                                                                <div
-                                                                                    style="font-size: 0.85rem; font-weight: 700; color: #334155;">
-                                                                                    📝 {{ $task->task_name }}</div>
-                                                                                <div
-                                                                                    style="font-size: 0.72rem; color: #94a3b8;">
-                                                                                    Max:
-                                                                                    {{ number_format($task->max_score, 0) }}
-                                                                                    pts</div>
-                                                                            </div>
-                                                                            <div>
-                                                                                <input type="number" step="0.1"
-                                                                                    min="0"
-                                                                                    max="{{ $task->max_score }}"
-                                                                                    value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
-                                                                                    class="score-input-cell"
-                                                                                    data-task-id="{{ $task->id }}"
-                                                                                    data-enrollment-id="{{ $enrollment->id }}"
-                                                                                    data-max-score="{{ $task->max_score }}"
-                                                                                    data-cat-id="{{ $cat->id }}"
-                                                                                    data-cat-weight="{{ $cat->weight }}"
-                                                                                    data-cat-type="general"
-                                                                                    placeholder="-">
-                                                                            </div>
-                                                                        </div>
-                                                                    @empty
-                                                                        <div
-                                                                            style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 0.5rem 0;">
-                                                                            No tasks configured</div>
-                                                                    @endforelse
-                                                                </div>
-                                                            @empty
-                                                                <div
-                                                                    style="font-size: 0.85rem; color: #94a3b8; text-align: center; padding: 1.5rem 0;">
-                                                                    No categories configured</div>
-                                                            @endforelse
+                                                        <div class="form-group">
+                                                            <label>Task Name</label>
+                                                            <input type="text" name="task_name" class="form-control"
+                                                                value="{{ $task->task_name }}" required>
                                                         </div>
-                                                    @endif
-                                                </div>
-
-                                                <div class="modal-footer"
-                                                    style="background: #f8fafc; padding: 0.85rem 1.35rem; display: flex; align-items: center; justify-content: space-between;">
-                                                    <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b;"
-                                                        data-modal-summary="{{ $enrollment->id }}">
-                                                        @if ($hasLab)
-                                                            Lec: <span class="badge"
-                                                                style="background: #eff6ff; color: #1d4ed8; font-size: 0.82rem;"><span
-                                                                    class="modal-lec-val">{{ number_format($lecSubtotal, 2) }}</span>%</span>
-                                                            &bull; Lab: <span class="badge"
-                                                                style="background: #ecfdf5; color: #047857; font-size: 0.82rem;"><span
-                                                                    class="modal-lab-val">{{ number_format($labSubtotal, 2) }}</span>%</span>
-                                                            &bull; {{ $selectedPeriod ? $selectedPeriod : 'Final' }}
-                                                            Grade:
-                                                            <span class="badge"
-                                                                style="background: #059669; color: #ffffff; font-size: 0.85rem;"><span
-                                                                    class="modal-final-val">{{ number_format($totalFinalGrade, 2) }}</span>%</span>
-                                                        @else
-                                                            {{ $selectedPeriod ? $selectedPeriod : 'Final' }} Grade: <span
-                                                                class="badge"
-                                                                style="background: #059669; color: #ffffff; font-size: 0.85rem;"><span
-                                                                    class="modal-final-val">{{ number_format($generalCategoryPctSum, 2) }}</span>%</span>
-                                                        @endif
+                                                        <div class="form-group">
+                                                            <label>Max Score (Points)</label>
+                                                            <input type="number" name="max_score" class="form-control"
+                                                                value="{{ number_format($task->max_score, 0) }}"
+                                                                min="1" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label>Task Date</label>
+                                                            <input type="date" name="task_date" class="form-control"
+                                                                value="{{ $task->task_date ? $task->task_date->format('Y-m-d') : '' }}">
+                                                        </div>
                                                     </div>
-                                                    <button type="button" class="btn-secondary"
-                                                        onclick="closeModal('studentGradeModal_{{ $enrollment->id }}')">Close</button>
-                                                </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn-secondary"
+                                                            onclick="closeModal('editTaskModal_{{ $task->id }}')">
+                                                            Cancel
+                                                        </button>
+                                                        <button type="submit" class="btn-primary">Save Changes</button>
+                                                    </div>
+                                                </form>
                                             </div>
                                         </div>
                                     @empty
+                                        <div
+                                            style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1rem 0;">
+                                            No tasks created for {{ $cat->academic_period }} {{ $cat->name }}.
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+
+                            <!-- Edit Category Modal -->
+                            <div class="modal-overlay" id="editCategoryModal_{{ $cat->id }}">
+                                <div class="modal-card">
+                                    <div class="modal-header">
+                                        <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Edit Grading Category
+                                        </h3>
+                                        <button type="button" class="btn-icon-action"
+                                            style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                                            onclick="closeModal('editCategoryModal_{{ $cat->id }}')">&times;</button>
+                                    </div>
+                                    <form action="{{ route('superadmin.grades.category.update', $cat->id) }}"
+                                        method="POST">
+                                        @csrf
+                                        <div class="modal-body">
+                                            <div class="form-group">
+                                                <label>Academic Period</label>
+                                                <select name="academic_period" class="form-control" required>
+                                                    @foreach ($availablePeriods as $pOpt)
+                                                        <option value="{{ $pOpt }}"
+                                                            {{ $pOpt == $cat->academic_period ? 'selected' : '' }}>
+                                                            {{ $pOpt }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Category Name</label>
+                                                <input type="text" name="name" class="form-control"
+                                                    value="{{ $cat->name }}" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Weight Percentage (%)</label>
+                                                <input type="number" name="weight" class="form-control"
+                                                    value="{{ number_format($cat->weight, 0) }}" min="0"
+                                                    max="100" required>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn-secondary"
+                                                onclick="closeModal('editCategoryModal_{{ $cat->id }}')">
+                                                Cancel
+                                            </button>
+                                            <button type="submit" class="btn-primary">Save Changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="card" style="grid-column: 1 / -1; border-radius: 12px;">
+                                <div class="card-body"
+                                    style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    No grading categories configured for
+                                    {{ $selectedPeriod ? $selectedPeriod : 'this period' }} yet.
+                                </div>
+                            </div>
+                        @endforelse
+                    </div>
+                @endif
+            </div> <!-- End #categoryBreakdownWrapper -->
+
+            <!-- Sheet Tabs Navigation -->
+            <div class="sheet-tabs-nav">
+                <button type="button" id="tab-btn-grades" class="sheet-tab-btn active"
+                    onclick="switchSheetTab('grades')">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Class Record & Grades
+                </button>
+                <button type="button" id="tab-btn-attendance" class="sheet-tab-btn"
+                    onclick="switchSheetTab('attendance')">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Class Attendance Sheet
+                </button>
+            </div>
+
+            <!-- Panel 1: Student Scores Matrix Class Record Table (Editable Table) -->
+            <div id="sheet-grades-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"
+                            style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <svg width="20" height="20" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Class Record Sheet
+                                @if ($selectedPeriod)
+                                    &bull; {{ $selectedPeriod }} Period
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        @php
+                            $hasLab = $currentSectionSubject->subject->has_lab ?? false;
+                            $lecWeightRatio = ($currentSectionSubject->subject->lecture_weight ?? 70) / 100;
+                            $labWeightRatio = ($currentSectionSubject->subject->lab_weight ?? 30) / 100;
+
+                            if ($hasLab) {
+                                $lecCategories = $categories->filter(fn($c) => $c->component_type !== 'laboratory');
+                                $labCategories = $categories->filter(fn($c) => $c->component_type === 'laboratory');
+                            } else {
+                                $lecCategories = $categories;
+                                $labCategories = collect();
+                            }
+
+                            $lecTotalWeight = $lecCategories->sum('weight');
+                            $labTotalWeight = $labCategories->sum('weight');
+                        @endphp
+
+                        <div class="table-responsive">
+                            <table class="custom-table" id="classRecordTable">
+                                <thead>
                                     <tr>
-                                        <td colspan="10"
-                                            style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
-                                            No students enrolled in this section for S.Y.
-                                            {{ $activeSchoolYear->school_year ?? '' }}.
-                                        </td>
+                                        <th>Student ID</th>
+                                        <th>Student Name</th>
+                                        @if ($hasLab)
+                                            <th
+                                                style="text-align: center; background: rgba(59, 130, 246, 0.08); color: #1e40af;">
+                                                Lec Grade
+                                                <div style="font-size: 0.65rem; font-weight: 700; color: #2563eb;">
+                                                    ({{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%)
+                                                </div>
+                                            </th>
+                                            <th
+                                                style="text-align: center; background: rgba(16, 185, 129, 0.08); color: #065f46;">
+                                                Lab Grade
+                                                <div style="font-size: 0.65rem; font-weight: 700; color: #059669;">
+                                                    ({{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%)
+                                                </div>
+                                            </th>
+                                            <th
+                                                style="text-align: center; background: rgba(16, 185, 129, 0.18); color: #064e3b; font-weight: 800;">
+                                                {{ $selectedPeriod ? strtoupper($selectedPeriod) . ' GRADE' : 'FINAL GRADE' }}
+                                                <div style="font-size: 0.65rem; font-weight: 700; color: #047857;">
+                                                    (Lec + Lab)
+                                                </div>
+                                            </th>
+                                        @else
+                                            <th
+                                                style="text-align: center; background: rgba(16, 185, 129, 0.12); color: #064e3b; font-weight: 800;">
+                                                {{ $selectedPeriod ? strtoupper($selectedPeriod) . ' GRADE' : 'FINAL GRADE' }}
+                                            </th>
+                                        @endif
+                                        <th style="text-align: center; width: 140px;">Actions</th>
                                     </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @forelse($enrolledStudents as $enrollment)
+                                        @php
+                                            $lecCategoryPctSum = 0;
+                                            $labCategoryPctSum = 0;
+                                            $generalCategoryPctSum = 0;
+
+                                            if ($hasLab) {
+                                                foreach ($lecCategories as $cat) {
+                                                    $catEarned = 0;
+                                                    $catMax = 0;
+                                                    foreach ($cat->gradingTasks as $task) {
+                                                        $ts = $enrollment->taskScores
+                                                            ->where('grading_task_id', $task->id)
+                                                            ->first();
+                                                        if ($ts && $ts->score !== null) {
+                                                            $catEarned += $ts->score;
+                                                        }
+                                                        $catMax += $task->max_score;
+                                                    }
+                                                    $lecCategoryPctSum +=
+                                                        $catMax > 0 ? ($catEarned / $catMax) * $cat->weight : 0;
+                                                }
+
+                                                foreach ($labCategories as $cat) {
+                                                    $catEarned = 0;
+                                                    $catMax = 0;
+                                                    foreach ($cat->gradingTasks as $task) {
+                                                        $ts = $enrollment->taskScores
+                                                            ->where('grading_task_id', $task->id)
+                                                            ->first();
+                                                        if ($ts && $ts->score !== null) {
+                                                            $catEarned += $ts->score;
+                                                        }
+                                                        $catMax += $task->max_score;
+                                                    }
+                                                    $labCategoryPctSum +=
+                                                        $catMax > 0 ? ($catEarned / $catMax) * $cat->weight : 0;
+                                                }
+
+                                                $lecSubtotal =
+                                                    $lecTotalWeight > 0
+                                                        ? ($lecCategoryPctSum / $lecTotalWeight) * 100
+                                                        : $lecCategoryPctSum;
+                                                $lecWeightedShare = $lecSubtotal * $lecWeightRatio;
+
+                                                $labSubtotal =
+                                                    $labTotalWeight > 0
+                                                        ? ($labCategoryPctSum / $labTotalWeight) * 100
+                                                        : $labCategoryPctSum;
+                                                $labWeightedShare = $labSubtotal * $labWeightRatio;
+
+                                                $totalFinalGrade =
+                                                    $lecTotalWeight > 0 && $labTotalWeight > 0
+                                                        ? $lecWeightedShare + $labWeightedShare
+                                                        : $lecCategoryPctSum + $labCategoryPctSum;
+                                            } else {
+                                                foreach ($categories as $cat) {
+                                                    $catEarned = 0;
+                                                    $catMax = 0;
+                                                    foreach ($cat->gradingTasks as $task) {
+                                                        $ts = $enrollment->taskScores
+                                                            ->where('grading_task_id', $task->id)
+                                                            ->first();
+                                                        if ($ts && $ts->score !== null) {
+                                                            $catEarned += $ts->score;
+                                                        }
+                                                        $catMax += $task->max_score;
+                                                    }
+                                                    $generalCategoryPctSum +=
+                                                        $catMax > 0 ? ($catEarned / $catMax) * $cat->weight : 0;
+                                                }
+                                                $totalFinalGrade = $generalCategoryPctSum;
+                                            }
+                                        @endphp
+                                        <tr data-student-row="{{ $enrollment->id }}"
+                                            data-has-lab="{{ $hasLab ? '1' : '0' }}"
+                                            data-lec-ratio="{{ $lecWeightRatio }}"
+                                            data-lab-ratio="{{ $labWeightRatio }}">
+                                            <td><strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong></td>
+                                            <td>
+                                                <strong>{{ $enrollment->student->first_name ?? '' }}
+                                                    {{ $enrollment->student->last_name ?? '' }}</strong>
+                                            </td>
+
+                                            @if ($hasLab)
+                                                {{-- LECTURE SUBTOTAL TD --}}
+                                                <td style="text-align: center; background: rgba(59, 130, 246, 0.04);"
+                                                    data-lec-summary="{{ $enrollment->id }}">
+                                                    <span class="badge"
+                                                        style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 0.85rem; padding: 0.28rem 0.65rem; border-radius: 8px;">
+                                                        <span
+                                                            class="lec-grade-val">{{ number_format($lecSubtotal, 2) }}</span>%
+                                                    </span>
+                                                    <div
+                                                        style="font-size: 0.68rem; color: #64748b; margin-top: 3px; font-weight: 600;">
+                                                        Share:
+                                                        <span
+                                                            class="lec-share-val">{{ number_format($lecWeightedShare, 2) }}</span>%
+                                                    </div>
+                                                </td>
+
+                                                {{-- LABORATORY SUBTOTAL TD --}}
+                                                <td style="text-align: center; background: rgba(16, 185, 129, 0.04);"
+                                                    data-lab-summary="{{ $enrollment->id }}">
+                                                    <span class="badge"
+                                                        style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 0.85rem; padding: 0.28rem 0.65rem; border-radius: 8px;">
+                                                        <span
+                                                            class="lab-grade-val">{{ number_format($labSubtotal, 2) }}</span>%
+                                                    </span>
+                                                    <div
+                                                        style="font-size: 0.68rem; color: #64748b; margin-top: 3px; font-weight: 600;">
+                                                        Share:
+                                                        <span
+                                                            class="lab-share-val">{{ number_format($labWeightedShare, 2) }}</span>%
+                                                    </div>
+                                                </td>
+
+                                                {{-- FINAL GRADE TD --}}
+                                                <td style="text-align: center; background: rgba(16, 185, 129, 0.12);"
+                                                    data-final-summary="{{ $enrollment->id }}">
+                                                    <span class="badge badge-active final-grade-badge"
+                                                        style="font-size: 0.9rem; padding: 0.35rem 0.8rem; background: #059669; color: #ffffff; border-radius: 8px;">
+                                                        <span
+                                                            class="final-grade-val">{{ number_format($totalFinalGrade, 2) }}</span>%
+                                                    </span>
+                                                </td>
+                                            @else
+                                                <td style="text-align: center; background: rgba(16, 185, 129, 0.08);"
+                                                    data-final-summary="{{ $enrollment->id }}">
+                                                    <span class="badge badge-active final-grade-badge"
+                                                        style="font-size: 0.9rem; padding: 0.35rem 0.8rem; background: #059669; color: #ffffff; border-radius: 8px;">
+                                                        <span
+                                                            class="final-grade-val">{{ number_format($totalFinalGrade, 2) }}</span>%
+                                                    </span>
+                                                </td>
+                                            @endif
+
+                                            <td style="text-align: center;">
+                                                <button type="button" class="btn-primary"
+                                                    style="padding: 0.4rem 0.85rem; font-size: 0.82rem; font-weight: 700; border-radius: 8px; background: #2563eb; color: #ffffff; border: none; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; box-shadow: 0 2px 4px rgba(37,99,235,0.25);"
+                                                    onclick="openModal('studentGradeModal_{{ $enrollment->id }}')">
+                                                    <svg width="14" height="14" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                    Add Grades
+                                                </button>
+                                            </td>
+                                            <!-- Student Grade Entry Modal -->
+                                            <div class="modal-overlay" id="studentGradeModal_{{ $enrollment->id }}">
+                                                <div class="modal-card"
+                                                    style="max-width: {{ $hasLab ? '1200px' : '750px' }}; width: 95%;">
+                                                    <div class="modal-header"
+                                                        style="background: linear-gradient(135deg, var(--primary-navy, #0f172a) 0%, #1e293b 100%); color: #ffffff; padding: 1.15rem 1.5rem;">
+                                                        <div>
+                                                            <h3
+                                                                style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #ffffff; display: flex; align-items: center; gap: 0.5rem;">
+                                                                📝 Grade Entry:
+                                                                {{ $enrollment->student->first_name ?? '' }}
+                                                                {{ $enrollment->student->last_name ?? '' }}
+                                                            </h3>
+                                                            <div
+                                                                style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">
+                                                                Student ID:
+                                                                <strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong>
+                                                                &bull;
+                                                                {{ $currentSectionSubject->subject->subject_code ?? '' }}
+                                                                -
+                                                                {{ $currentSectionSubject->subject->subject_name ?? '' }}
+                                                            </div>
+                                                        </div>
+                                                        <button type="button" class="btn-icon-action"
+                                                            style="color: #ffffff; background: rgba(255,255,255,0.15); border: none;"
+                                                            onclick="closeModal('studentGradeModal_{{ $enrollment->id }}')">&times;</button>
+                                                    </div>
+
+                                                    <div class="modal-body"
+                                                        style="max-height: 80vh; overflow-y: auto; padding: 1.5rem;">
+                                                        @if ($hasLab)
+                                                            <!-- 2-COLUMN GRID: LECTURE LEFT, LABORATORY RIGHT -->
+                                                            <div
+                                                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 1.5rem; align-items: start;">
+                                                                <!-- LEFT COLUMN: LECTURE TASKS & SCORES -->
+                                                                <div
+                                                                    style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; border-top: 3.5px solid #3b82f6;">
+                                                                    <div
+                                                                        style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; margin-bottom: 0.85rem; border-bottom: 1.5px solid #cbd5e1;">
+                                                                        <h4
+                                                                            style="font-size: 0.92rem; font-weight: 800; color: #1e40af; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                                                                            📘 Lecture Component
+                                                                        </h4>
+                                                                        <span class="badge"
+                                                                            style="background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.7rem; font-weight: 800; padding: 0.18rem 0.5rem; border-radius: 12px;">
+                                                                            Ratio:
+                                                                            {{ number_format($currentSectionSubject->subject->lecture_weight, 0) }}%
+                                                                        </span>
+                                                                    </div>
+
+                                                                    @forelse($lecCategories as $cat)
+                                                                        <div
+                                                                            style="margin-bottom: 1rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.75rem;">
+                                                                            <div
+                                                                                style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px dashed #e2e8f0; padding-bottom: 0.35rem;">
+                                                                                <span
+                                                                                    style="font-size: 0.85rem; font-weight: 800; color: #0f172a;">
+                                                                                    {{ $cat->name }}
+                                                                                    <small
+                                                                                        style="color: #64748b; font-weight: 600;">({{ number_format($cat->weight, 0) }}%)</small>
+                                                                                </span>
+                                                                                <span
+                                                                                    style="font-size: 0.7rem; color: #64748b;">Period:
+                                                                                    <strong>{{ $cat->academic_period }}</strong></span>
+                                                                            </div>
+
+                                                                            @forelse($cat->gradingTasks as $task)
+                                                                                @php
+                                                                                    $taskScoreModel = $enrollment->taskScores
+                                                                                        ->where(
+                                                                                            'grading_task_id',
+                                                                                            $task->id,
+                                                                                        )
+                                                                                        ->first();
+                                                                                    $scoreValue = $taskScoreModel
+                                                                                        ? $taskScoreModel->score
+                                                                                        : null;
+                                                                                @endphp
+                                                                                <div
+                                                                                    style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9;">
+                                                                                    <div>
+                                                                                        <div
+                                                                                            style="font-size: 0.82rem; font-weight: 700; color: #334155;">
+                                                                                            📝 {{ $task->task_name }}
+                                                                                        </div>
+                                                                                        <div
+                                                                                            style="font-size: 0.7rem; color: #94a3b8;">
+                                                                                            Max:
+                                                                                            {{ number_format($task->max_score, 0) }}
+                                                                                            pts</div>
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <input type="number"
+                                                                                            step="0.1" min="0"
+                                                                                            max="{{ $task->max_score }}"
+                                                                                            value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
+                                                                                            class="score-input-cell"
+                                                                                            data-task-id="{{ $task->id }}"
+                                                                                            data-enrollment-id="{{ $enrollment->id }}"
+                                                                                            data-max-score="{{ $task->max_score }}"
+                                                                                            data-cat-id="{{ $cat->id }}"
+                                                                                            data-cat-weight="{{ $cat->weight }}"
+                                                                                            data-cat-type="lecture"
+                                                                                            placeholder="-">
+                                                                                    </div>
+                                                                                </div>
+                                                                            @empty
+                                                                                <div
+                                                                                    style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 0.4rem 0;">
+                                                                                    No tasks configured</div>
+                                                                            @endforelse
+                                                                        </div>
+                                                                    @empty
+                                                                        <div
+                                                                            style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1rem 0;">
+                                                                            No Lecture categories</div>
+                                                                    @endforelse
+                                                                </div>
+
+                                                                <!-- RIGHT COLUMN: LABORATORY TASKS & SCORES -->
+                                                                <div
+                                                                    style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; border-top: 3.5px solid #10b981;">
+                                                                    <div
+                                                                        style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; margin-bottom: 0.85rem; border-bottom: 1.5px solid #cbd5e1;">
+                                                                        <h4
+                                                                            style="font-size: 0.92rem; font-weight: 800; color: #065f46; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                                                                            🔬 Laboratory Component
+                                                                        </h4>
+                                                                        <span class="badge"
+                                                                            style="background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.7rem; font-weight: 800; padding: 0.18rem 0.5rem; border-radius: 12px;">
+                                                                            Ratio:
+                                                                            {{ number_format($currentSectionSubject->subject->lab_weight, 0) }}%
+                                                                        </span>
+                                                                    </div>
+
+                                                                    @forelse($labCategories as $cat)
+                                                                        <div
+                                                                            style="margin-bottom: 1rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.75rem;">
+                                                                            <div
+                                                                                style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; border-bottom: 1px dashed #e2e8f0; padding-bottom: 0.35rem;">
+                                                                                <span
+                                                                                    style="font-size: 0.85rem; font-weight: 800; color: #0f172a;">
+                                                                                    {{ $cat->name }}
+                                                                                    <small
+                                                                                        style="color: #64748b; font-weight: 600;">({{ number_format($cat->weight, 0) }}%)</small>
+                                                                                </span>
+                                                                                <span
+                                                                                    style="font-size: 0.7rem; color: #64748b;">Period:
+                                                                                    <strong>{{ $cat->academic_period }}</strong></span>
+                                                                            </div>
+
+                                                                            @forelse($cat->gradingTasks as $task)
+                                                                                @php
+                                                                                    $taskScoreModel = $enrollment->taskScores
+                                                                                        ->where(
+                                                                                            'grading_task_id',
+                                                                                            $task->id,
+                                                                                        )
+                                                                                        ->first();
+                                                                                    $scoreValue = $taskScoreModel
+                                                                                        ? $taskScoreModel->score
+                                                                                        : null;
+                                                                                @endphp
+                                                                                <div
+                                                                                    style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9;">
+                                                                                    <div>
+                                                                                        <div
+                                                                                            style="font-size: 0.82rem; font-weight: 700; color: #334155;">
+                                                                                            🔬 {{ $task->task_name }}
+                                                                                        </div>
+                                                                                        <div
+                                                                                            style="font-size: 0.7rem; color: #94a3b8;">
+                                                                                            Max:
+                                                                                            {{ number_format($task->max_score, 0) }}
+                                                                                            pts</div>
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <input type="number"
+                                                                                            step="0.1" min="0"
+                                                                                            max="{{ $task->max_score }}"
+                                                                                            value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
+                                                                                            class="score-input-cell"
+                                                                                            data-task-id="{{ $task->id }}"
+                                                                                            data-enrollment-id="{{ $enrollment->id }}"
+                                                                                            data-max-score="{{ $task->max_score }}"
+                                                                                            data-cat-id="{{ $cat->id }}"
+                                                                                            data-cat-weight="{{ $cat->weight }}"
+                                                                                            data-cat-type="laboratory"
+                                                                                            placeholder="-">
+                                                                                    </div>
+                                                                                </div>
+                                                                            @empty
+                                                                                <div
+                                                                                    style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 0.4rem 0;">
+                                                                                    No tasks configured</div>
+                                                                            @endforelse
+                                                                        </div>
+                                                                    @empty
+                                                                        <div
+                                                                            style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 1rem 0;">
+                                                                            No Laboratory categories</div>
+                                                                    @endforelse
+                                                                </div>
+                                                            </div>
+                                                        @else
+                                                            <!-- NON-LAB SUBJECT TASKS MATRIX -->
+                                                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                                                @forelse($categories as $cat)
+                                                                    <div
+                                                                        style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 1rem;">
+                                                                        <div
+                                                                            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem;">
+                                                                            <span
+                                                                                style="font-size: 0.9rem; font-weight: 800; color: #0f172a;">
+                                                                                {{ $cat->name }}
+                                                                                ({{ number_format($cat->weight, 0) }}%)
+                                                                            </span>
+                                                                            <span
+                                                                                style="font-size: 0.75rem; color: #64748b;">Period:
+                                                                                <strong>{{ $cat->academic_period }}</strong></span>
+                                                                        </div>
+
+                                                                        @forelse($cat->gradingTasks as $task)
+                                                                            @php
+                                                                                $taskScoreModel = $enrollment->taskScores
+                                                                                    ->where(
+                                                                                        'grading_task_id',
+                                                                                        $task->id,
+                                                                                    )
+                                                                                    ->first();
+                                                                                $scoreValue = $taskScoreModel
+                                                                                    ? $taskScoreModel->score
+                                                                                    : null;
+                                                                            @endphp
+                                                                            <div
+                                                                                style="display: flex; align-items: center; justify-content: space-between; padding: 0.45rem 0; border-bottom: 1px dashed #e2e8f0;">
+                                                                                <div>
+                                                                                    <div
+                                                                                        style="font-size: 0.85rem; font-weight: 700; color: #334155;">
+                                                                                        📝 {{ $task->task_name }}</div>
+                                                                                    <div
+                                                                                        style="font-size: 0.72rem; color: #94a3b8;">
+                                                                                        Max:
+                                                                                        {{ number_format($task->max_score, 0) }}
+                                                                                        pts</div>
+                                                                                </div>
+                                                                                <div>
+                                                                                    <input type="number" step="0.1"
+                                                                                        min="0"
+                                                                                        max="{{ $task->max_score }}"
+                                                                                        value="{{ $scoreValue !== null ? number_format($scoreValue, 1, '.', '') : '' }}"
+                                                                                        class="score-input-cell"
+                                                                                        data-task-id="{{ $task->id }}"
+                                                                                        data-enrollment-id="{{ $enrollment->id }}"
+                                                                                        data-max-score="{{ $task->max_score }}"
+                                                                                        data-cat-id="{{ $cat->id }}"
+                                                                                        data-cat-weight="{{ $cat->weight }}"
+                                                                                        data-cat-type="general"
+                                                                                        placeholder="-">
+                                                                                </div>
+                                                                            </div>
+                                                                        @empty
+                                                                            <div
+                                                                                style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 0.5rem 0;">
+                                                                                No tasks configured</div>
+                                                                        @endforelse
+                                                                    </div>
+                                                                @empty
+                                                                    <div
+                                                                        style="font-size: 0.85rem; color: #94a3b8; text-align: center; padding: 1.5rem 0;">
+                                                                        No categories configured</div>
+                                                                @endforelse
+                                                            </div>
+                                                        @endif
+                                                    </div>
+
+                                                    <div class="modal-footer"
+                                                        style="background: #f8fafc; padding: 0.85rem 1.35rem; display: flex; align-items: center; justify-content: space-between;">
+                                                        <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b;"
+                                                            data-modal-summary="{{ $enrollment->id }}">
+                                                            @if ($hasLab)
+                                                                Lec: <span class="badge"
+                                                                    style="background: #eff6ff; color: #1d4ed8; font-size: 0.82rem;"><span
+                                                                        class="modal-lec-val">{{ number_format($lecSubtotal, 2) }}</span>%</span>
+                                                                &bull; Lab: <span class="badge"
+                                                                    style="background: #ecfdf5; color: #047857; font-size: 0.82rem;"><span
+                                                                        class="modal-lab-val">{{ number_format($labSubtotal, 2) }}</span>%</span>
+                                                                &bull; {{ $selectedPeriod ? $selectedPeriod : 'Final' }}
+                                                                Grade:
+                                                                <span class="badge"
+                                                                    style="background: #059669; color: #ffffff; font-size: 0.85rem;"><span
+                                                                        class="modal-final-val">{{ number_format($totalFinalGrade, 2) }}</span>%</span>
+                                                            @else
+                                                                {{ $selectedPeriod ? $selectedPeriod : 'Final' }} Grade:
+                                                                <span class="badge"
+                                                                    style="background: #059669; color: #ffffff; font-size: 0.85rem;"><span
+                                                                        class="modal-final-val">{{ number_format($generalCategoryPctSum, 2) }}</span>%</span>
+                                                            @endif
+                                                        </div>
+                                                        <button type="button" class="btn-secondary"
+                                                            onclick="closeModal('studentGradeModal_{{ $enrollment->id }}')">Close</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @empty
+                                        <tr>
+                                            <td colspan="10"
+                                                style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                                                No students enrolled in this section for S.Y.
+                                                {{ $activeSchoolYear->school_year ?? '' }}.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Panel 2: Class Attendance Sheet -->
-        <div id="sheet-attendance-panel" style="display: none;">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title"
-                        style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            Class Attendance Sheet
+            <!-- Panel 2: Class Attendance Sheet -->
+            <div id="sheet-attendance-panel" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"
+                            style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <svg width="20" height="20" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Class Attendance Sheet
+                            </div>
+                            @if ($currentSectionSubject)
+                                <button class="btn-primary" style="padding: 0.45rem 0.85rem; font-size: 0.82rem;"
+                                    onclick="openModal('addAttendanceDateModal')">
+                                    + Add Attendance Date
+                                </button>
+                            @endif
                         </div>
-                        @if ($currentSectionSubject)
-                            <button class="btn-primary" style="padding: 0.45rem 0.85rem; font-size: 0.82rem;"
-                                onclick="openModal('addAttendanceDateModal')">
-                                + Add Attendance Date
-                            </button>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="card-body">
-                    <!-- Legend Bar -->
-                    <div
-                        style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 0.78rem; font-weight: 700; align-items: center;">
-                        <span style="color: #475569;">Attendance Codes:</span>
-                        <span class="status-badge"
-                            style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;">P - Present</span>
-                        <span class="status-badge"
-                            style="background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5;">L - Late</span>
-                        <span class="status-badge"
-                            style="background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5;">A - Absent</span>
-                        <span class="status-badge"
-                            style="background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe;">AEL - Excuse
-                            Letter</span>
-                        <span class="status-badge"
-                            style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;">E - Excuse</span>
-                        <span class="status-badge"
-                            style="background: #450a0a; color: #ffffff; border: 1px solid #7f1d1d;">C - Cutting
-                            Class</span>
                     </div>
 
-                    <div class="table-responsive">
-                        <table class="custom-table" id="attendanceRecordTable">
-                            <thead>
-                                <tr>
-                                    <th>Student ID</th>
-                                    <th>Student Name</th>
-                                    @foreach ($attendanceDates as $attDate)
-                                        @php
-                                            $formattedDate = \Carbon\Carbon::parse($attDate)->format('Y-m-d');
-                                            $displayDate = \Carbon\Carbon::parse($attDate)->format('M d, Y');
-                                        @endphp
-                                        <th style="text-align: center; min-width: 90px;">
-                                            <div
-                                                style="display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
-                                                <span>{{ $displayDate }}</span>
-                                                 @if ($currentSectionSubject)
-                                                    @php
-                                                        $targetAttSubjId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : $currentSectionSubject->id;
-                                                    @endphp
-                                                    <form
-                                                        action="{{ route('superadmin.grades.attendance.date.destroy') }}"
-                                                        method="POST" style="display: inline;"
-                                                        onsubmit="return confirm('Are you sure you want to delete attendance column for {{ $displayDate }}?');">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <input type="hidden" name="class_section_subject_id"
-                                                            value="{{ $targetAttSubjId }}">
-                                                        @if ($selectedPeriod)
-                                                            <input type="hidden" name="academic_period"
-                                                                value="{{ $selectedPeriod }}">
-                                                        @endif
-                                                        <input type="hidden" name="attendance_date"
-                                                            value="{{ $formattedDate }}">
-                                                        <button type="submit"
-                                                            style="background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; cursor: pointer; font-size: 0.85rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; margin-left: 3px;"
-                                                            title="Delete Column">&times;</button>
-                                                    </form>
-                                                @endif
-                                            </div>
-                                        </th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($enrolledStudents as $enrollment)
+                    <div class="card-body">
+                        <!-- Legend Bar -->
+                        <div
+                            style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 0.78rem; font-weight: 700; align-items: center;">
+                            <span style="color: #475569;">Attendance Codes:</span>
+                            <span class="status-badge"
+                                style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;">P - Present</span>
+                            <span class="status-badge"
+                                style="background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5;">L - Late</span>
+                            <span class="status-badge"
+                                style="background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5;">A - Absent</span>
+                            <span class="status-badge"
+                                style="background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe;">AEL - Excuse
+                                Letter</span>
+                            <span class="status-badge"
+                                style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;">E - Excuse</span>
+                            <span class="status-badge"
+                                style="background: #450a0a; color: #ffffff; border: 1px solid #7f1d1d;">C - Cutting
+                                Class</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="custom-table" id="attendanceRecordTable">
+                                <thead>
                                     <tr>
-                                        <td><strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong></td>
-                                        <td>
-                                            <strong>{{ $enrollment->student->first_name ?? '' }}
-                                                {{ $enrollment->student->last_name ?? '' }}</strong>
-                                        </td>
+                                        <th>Student ID</th>
+                                        <th>Student Name</th>
                                         @foreach ($attendanceDates as $attDate)
                                             @php
                                                 $formattedDate = \Carbon\Carbon::parse($attDate)->format('Y-m-d');
-                                                $attRec = $attendances
-                                                    ->where('enrollment_id', $enrollment->id)
-                                                    ->where('attendance_date', $formattedDate)
-                                                    ->first();
-                                                $statusVal = strtoupper($attRec->status ?? 'P');
-                                                if (!in_array($statusVal, ['P', 'L', 'A', 'AEL', 'E', 'C'])) {
-                                                    $statusVal = 'P';
-                                                }
+                                                $displayDate = \Carbon\Carbon::parse($attDate)->format('M d, Y');
                                             @endphp
-                                            <td style="text-align: center;">
-                                                <select class="att-status-select {{ $statusVal }}"
-                                                    data-css-id="{{ $currentSectionSubject->id }}"
-                                                    data-enrollment-id="{{ $enrollment->id }}"
-                                                    data-date="{{ $formattedDate }}"
-                                                    onchange="updateAttendanceStatusCell(this)">
-                                                    <option value="P" {{ $statusVal === 'P' ? 'selected' : '' }}>P</option>
-                                                    <option value="L" {{ $statusVal === 'L' ? 'selected' : '' }}>L</option>
-                                                    <option value="A" {{ $statusVal === 'A' ? 'selected' : '' }}>A</option>
-                                                    <option value="AEL" {{ $statusVal === 'AEL' ? 'selected' : '' }}>AEL</option>
-                                                    <option value="E" {{ $statusVal === 'E' ? 'selected' : '' }}>E</option>
-                                                    <option value="C" {{ $statusVal === 'C' ? 'selected' : '' }}>C</option>
-                                                </select>
-                                            </td>
+                                            <th style="text-align: center; min-width: 90px;">
+                                                <div
+                                                    style="display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                                                    <span>{{ $displayDate }}</span>
+                                                    @if ($currentSectionSubject)
+                                                        @php
+                                                            $targetAttSubjId =
+                                                                isset($isParentSubject) &&
+                                                                $isParentSubject &&
+                                                                is_object($activeSubSectionSubject)
+                                                                    ? $activeSubSectionSubject->id
+                                                                    : $currentSectionSubject->id;
+                                                        @endphp
+                                                        <form
+                                                            action="{{ route('superadmin.grades.attendance.date.destroy') }}"
+                                                            method="POST" style="display: inline;"
+                                                            onsubmit="return confirm('Are you sure you want to delete attendance column for {{ $displayDate }}?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <input type="hidden" name="class_section_subject_id"
+                                                                value="{{ $targetAttSubjId }}">
+                                                            @if ($selectedPeriod)
+                                                                <input type="hidden" name="academic_period"
+                                                                    value="{{ $selectedPeriod }}">
+                                                            @endif
+                                                            <input type="hidden" name="attendance_date"
+                                                                value="{{ $formattedDate }}">
+                                                            <button type="submit"
+                                                                style="background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; cursor: pointer; font-size: 0.85rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; margin-left: 3px;"
+                                                                title="Delete Column">&times;</button>
+                                                        </form>
+                                                    @endif
+                                                </div>
+                                            </th>
                                         @endforeach
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="20"
-                                            style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
-                                            No students enrolled in this section for S.Y.
-                                            {{ $activeSchoolYear->school_year ?? '' }}.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @forelse($enrolledStudents as $enrollment)
+                                        <tr>
+                                            <td><strong>{{ $enrollment->student->student_number ?? 'N/A' }}</strong></td>
+                                            <td>
+                                                <strong>{{ $enrollment->student->first_name ?? '' }}
+                                                    {{ $enrollment->student->last_name ?? '' }}</strong>
+                                            </td>
+                                            @foreach ($attendanceDates as $attDate)
+                                                @php
+                                                    $formattedDate = \Carbon\Carbon::parse($attDate)->format('Y-m-d');
+                                                    $attRec = $attendances
+                                                        ->where('enrollment_id', $enrollment->id)
+                                                        ->where('attendance_date', $formattedDate)
+                                                        ->first();
+                                                    $statusVal = strtoupper($attRec->status ?? 'P');
+                                                    if (!in_array($statusVal, ['P', 'L', 'A', 'AEL', 'E', 'C'])) {
+                                                        $statusVal = 'P';
+                                                    }
+                                                @endphp
+                                                <td style="text-align: center;">
+                                                    <select class="att-status-select {{ $statusVal }}"
+                                                        data-css-id="{{ $currentSectionSubject->id }}"
+                                                        data-enrollment-id="{{ $enrollment->id }}"
+                                                        data-date="{{ $formattedDate }}"
+                                                        onchange="updateAttendanceStatusCell(this)">
+                                                        <option value="P"
+                                                            {{ $statusVal === 'P' ? 'selected' : '' }}>P</option>
+                                                        <option value="L"
+                                                            {{ $statusVal === 'L' ? 'selected' : '' }}>L</option>
+                                                        <option value="A"
+                                                            {{ $statusVal === 'A' ? 'selected' : '' }}>A</option>
+                                                        <option value="AEL"
+                                                            {{ $statusVal === 'AEL' ? 'selected' : '' }}>AEL</option>
+                                                        <option value="E"
+                                                            {{ $statusVal === 'E' ? 'selected' : '' }}>E</option>
+                                                        <option value="C"
+                                                            {{ $statusVal === 'C' ? 'selected' : '' }}>C</option>
+                                                    </select>
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="20"
+                                                style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+                                                No students enrolled in this section for S.Y.
+                                                {{ $activeSchoolYear->school_year ?? '' }}.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         @endif
 
         <!-- Add Category Modal -->
@@ -2038,12 +2114,19 @@
                 <form action="{{ route('superadmin.grades.category.store') }}" method="POST">
                     @csrf
                     @php
-                        $targetModalSubjId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : ($currentSectionSubject->id ?? '');
-                        $targetModalSubjName = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->subject->subject_name : ($currentSectionSubject->subject->subject_name ?? '');
+                        $targetModalSubjId =
+                            isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)
+                                ? $activeSubSectionSubject->id
+                                : $currentSectionSubject->id ?? '';
+                        $targetModalSubjName =
+                            isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)
+                                ? $activeSubSectionSubject->subject->subject_name
+                                : $currentSectionSubject->subject->subject_name ?? '';
                     @endphp
                     <input type="hidden" name="class_section_subject_id" value="{{ $targetModalSubjId }}">
                     <div class="modal-body">
-                        <div style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.5rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.82rem; margin-bottom: 1rem;">
+                        <div
+                            style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 0.5rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.82rem; margin-bottom: 1rem;">
                             📌 Subject Component: <strong>{{ $targetModalSubjName }}</strong>
                         </div>
                         @if ($selectedPeriod)
@@ -2114,8 +2197,10 @@
                 <form action="{{ route('superadmin.grades.task.store') }}" method="POST">
                     @csrf
                     <div class="modal-body">
-                        <div style="background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 0.5rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.82rem; margin-bottom: 1rem;">
-                            📝 Task For Component: <strong>{{ (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->subject->subject_name : ($currentSectionSubject->subject->subject_name ?? '') }}</strong>
+                        <div
+                            style="background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 0.5rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.82rem; margin-bottom: 1rem;">
+                            📝 Task For Component:
+                            <strong>{{ isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject) ? $activeSubSectionSubject->subject->subject_name : $currentSectionSubject->subject->subject_name ?? '' }}</strong>
                         </div>
                         <div class="form-group">
                             <label>Grading Category</label>
@@ -2177,15 +2262,22 @@
                 <form action="{{ route('superadmin.grades.attendance.date.store') }}" method="POST">
                     @csrf
                     @php
-                        $targetAttSubjId = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->id : ($currentSectionSubject->id ?? '');
-                        $targetAttSubjName = (isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)) ? $activeSubSectionSubject->subject->subject_name : ($currentSectionSubject->subject->subject_name ?? '');
+                        $targetAttSubjId =
+                            isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)
+                                ? $activeSubSectionSubject->id
+                                : $currentSectionSubject->id ?? '';
+                        $targetAttSubjName =
+                            isset($isParentSubject) && $isParentSubject && is_object($activeSubSectionSubject)
+                                ? $activeSubSectionSubject->subject->subject_name
+                                : $currentSectionSubject->subject->subject_name ?? '';
                     @endphp
                     <input type="hidden" name="class_section_subject_id" value="{{ $targetAttSubjId }}">
                     @if ($selectedPeriod)
                         <input type="hidden" name="academic_period" value="{{ $selectedPeriod }}">
                     @endif
                     <div class="modal-body">
-                        <div style="background: #fff7ed; border: 1px solid #ffedd5; color: #c2410c; padding: 0.5rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.82rem; margin-bottom: 1rem;">
+                        <div
+                            style="background: #fff7ed; border: 1px solid #ffedd5; color: #c2410c; padding: 0.5rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.82rem; margin-bottom: 1rem;">
                             📅 Attendance For Component: <strong>{{ $targetAttSubjName }}</strong>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
@@ -2209,7 +2301,8 @@
                 <div class="modal-card">
                     <div class="modal-header"
                         style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff;">
-                        <h3 style="font-size: 1rem; font-weight: 700; margin: 0; color: #ffffff;">⚙️ Edit Subject Lec & Lab
+                        <h3 style="font-size: 1rem; font-weight: 700; margin: 0; color: #ffffff;">⚙️ Edit Subject Lec &
+                            Lab
                             Share Percentage</h3>
                         <button type="button" class="btn-icon-action"
                             style="color: #ffffff; background: rgba(255,255,255,0.2); border: none;"
@@ -2229,7 +2322,8 @@
                                 </div>
                                 <div class="form-group">
                                     <label>🔬 Laboratory Weight (%) <span style="color: #ef4444;">*</span></label>
-                                    <input type="number" name="lab_weight" id="modal_lab_weight" class="form-control"
+                                    <input type="number" name="lab_weight" id="modal_lab_weight"
+                                        class="form-control"
                                         value="{{ number_format($currentSectionSubject->subject->lab_weight, 0) }}"
                                         min="0" max="100" required>
                                 </div>
@@ -2586,12 +2680,14 @@
                                 for (const [pName, val] of Object.entries(res.period_grades)) {
                                     const cell = row.querySelector(`[data-period-cell="${pName}"] .period-val`);
                                     if (cell) {
-                                        cell.textContent = (val !== null && val !== undefined) ? parseFloat(val).toFixed(2) + '%' : '-';
+                                        cell.textContent = (val !== null && val !== undefined) ? parseFloat(val)
+                                            .toFixed(2) + '%' : '-';
                                     }
                                 }
                                 const sgCell = row.querySelector('[data-sg-cell] .sg-val');
                                 if (sgCell) {
-                                    sgCell.textContent = (res.subject_grade && res.subject_grade !== '-') ? res.subject_grade + '%' : '-';
+                                    sgCell.textContent = (res.subject_grade && res.subject_grade !== '-') ? res
+                                        .subject_grade + '%' : '-';
                                 }
                                 const remCell = row.querySelector('[data-remarks-cell]');
                                 if (remCell) {
@@ -2600,7 +2696,8 @@
                                         remCell.innerHTML =
                                             `<span class="badge ${isPassed ? 'badge-active' : 'badge-danger'}" style="font-size: 0.8rem; font-weight: 800;">${res.remarks}</span>`;
                                     } else {
-                                        remCell.innerHTML = `<span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.8rem;">-</span>`;
+                                        remCell.innerHTML =
+                                            `<span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.8rem;">-</span>`;
                                     }
                                 }
                             }
@@ -2656,7 +2753,8 @@
                             row.querySelectorAll('.sg-val').forEach(el => el.textContent = '-');
                             const remCell = row.querySelector('[data-remarks-cell]');
                             if (remCell) {
-                                remCell.innerHTML = `<span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.8rem;">-</span>`;
+                                remCell.innerHTML =
+                                    `<span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.8rem;">-</span>`;
                             }
                         });
                         alert('✅ ' + data.message);
@@ -2751,7 +2849,12 @@
                                             ? $savedGrades->where('enrollment_id', $enrollment->id)
                                             : collect();
                                         $sgModel = $stGrades->where('academic_period', 'Subject Grade')->first();
-                                        $sgVal = ($sgModel && $sgModel->final_grade !== null && floatval($sgModel->final_grade) > 0) ? number_format($sgModel->final_grade, 2) : null;
+                                        $sgVal =
+                                            $sgModel &&
+                                            $sgModel->final_grade !== null &&
+                                            floatval($sgModel->final_grade) > 0
+                                                ? number_format($sgModel->final_grade, 2)
+                                                : null;
                                         $sgRemarks = $sgModel ? $sgModel->remarks : null;
                                     @endphp
                                     <tr data-breakdown-row="{{ $enrollment->id }}">
@@ -2764,7 +2867,12 @@
                                             @foreach ($availablePeriods as $pName)
                                                 @php
                                                     $pModel = $stGrades->where('academic_period', $pName)->first();
-                                                    $pVal = ($pModel && $pModel->final_grade !== null && floatval($pModel->final_grade) > 0) ? number_format($pModel->final_grade, 2) : '-';
+                                                    $pVal =
+                                                        $pModel &&
+                                                        $pModel->final_grade !== null &&
+                                                        floatval($pModel->final_grade) > 0
+                                                            ? number_format($pModel->final_grade, 2)
+                                                            : '-';
                                                 @endphp
                                                 <td style="text-align: center; font-weight: 700;"
                                                     data-period-cell="{{ $pName }}">

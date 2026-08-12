@@ -1,6 +1,6 @@
 @extends('layouts.junior_high_school')
 
-@section('title', 'GNHS - JHS Teacher Dashboard')
+@section('title', 'GNHS-P - JHS Teacher Dashboard')
 @section('header_title', 'Dashboard Overview')
 
 @section('content')

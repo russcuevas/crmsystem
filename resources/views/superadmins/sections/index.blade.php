@@ -1,6 +1,6 @@
 @extends('layouts.superadmin')
 
-@section('title', 'GNHS - Manage Class Sections')
+@section('title', 'GNHS-P - Manage Class Sections')
 
 @push('styles')
     <!-- jQuery & DataTables CSS -->
@@ -351,7 +351,7 @@
                         });
                     }
 
-                    $isCollegeFilter = ($selectedLevelCode === 'COLLEGE');
+                    $isCollegeFilter = $selectedLevelCode === 'COLLEGE';
                     if (!$isCollegeFilter && isset($sections) && $sections->isNotEmpty()) {
                         $isCollegeFilter = $sections->every(function ($sec) {
                             return strtoupper($sec->gradeLevel->educationLevel->code ?? '') === 'COLLEGE';

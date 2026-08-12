@@ -1,6 +1,6 @@
 @extends('layouts.superadmin')
 
-@section('title', 'GNHS - Faculty Information Roster')
+@section('title', 'GNHS-P - Faculty Information Roster')
 
 @push('styles')
     <!-- jQuery & DataTables CSS -->

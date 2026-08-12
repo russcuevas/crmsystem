@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'GNHS - Enroll Students')
+@section('title', 'GNHS-P - Enroll Students')
 
 @push('styles')
     <!-- jQuery & DataTables CSS -->
@@ -377,9 +377,16 @@
                     <tbody>
                         @foreach ($enrollments as $enr)
                             @php
-                                $stName = $enr->student->user->name ?? ($enr->student ? $enr->student->first_name . ' ' . $enr->student->last_name : 'N/A');
+                                $stName =
+                                    $enr->student->user->name ??
+                                    ($enr->student
+                                        ? $enr->student->first_name . ' ' . $enr->student->last_name
+                                        : 'N/A');
                                 $lrn = $enr->student->lrn ?? ($enr->student->student_id ?? 'N/A');
-                                $edCode = strtoupper($enr->gradeLevel->educationLevel->code ?? ($enr->classSection->gradeLevel->educationLevel->code ?? ''));
+                                $edCode = strtoupper(
+                                    $enr->gradeLevel->educationLevel->code ??
+                                        ($enr->classSection->gradeLevel->educationLevel->code ?? ''),
+                                );
                             @endphp
                             <tr>
                                 <td>
@@ -409,7 +416,8 @@
                                     @endphp
                                     <span class="status-badge {{ $stClass }}">
                                         @if ($stClass === 'active')
-                                            <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                                            <span
+                                                style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
                                         @endif
                                         {{ ucfirst($enr->status ?? 'Active') }}
                                     </span>
@@ -421,17 +429,21 @@
                                     <div style="display: flex; gap: 0.35rem; justify-content: center;">
                                         <button type="button" class="btn-action-icon" title="Edit Enrollment"
                                             onclick='openEditEnrollmentModal(@json($enr))'>
-                                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </button>
 
-                                        <form action="{{ route('admin.enrollment.destroy', $enr->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to remove this student enrollment record?');">
+                                        <form action="{{ route('admin.enrollment.destroy', $enr->id) }}" method="POST"
+                                            style="display: inline;"
+                                            onsubmit="return confirm('Are you sure you want to remove this student enrollment record?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn-action-icon danger" title="Delete Enrollment">
-                                                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
@@ -471,16 +483,21 @@
 
                     <div class="form-group">
                         <label>Select Student <span style="color: #ef4444;">*</span></label>
-                        <select name="student_id" id="add_enrollment_student_id" class="form-control-custom" required onchange="handleStudentCascade('add')">
+                        <select name="student_id" id="add_enrollment_student_id" class="form-control-custom" required
+                            onchange="handleStudentCascade('add')">
                             <option value="">-- Select Student --</option>
                             @foreach ($studentsList as $st)
                                 @php
-                                    $stName = $st->user->name ?? ($st->first_name . ' ' . $st->last_name);
-                                    $stEdLevelId = $st->education_level_id ?? ($st->gradeLevel->education_level_id ?? '');
-                                    $stLevelCode = strtoupper($st->educationLevel->code ?? ($st->gradeLevel->educationLevel->code ?? ''));
+                                    $stName = $st->user->name ?? $st->first_name . ' ' . $st->last_name;
+                                    $stEdLevelId =
+                                        $st->education_level_id ?? ($st->gradeLevel->education_level_id ?? '');
+                                    $stLevelCode = strtoupper(
+                                        $st->educationLevel->code ?? ($st->gradeLevel->educationLevel->code ?? ''),
+                                    );
                                 @endphp
                                 <option value="{{ $st->id }}" data-ed-level-id="{{ $stEdLevelId }}">
-                                    {{ $stName }} ({{ $stLevelCode ?: 'N/A' }} - {{ $st->student_number ?? 'No ID' }})
+                                    {{ $stName }} ({{ $stLevelCode ?: 'N/A' }} -
+                                    {{ $st->student_number ?? 'No ID' }})
                                 </option>
                             @endforeach
                         </select>
@@ -488,11 +505,14 @@
 
                     <div class="form-group">
                         <label>Assign Class Section <span style="color: #ef4444;">*</span></label>
-                        <select name="class_section_id" id="add_enrollment_class_section_id" class="form-control-custom" required>
+                        <select name="class_section_id" id="add_enrollment_class_section_id" class="form-control-custom"
+                            required>
                             <option value="">-- Select Class Section --</option>
                             @foreach ($sectionsList as $sec)
-                                <option value="{{ $sec->id }}" data-ed-level-id="{{ $sec->gradeLevel->education_level_id ?? '' }}">
-                                    {{ $sec->section_name }} ({{ $sec->gradeLevel->name ?? 'N/A' }} - S.Y. {{ $sec->schoolYear->school_year ?? '' }})
+                                <option value="{{ $sec->id }}"
+                                    data-ed-level-id="{{ $sec->gradeLevel->education_level_id ?? '' }}">
+                                    {{ $sec->section_name }} ({{ $sec->gradeLevel->name ?? 'N/A' }} - S.Y.
+                                    {{ $sec->schoolYear->school_year ?? '' }})
                                 </option>
                             @endforeach
                         </select>
@@ -500,7 +520,8 @@
 
                     <div class="form-group">
                         <label>Enrollment Date <span style="color: #ef4444;">*</span></label>
-                        <input type="date" name="enrolled_at" class="form-control-custom" value="{{ date('Y-m-d') }}" required>
+                        <input type="date" name="enrolled_at" class="form-control-custom"
+                            value="{{ date('Y-m-d') }}" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -524,12 +545,14 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Student</label>
-                        <input type="text" id="edit_student_name_display" class="form-control-custom" readonly style="background: #f1f5f9; font-weight: 700; color: #0f172a;">
+                        <input type="text" id="edit_student_name_display" class="form-control-custom" readonly
+                            style="background: #f1f5f9; font-weight: 700; color: #0f172a;">
                     </div>
 
                     <div class="form-group">
                         <label>School Year <span style="color: #ef4444;">*</span></label>
-                        <select name="school_year_id" id="edit_enrollment_school_year" class="form-control-custom" required>
+                        <select name="school_year_id" id="edit_enrollment_school_year" class="form-control-custom"
+                            required>
                             @foreach ($schoolYears as $sy)
                                 <option value="{{ $sy->id }}">S.Y. {{ $sy->school_year }}</option>
                             @endforeach
@@ -538,7 +561,8 @@
 
                     <div class="form-group">
                         <label>Class Section <span style="color: #ef4444;">*</span></label>
-                        <select name="class_section_id" id="edit_enrollment_class_section_id" class="form-control-custom" required>
+                        <select name="class_section_id" id="edit_enrollment_class_section_id" class="form-control-custom"
+                            required>
                             @foreach ($sectionsList as $sec)
                                 <option value="{{ $sec->id }}">
                                     {{ $sec->section_name }} ({{ $sec->gradeLevel->name ?? 'N/A' }})
@@ -558,7 +582,8 @@
                         </div>
                         <div class="form-group">
                             <label>Enrolled Date</label>
-                            <input type="date" name="enrolled_at" id="edit_enrollment_date" class="form-control-custom">
+                            <input type="date" name="enrolled_at" id="edit_enrollment_date"
+                                class="form-control-custom">
                         </div>
                     </div>
                 </div>
@@ -644,7 +669,8 @@
             const form = document.getElementById('editEnrollmentForm');
             form.action = "{{ url('/admin/enrollment/update') }}/" + enr.id;
 
-            const stName = enr.student && enr.student.user ? enr.student.user.name : (enr.student ? enr.student.first_name + ' ' + enr.student.last_name : 'N/A');
+            const stName = enr.student && enr.student.user ? enr.student.user.name : (enr.student ? enr.student.first_name +
+                ' ' + enr.student.last_name : 'N/A');
             const lrn = enr.student ? (enr.student.student_id || enr.student.lrn || '') : '';
             document.getElementById('edit_student_name_display').value = stName + (lrn ? ' (' + lrn + ')' : '');
 

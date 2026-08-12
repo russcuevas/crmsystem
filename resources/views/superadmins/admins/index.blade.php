@@ -1,6 +1,6 @@
 @extends('layouts.superadmin')
 
-@section('title', 'GNHS - Admin Management')
+@section('title', 'GNHS-P - Admin Management')
 
 @push('styles')
     <!-- jQuery & DataTables CSS -->
@@ -410,20 +410,24 @@
                                     <div style="display: inline-flex; gap: 0.35rem;">
                                         <button type="button" class="btn-action-icon" title="Edit Admin"
                                             onclick='openEditAdminModal(@json($admin))'>
-                                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </button>
                                         @if (Auth::id() !== $admin->id)
-                                            <form action="{{ route('superadmin.admins.destroy', $admin->id) }}" method="POST"
-                                                id="delete-admin-form-{{ $admin->id }}" style="display: inline;">
+                                            <form action="{{ route('superadmin.admins.destroy', $admin->id) }}"
+                                                method="POST" id="delete-admin-form-{{ $admin->id }}"
+                                                style="display: inline;">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="button" class="btn-action-delete" title="Delete Admin"
                                                     onclick="confirmDeleteAdmin({{ $admin->id }}, '{{ addslashes($admin->name) }}')">
-                                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
                                                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
                                                 </button>
@@ -452,17 +456,20 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Full Name <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="name" class="form-control-custom" required placeholder="e.g. Juan Dela Cruz">
+                        <input type="text" name="name" class="form-control-custom" required
+                            placeholder="e.g. Juan Dela Cruz">
                     </div>
 
                     <div class="form-group">
                         <label>Email Address <span style="color: #ef4444;">*</span></label>
-                        <input type="email" name="email" class="form-control-custom" required placeholder="e.g. admin@gnhs.edu.ph">
+                        <input type="email" name="email" class="form-control-custom" required
+                            placeholder="e.g. admin@gnhs.edu.ph">
                     </div>
 
                     <div class="form-group">
                         <label>Password <span style="color: #ef4444;">*</span></label>
-                        <input type="password" name="password" class="form-control-custom" required placeholder="Enter password (min. 6 characters)">
+                        <input type="password" name="password" class="form-control-custom" required
+                            placeholder="Enter password (min. 6 characters)">
                     </div>
 
                     <div class="form-group">
@@ -484,7 +491,8 @@
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeAddAdminModal()">
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
                         </svg>
                         Cancel
                     </button>
@@ -507,12 +515,14 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Full Name <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="name" id="edit_admin_name" class="form-control-custom" required placeholder="Enter full name">
+                        <input type="text" name="name" id="edit_admin_name" class="form-control-custom" required
+                            placeholder="Enter full name">
                     </div>
 
                     <div class="form-group">
                         <label>Email Address <span style="color: #ef4444;">*</span></label>
-                        <input type="email" name="email" id="edit_admin_email" class="form-control-custom" required placeholder="Enter email address">
+                        <input type="email" name="email" id="edit_admin_email" class="form-control-custom" required
+                            placeholder="Enter email address">
                     </div>
 
                     <div class="form-group">
@@ -532,14 +542,18 @@
                     </div>
 
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label>New Password <span style="font-size: 0.72rem; text-transform: none; color: #64748b; font-weight: 500;">(Leave blank to keep current password)</span></label>
-                        <input type="password" name="password" id="edit_admin_password" class="form-control-custom" placeholder="Enter new password (min. 6 characters)">
+                        <label>New Password <span
+                                style="font-size: 0.72rem; text-transform: none; color: #64748b; font-weight: 500;">(Leave
+                                blank to keep current password)</span></label>
+                        <input type="password" name="password" id="edit_admin_password" class="form-control-custom"
+                            placeholder="Enter new password (min. 6 characters)">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeEditAdminModal()">
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
                         </svg>
                         Cancel
                     </button>

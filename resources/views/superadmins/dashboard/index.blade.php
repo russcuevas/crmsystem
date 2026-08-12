@@ -1,6 +1,6 @@
 @extends('layouts.superadmin')
 
-@section('title', 'GNHS - Super Admin Dashboard')
+@section('title', 'GNHS-P - Super Admin Dashboard')
 
 @section('content')
     <!-- Education Level Filter Tabs Bar -->

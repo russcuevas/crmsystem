@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'GNHS - Admin Dashboard')
+@section('title', 'GNHS-P - Admin Dashboard')
 
 @section('content')
     <div class="dashboard-content-grid">

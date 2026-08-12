@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'GNHS - Manage Class Sections')
+@section('title', 'GNHS-P - Manage Class Sections')
 
 @push('styles')
     <!-- jQuery & DataTables CSS -->
@@ -427,8 +427,8 @@
                                             </svg>
                                         </button>
 
-                                        <form action="{{ route('admin.sections.destroy', $section->id) }}"
-                                            method="POST" style="display: inline;"
+                                        <form action="{{ route('admin.sections.destroy', $section->id) }}" method="POST"
+                                            style="display: inline;"
                                             onsubmit="return confirm('Are you sure you want to delete this class section?');">
                                             @csrf
                                             @method('DELETE')
@@ -477,9 +477,7 @@
                         @php
                             $autoSectionLevelObj = null;
                             if ($selectedLevel) {
-                                $autoSectionLevelObj = $educationLevelsList->first(function ($l) use (
-                                    $selectedLevel,
-                                ) {
+                                $autoSectionLevelObj = $educationLevelsList->first(function ($l) use ($selectedLevel) {
                                     return strtoupper($l->code) == strtoupper($selectedLevel) ||
                                         strtoupper($l->name) == strtoupper($selectedLevel);
                                 });
@@ -495,8 +493,8 @@
                                 class="form-control-custom" readonly
                                 style="background: #f1f5f9; font-weight: 700; color: var(--primary-navy, #0f172a); cursor: not-allowed;">
                         @else
-                            <select name="education_level_id" id="add_section_education_level" class="form-control-custom"
-                                required onchange="handleSectionLevelCascade('add')">
+                            <select name="education_level_id" id="add_section_education_level"
+                                class="form-control-custom" required onchange="handleSectionLevelCascade('add')">
                                 <option value="">-- Select Level --</option>
                                 @foreach ($educationLevelsList as $lvl)
                                     <option value="{{ $lvl->id }}" data-code="{{ strtoupper($lvl->code) }}">
@@ -527,8 +525,7 @@
                             <select name="course_id" id="add_section_course" class="form-control-custom">
                                 <option value="">-- Select Course --</option>
                                 @foreach ($allCourses as $c)
-                                    <option value="{{ $c->id }}"
-                                        data-level-code="{{ strtoupper($c->level) }}">
+                                    <option value="{{ $c->id }}" data-level-code="{{ strtoupper($c->level) }}">
                                         {{ $c->course_code }} - {{ $c->course_name }}
                                     </option>
                                 @endforeach
@@ -616,8 +613,7 @@
                             <select name="course_id" id="edit_section_course" class="form-control-custom">
                                 <option value="">-- Select Course --</option>
                                 @foreach ($allCourses as $c)
-                                    <option value="{{ $c->id }}"
-                                        data-level-code="{{ strtoupper($c->level) }}">
+                                    <option value="{{ $c->id }}" data-level-code="{{ strtoupper($c->level) }}">
                                         {{ $c->course_code }} - {{ $c->course_name }}
                                     </option>
                                 @endforeach

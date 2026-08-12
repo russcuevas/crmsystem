@@ -104,7 +104,7 @@ class JuniorHighSchoolGradeController extends Controller
             // Enrolled students in section
             $enrolledStudents = Student::whereHas('enrollments', function ($q) use ($classSectionId, $activeSchoolYear) {
                 $q->where('class_section_id', $classSectionId)
-                  ->where('status', 'enrolled');
+                  ->whereIn('status', ['enrolled', 'active']);
                 if ($activeSchoolYear) {
                     $q->where('school_year_id', $activeSchoolYear->id);
                 }
@@ -259,7 +259,7 @@ class JuniorHighSchoolGradeController extends Controller
             // Enrolled students in this advisory section
             $enrolledStudents = Student::whereHas('enrollments', function ($q) use ($currentSection, $activeSchoolYear) {
                 $q->where('class_section_id', $currentSection->id)
-                  ->where('status', 'enrolled');
+                  ->whereIn('status', ['enrolled', 'active']);
                 if ($activeSchoolYear) {
                     $q->where('school_year_id', $activeSchoolYear->id);
                 }
@@ -519,7 +519,7 @@ class JuniorHighSchoolGradeController extends Controller
         $sectionSubject = ClassSectionSubject::findOrFail($validated['class_section_subject_id']);
 
         $enrollments = Enrollment::where('class_section_id', $sectionSubject->class_section_id)
-            ->where('status', 'enrolled')
+            ->whereIn('status', ['enrolled', 'active'])
             ->get();
 
         foreach ($enrollments as $enr) {
@@ -606,7 +606,7 @@ class JuniorHighSchoolGradeController extends Controller
             ->get();
 
         $enrolments = Enrollment::where('class_section_id', $sectionSubject->class_section_id)
-            ->where('status', 'enrolled')
+            ->whereIn('status', ['enrolled', 'active'])
             ->with('student')
             ->get();
 
@@ -729,7 +729,7 @@ class JuniorHighSchoolGradeController extends Controller
         $student = Student::with('user')->findOrFail($student_id);
 
         // Find enrollment
-        $enrollmentQuery = Enrollment::where('student_id', $student->id)->where('status', 'enrolled');
+        $enrollmentQuery = Enrollment::where('student_id', $student->id)->whereIn('status', ['enrolled', 'active']);
         if ($request->filled('class_section_id')) {
             $enrollmentQuery->where('class_section_id', $request->input('class_section_id'));
         }

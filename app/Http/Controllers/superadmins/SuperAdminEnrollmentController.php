@@ -27,6 +27,7 @@ class SuperAdminEnrollmentController extends Controller
         $selectedLevel = request('level');
         $educationLevelsList = EducationLevel::all();
         $allSchoolYears = SchoolYear::all();
+        $schoolYears = $allSchoolYears;
         $allGradeLevels = GradeLevel::with('educationLevel')->get();
 
         $enrollmentsQuery = Enrollment::with([
@@ -65,6 +66,7 @@ class SuperAdminEnrollmentController extends Controller
             });
         }
         $classSections = $sectionsQuery->get();
+        $sectionsList = $classSections;
 
         // Get Students with User & Levels matching current selected level
         $studentsQuery = Student::with(['user', 'educationLevel', 'gradeLevel', 'course']);
@@ -75,6 +77,7 @@ class SuperAdminEnrollmentController extends Controller
             });
         }
         $students = $studentsQuery->get();
+        $studentsList = $students;
 
         // System overview statistics
         $totalAccounts = User::count();
@@ -86,8 +89,11 @@ class SuperAdminEnrollmentController extends Controller
         return view('superadmins.enrollment.index', compact(
             'enrollments',
             'classSections',
+            'sectionsList',
             'students',
+            'studentsList',
             'allSchoolYears',
+            'schoolYears',
             'allGradeLevels',
             'activeSchoolYear',
             'selectedLevel',

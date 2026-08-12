@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'GNHS - Assigned Subjects Roster')
+@section('title', 'GNHS-P - Assigned Subjects Roster')
 
 @push('styles')
     <!-- jQuery & DataTables CSS -->
@@ -348,13 +348,19 @@
                     <tbody>
                         @foreach ($assignedSubjects as $assigned)
                             @php
-                                $secLevelCode = strtoupper($assigned->classSection->gradeLevel->educationLevel->code ?? 'N/A');
+                                $secLevelCode = strtoupper(
+                                    $assigned->classSection->gradeLevel->educationLevel->code ?? 'N/A',
+                                );
                                 $teacherName =
                                     $assigned->teacher->user->name ??
                                     ($assigned->teacher
                                         ? $assigned->teacher->first_name . ' ' . $assigned->teacher->last_name
                                         : 'Unassigned');
-                                $hasAssignedSub = $assigned->subject && ($assigned->subject->is_parent || ($assigned->assignedSubSubjects && $assigned->assignedSubSubjects->isNotEmpty()));
+                                $hasAssignedSub =
+                                    $assigned->subject &&
+                                    ($assigned->subject->is_parent ||
+                                        ($assigned->assignedSubSubjects &&
+                                            $assigned->assignedSubSubjects->isNotEmpty()));
                             @endphp
                             <tr class="{{ $hasAssignedSub ? 'parent-row' : '' }}">
                                 <td>
@@ -365,16 +371,20 @@
                                 </td>
                                 <td>
                                     @if ($hasAssignedSub)
-                                        <button type="button" class="btn-toggle-sub" onclick="toggleAssignedSubRows({{ $assigned->id }}, this)"
+                                        <button type="button" class="btn-toggle-sub"
+                                            onclick="toggleAssignedSubRows({{ $assigned->id }}, this)"
                                             title="Click to view assigned sub-subjects"
                                             style="background: #0f172a; color: #ffffff; border: none; border-radius: 6px; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; cursor: pointer; margin-right: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: all 0.2s;">
-                                            <span id="icon-assigned-sub-{{ $assigned->id }}" style="line-height: 1;">+</span>
+                                            <span id="icon-assigned-sub-{{ $assigned->id }}"
+                                                style="line-height: 1;">+</span>
                                         </button>
                                     @endif
                                     <strong>{{ $assigned->subject->subject_code ?? 'N/A' }}</strong> -
                                     {{ $assigned->subject->subject_name ?? '' }}
                                     @if ($assigned->subject && $assigned->subject->is_parent)
-                                        <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-size: 0.7rem; margin-left: 6px; font-weight: 700;">Parent Subject</span>
+                                        <span class="badge"
+                                            style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-size: 0.7rem; margin-left: 6px; font-weight: 700;">Parent
+                                            Subject</span>
                                     @endif
                                 </td>
                                 <td>
@@ -417,24 +427,33 @@
                             @if ($hasAssignedSub)
                                 @foreach ($assigned->assignedSubSubjects as $subAssigned)
                                     @php
-                                        $subTeacherName = $subAssigned->teacher->user->name ?? ($subAssigned->teacher->first_name . ' ' . $subAssigned->teacher->last_name);
+                                        $subTeacherName =
+                                            $subAssigned->teacher->user->name ??
+                                            $subAssigned->teacher->first_name . ' ' . $subAssigned->teacher->last_name;
                                     @endphp
-                                    <tr class="assigned-sub-row-{{ $assigned->id }}" style="display: none; background: #f8fafc;">
+                                    <tr class="assigned-sub-row-{{ $assigned->id }}"
+                                        style="display: none; background: #f8fafc;">
                                         <td style="opacity: 0.7;">{{ $assigned->classSection->section_name ?? 'N/A' }}</td>
-                                        <td><span class="badge badge-admin" style="opacity: 0.85;">{{ $secLevelCode }}</span></td>
+                                        <td><span class="badge badge-admin"
+                                                style="opacity: 0.85;">{{ $secLevelCode }}</span></td>
                                         <td style="padding-left: 2rem; color: #334155;">
-                                            <i class="fa-solid fa-arrow-turn-up fa-rotate-90" style="color: #94a3b8; margin-right: 8px;"></i>
-                                            <strong>{{ $subAssigned->subject->subject_code ?? 'N/A' }}</strong> - {{ $subAssigned->subject->subject_name ?? '' }}
+                                            <i class="fa-solid fa-arrow-turn-up fa-rotate-90"
+                                                style="color: #94a3b8; margin-right: 8px;"></i>
+                                            <strong>{{ $subAssigned->subject->subject_code ?? 'N/A' }}</strong> -
+                                            {{ $subAssigned->subject->subject_name ?? '' }}
                                         </td>
                                         <td>
                                             <div style="display: flex; align-items: center; gap: 0.4rem; color: #475569;">
-                                                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: #64748b;">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                <svg width="13" height="13" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" style="color: #64748b;">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                 </svg>
                                                 <span>{{ $subTeacherName }}</span>
                                             </div>
                                         </td>
-                                        <td style="text-align: center; color: #94a3b8; font-size: 0.8rem;">Auto-Assigned</td>
+                                        <td style="text-align: center; color: #94a3b8; font-size: 0.8rem;">Auto-Assigned
+                                        </td>
                                     </tr>
                                 @endforeach
                             @endif
@@ -476,8 +495,7 @@
                         <select name="subject_id" id="add_subject_id" class="form-control-custom" required>
                             <option value="">-- Select Subject --</option>
                             @foreach ($subjectsList as $subj)
-                                <option value="{{ $subj->id }}"
-                                    data-ed-level-id="{{ $subj->education_level_id }}"
+                                <option value="{{ $subj->id }}" data-ed-level-id="{{ $subj->education_level_id }}"
                                     data-sem="{{ $subj->semester }}">
                                     {{ $subj->subject_code }} - {{ $subj->subject_name }}
                                     ({{ $subj->educationLevel->code ?? '' }})
@@ -491,8 +509,7 @@
                         <select name="teacher_id" id="add_teacher_id" class="form-control-custom" required>
                             <option value="">-- Select Teacher --</option>
                             @foreach ($teachersList as $t)
-                                <option value="{{ $t->id }}"
-                                    data-ed-level-id="{{ $t->education_level_id }}">
+                                <option value="{{ $t->id }}" data-ed-level-id="{{ $t->education_level_id }}">
                                     {{ $t->first_name }} {{ $t->last_name }} ({{ $t->position ?? 'Teacher' }})
                                 </option>
                             @endforeach
@@ -537,8 +554,7 @@
                         <select name="subject_id" id="edit_subject_id" class="form-control-custom" required>
                             <option value="">-- Select Subject --</option>
                             @foreach ($subjectsList as $subj)
-                                <option value="{{ $subj->id }}"
-                                    data-ed-level-id="{{ $subj->education_level_id }}"
+                                <option value="{{ $subj->id }}" data-ed-level-id="{{ $subj->education_level_id }}"
                                     data-sem="{{ $subj->semester }}">
                                     {{ $subj->subject_code }} - {{ $subj->subject_name }}
                                 </option>
@@ -551,8 +567,7 @@
                         <select name="teacher_id" id="edit_teacher_id" class="form-control-custom" required>
                             <option value="">-- Select Teacher --</option>
                             @foreach ($teachersList as $t)
-                                <option value="{{ $t->id }}"
-                                    data-ed-level-id="{{ $t->education_level_id }}">
+                                <option value="{{ $t->id }}" data-ed-level-id="{{ $t->education_level_id }}">
                                     {{ $t->first_name }} {{ $t->last_name }} ({{ $t->position ?? 'Teacher' }})
                                 </option>
                             @endforeach
@@ -643,7 +658,8 @@
 
                 if (activeSem && subjSem) {
                     const activeKey = activeSem.toLowerCase().includes('2nd') ? '2nd' : '1st';
-                    const subjKey = subjSem.toLowerCase().includes('2nd') ? '2nd' : (subjSem.toLowerCase().includes('1st') ? '1st' : '');
+                    const subjKey = subjSem.toLowerCase().includes('2nd') ? '2nd' : (subjSem.toLowerCase().includes(
+                        '1st') ? '1st' : '');
                     if (subjKey && subjKey !== activeKey && subjSem !== 'All Quarters') {
                         matchSem = false;
                     }

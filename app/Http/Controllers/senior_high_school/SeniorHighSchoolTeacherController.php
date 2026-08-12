@@ -67,7 +67,7 @@ class SeniorHighSchoolTeacherController extends Controller
         $totalStudents = 0;
         if ($uniqueSectionIds->isNotEmpty()) {
             $totalStudents = Enrollment::whereIn('class_section_id', $uniqueSectionIds)
-                ->where('status', 'enrolled')
+                ->whereIn('status', ['enrolled', 'active'])
                 ->distinct('student_id')
                 ->count('student_id');
         }

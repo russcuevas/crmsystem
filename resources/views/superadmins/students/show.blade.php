@@ -1,6 +1,6 @@
 @extends('layouts.superadmin')
 
-@section('title', 'GNHS - Student Profiling | ' . $student->first_name . ' ' . $student->last_name)
+@section('title', 'GNHS-P - Student Profiling | ' . $student->first_name . ' ' . $student->last_name)
 
 @section('content')
     <div style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">

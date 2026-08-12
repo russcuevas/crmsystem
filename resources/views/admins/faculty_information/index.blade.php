@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'GNHS - Faculty Information Roster')
+@section('title', 'GNHS-P - Faculty Information Roster')
 
 @push('styles')
     <!-- jQuery & DataTables CSS -->
@@ -414,8 +414,8 @@
                                             </svg>
                                         </button>
 
-                                        <form action="{{ route('admin.faculty.destroy', $teacher->id) }}"
-                                            method="POST" style="display: inline;"
+                                        <form action="{{ route('admin.faculty.destroy', $teacher->id) }}" method="POST"
+                                            style="display: inline;"
                                             onsubmit="return confirm('Are you sure you want to delete this faculty member?');">
                                             @csrf
                                             @method('DELETE')
@@ -501,7 +501,8 @@
                                     <select name="education_level_id" class="form-control-custom" required>
                                         <option value="" disabled selected>-- Select Level --</option>
                                         @foreach ($educationLevelsList as $lvl)
-                                            <option value="{{ $lvl->id }}">{{ $lvl->code }} - {{ $lvl->name }}
+                                            <option value="{{ $lvl->id }}">{{ $lvl->code }} -
+                                                {{ $lvl->name }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -578,7 +579,8 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Barangay</label>
-                                    <select name="barangay" id="add_barangay_select" class="form-control-custom" disabled>
+                                    <select name="barangay" id="add_barangay_select" class="form-control-custom"
+                                        disabled>
                                         <option value="">-- Select Barangay --</option>
                                     </select>
                                 </div>
@@ -611,7 +613,8 @@
                         <!-- COLUMN 1: PART 1 ACCOUNT DETAILS -->
                         <div class="modal-part-card">
                             <div class="form-section-title">
-                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
@@ -620,7 +623,8 @@
 
                             <div class="form-group">
                                 <label>LMS Email Address <span style="color: #ef4444;">*</span></label>
-                                <input type="email" name="email" id="edit_email" class="form-control-custom" required>
+                                <input type="email" name="email" id="edit_email" class="form-control-custom"
+                                    required>
                             </div>
 
                             <div class="form-group">
@@ -635,7 +639,8 @@
                         <!-- COLUMN 2: PART 2 TEACHER PROFILE -->
                         <div class="modal-part-card">
                             <div class="form-section-title">
-                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg width="16" height="16" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h2a2 2 0 012 2v1m-6 0h6" />
                                 </svg>
@@ -645,13 +650,16 @@
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                                 <div class="form-group">
                                     <label>Teacher ID <span style="color: #ef4444;">*</span></label>
-                                    <input type="text" name="teacher_id" id="edit_teacher_id" class="form-control-custom" required>
+                                    <input type="text" name="teacher_id" id="edit_teacher_id"
+                                        class="form-control-custom" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Education Level <span style="color: #ef4444;">*</span></label>
-                                    <select name="education_level_id" id="edit_education_level_id" class="form-control-custom" required>
+                                    <select name="education_level_id" id="edit_education_level_id"
+                                        class="form-control-custom" required>
                                         @foreach ($educationLevelsList as $lvl)
-                                            <option value="{{ $lvl->id }}">{{ $lvl->code }} - {{ $lvl->name }}</option>
+                                            <option value="{{ $lvl->id }}">{{ $lvl->code }} -
+                                                {{ $lvl->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -660,29 +668,34 @@
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                                 <div class="form-group">
                                     <label>First Name <span style="color: #ef4444;">*</span></label>
-                                    <input type="text" name="first_name" id="edit_first_name" class="form-control-custom" required>
+                                    <input type="text" name="first_name" id="edit_first_name"
+                                        class="form-control-custom" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Middle Name</label>
-                                    <input type="text" name="middle_name" id="edit_middle_name" class="form-control-custom">
+                                    <input type="text" name="middle_name" id="edit_middle_name"
+                                        class="form-control-custom">
                                 </div>
                             </div>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                                 <div class="form-group">
                                     <label>Last Name <span style="color: #ef4444;">*</span></label>
-                                    <input type="text" name="last_name" id="edit_last_name" class="form-control-custom" required>
+                                    <input type="text" name="last_name" id="edit_last_name"
+                                        class="form-control-custom" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Ext. Name</label>
-                                    <input type="text" name="extension_name" id="edit_extension_name" class="form-control-custom">
+                                    <input type="text" name="extension_name" id="edit_extension_name"
+                                        class="form-control-custom">
                                 </div>
                             </div>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                                 <div class="form-group">
                                     <label>Position / Rank</label>
-                                    <input type="text" name="position" id="edit_position" class="form-control-custom">
+                                    <input type="text" name="position" id="edit_position"
+                                        class="form-control-custom">
                                 </div>
                                 <div class="form-group">
                                     <label>Gender</label>
@@ -697,11 +710,13 @@
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                                 <div class="form-group">
                                     <label>Birthday</label>
-                                    <input type="date" name="birthday" id="edit_birthday" class="form-control-custom">
+                                    <input type="date" name="birthday" id="edit_birthday"
+                                        class="form-control-custom">
                                 </div>
                                 <div class="form-group">
                                     <label>Phone Number</label>
-                                    <input type="text" name="phone_number" id="edit_phone_number" class="form-control-custom">
+                                    <input type="text" name="phone_number" id="edit_phone_number"
+                                        class="form-control-custom">
                                 </div>
                             </div>
 
@@ -747,7 +762,8 @@
         // Philippine PSGC Address API Integration
         const PSGC_BASE_URL = 'https://psgc.gitlab.io/api';
 
-        async function loadProvinces(provSelectEl, defaultProv = null, citySelectEl = null, defaultCity = null, brgySelectEl = null, defaultBrgy = null) {
+        async function loadProvinces(provSelectEl, defaultProv = null, citySelectEl = null, defaultCity = null,
+            brgySelectEl = null, defaultBrgy = null) {
             try {
                 provSelectEl.innerHTML = '<option value="">Loading Provinces...</option>';
                 const res = await fetch(`${PSGC_BASE_URL}/provinces.json`);

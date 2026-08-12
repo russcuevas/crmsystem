@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,7 +34,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .btn-print {
@@ -121,21 +122,40 @@
             font-weight: 600;
         }
 
-        .remarks-passed { color: #065f46; font-weight: bold; }
-        .remarks-failed { color: #991b1b; font-weight: bold; }
+        .remarks-passed {
+            color: #065f46;
+            font-weight: bold;
+        }
+
+        .remarks-failed {
+            color: #991b1b;
+            font-weight: bold;
+        }
 
         @media print {
-            .no-print-bar { display: none !important; }
-            body { background: #ffffff !important; }
-            .card-container { border: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+            .no-print-bar {
+                display: none !important;
+            }
+
+            body {
+                background: #ffffff !important;
+            }
+
+            .card-container {
+                border: none !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="no-print-bar">
         <div>
             <span style="font-weight: 800; font-size: 1.1rem;">SENIOR HIGH SCHOOL REPORT CARD (SF9)</span>
-            <span style="font-size: 0.85rem; margin-left: 0.75rem; color: #fecdd3;">{{ $student->first_name }} {{ $student->last_name }}</span>
+            <span style="font-size: 0.85rem; margin-left: 0.75rem; color: #fecdd3;">{{ $student->first_name }} {{ $student->middle_name ? $student->middle_name . ' ' : '' }}{{ $student->last_name }}</span>
         </div>
         <button onclick="window.print()" class="btn-print">
             <i class="fa-solid fa-print"></i> Print Report Card
@@ -146,18 +166,26 @@
         <!-- Student Information Header -->
         <div class="student-info-header">
             <div style="text-align: center; margin-bottom: 6px;">
-                <h2 style="font-size: 14px; font-weight: 800; text-transform: uppercase;">Guihulngan National High School</h2>
-                <p style="font-size: 10px; font-weight: bold; color: #7f1d1d;">SENIOR HIGH SCHOOL REPORT CARD (SF9 / FORM 138)</p>
+                <h2 style="font-size: 14px; font-weight: 800; text-transform: uppercase;">Guihulngan National High
+                    School</h2>
+                <p style="font-size: 10px; font-weight: bold; color: #7f1d1d;">SENIOR HIGH SCHOOL REPORT CARD (SF9 /
+                    FORM 138)</p>
             </div>
             <div class="info-grid">
-                <div><span>Name:</span> {{ $student->last_name }}, {{ $student->first_name }} {{ $student->middle_name ?? '' }}</div>
+                <div><span>Name:</span> {{ $student->last_name }}, {{ $student->first_name }}
+                    {{ $student->middle_name ?? '' }}</div>
                 <div><span>LRN:</span> {{ $student->lrn ?? 'N/A' }}</div>
                 <div><span>Student ID:</span> {{ $student->student_number }}</div>
                 <div><span>Grade Level:</span> {{ $student->gradeLevel ? $student->gradeLevel->name : 'N/A' }}</div>
-                <div><span>Track & Strand:</span> {{ $student->course ? $student->course->course_code . ' (' . $student->course->course_name . ')' : 'N/A' }}</div>
+                <div><span>Strand:</span>
+                    {{ $student->course ? $student->course->course_code . ' (' . $student->course->course_name . ')' : 'N/A' }}
+                </div>
                 <div><span>Section:</span> {{ $classSection ? $classSection->section_name : 'N/A' }}</div>
-                <div><span>School Year:</span> {{ $enrollment->schoolYear ? $enrollment->schoolYear->school_year : 'N/A' }}</div>
-                <div><span>Class Adviser:</span> {{ $classSection && $classSection->adviser ? $classSection->adviser->first_name . ' ' . $classSection->adviser->last_name : 'N/A' }}</div>
+                <div><span>School Year:</span>
+                    {{ $enrollment->schoolYear ? $enrollment->schoolYear->school_year : 'N/A' }}</div>
+                <div><span>Class Adviser:</span>
+                    {{ $classSection && $classSection->adviser ? $classSection->adviser->first_name . ' ' . $classSection->adviser->last_name : 'N/A' }}
+                </div>
             </div>
         </div>
 
@@ -179,7 +207,9 @@
                     <tbody>
                         @foreach ($reportCardData as $row)
                             <tr>
-                                <td class="subject-name">{{ $row['subject'] ? ($row['subject']->subject_name ?? $row['subject']->name) : 'N/A' }}</td>
+                                <td class="subject-name">
+                                    {{ $row['subject'] ? $row['subject']->subject_name ?? $row['subject']->name : 'N/A' }}
+                                </td>
                                 <td>{{ $row['grades']['Prelim'] ?? '-' }}</td>
                                 <td>{{ $row['grades']['Midterm'] ?? '-' }}</td>
                                 <td>{{ $row['grades']['Finals'] ?? '-' }}</td>
@@ -198,10 +228,12 @@
                         <tr style="font-weight: bold; background-color: #f8fafc;">
                             <td class="subject-name">General Average</td>
                             <td colspan="3" style="text-align: right; padding-right: 8px;">Final Average:</td>
-                            <td style="font-size: 11px; font-weight: 800; color: #7f1d1d;">{{ $overallFinalRating ?? '-' }}</td>
+                            <td style="font-size: 11px; font-weight: 800; color: #7f1d1d;">
+                                {{ $overallFinalRating ?? '-' }}</td>
                             <td>
                                 @if ($overallFinalRating)
-                                    <span class="{{ $overallFinalRating >= 75 ? 'remarks-passed' : 'remarks-failed' }}">
+                                    <span
+                                        class="{{ $overallFinalRating >= 75 ? 'remarks-passed' : 'remarks-failed' }}">
                                         {{ $overallFinalRating >= 75 ? 'PASSED' : 'FAILED' }}
                                     </span>
                                 @else
@@ -272,4 +304,5 @@
         </div>
     </div>
 </body>
+
 </html>

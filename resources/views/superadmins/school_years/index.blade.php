@@ -1,6 +1,6 @@
 @extends('layouts.superadmin')
 
-@section('title', 'GNHS - Manage School Years')
+@section('title', 'GNHS-P - Manage School Years')
 
 @push('styles')
     <!-- jQuery & DataTables CSS -->
@@ -392,7 +392,8 @@
                                 <td>
                                     @if ($sy->is_active)
                                         <span class="badge-active">
-                                            <span style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                                            <span
+                                                style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
                                             Active S.Y.
                                         </span>
                                     @else
@@ -408,11 +409,15 @@
                                 <td style="text-align: center;">
                                     <div style="display: flex; gap: 0.35rem; justify-content: center; align-items: center;">
                                         @if (!$sy->is_active)
-                                            <form action="{{ route('superadmin.school_years.setActive', $sy->id) }}" method="POST" style="display: inline;">
+                                            <form action="{{ route('superadmin.school_years.setActive', $sy->id) }}"
+                                                method="POST" style="display: inline;">
                                                 @csrf
-                                                <button type="submit" class="btn-set-active" title="Set as Active School Year">
-                                                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                <button type="submit" class="btn-set-active"
+                                                    title="Set as Active School Year">
+                                                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2.5" d="M5 13l4 4L19 7" />
                                                     </svg>
                                                     Set Active
                                                 </button>
@@ -421,19 +426,25 @@
 
                                         <button type="button" class="btn-action-icon" title="Edit School Year"
                                             onclick='openEditSchoolYearModal(@json($sy))'>
-                                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </button>
 
                                         @if (!$sy->is_active)
-                                            <form action="{{ route('superadmin.school_years.destroy', $sy->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete S.Y. {{ $sy->school_year }}?');">
+                                            <form action="{{ route('superadmin.school_years.destroy', $sy->id) }}"
+                                                method="POST" style="display: inline;"
+                                                onsubmit="return confirm('Are you sure you want to delete S.Y. {{ $sy->school_year }}?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn-action-icon danger" title="Delete School Year">
-                                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                <button type="submit" class="btn-action-icon danger"
+                                                    title="Delete School Year">
+                                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
                                                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
                                                 </button>
@@ -454,19 +465,23 @@
         <div class="modal-card">
             <div class="modal-header">
                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Create New School Year</h3>
-                <button type="button" onclick="closeAddSchoolYearModal()" style="background: none; border: none; color: #ffffff; font-size: 1.4rem; cursor: pointer;">&times;</button>
+                <button type="button" onclick="closeAddSchoolYearModal()"
+                    style="background: none; border: none; color: #ffffff; font-size: 1.4rem; cursor: pointer;">&times;</button>
             </div>
             <form action="{{ route('superadmin.school_years.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">
                         <label>School Year <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="school_year" class="form-control-custom" placeholder="e.g. 2025-2026" required>
+                        <input type="text" name="school_year" class="form-control-custom" placeholder="e.g. 2025-2026"
+                            required>
                     </div>
 
                     <div class="form-group" style="margin-top: 1rem; margin-bottom: 0;">
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; text-transform: none; font-size: 0.9rem;">
-                            <input type="checkbox" name="is_active" value="1" style="width: 17px; height: 17px; accent-color: #10b981; cursor: pointer;">
+                        <label
+                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; text-transform: none; font-size: 0.9rem;">
+                            <input type="checkbox" name="is_active" value="1"
+                                style="width: 17px; height: 17px; accent-color: #10b981; cursor: pointer;">
                             <span>Set as <strong>Active School Year</strong> for system</span>
                         </label>
                     </div>
@@ -474,7 +489,8 @@
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeAddSchoolYearModal()">
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
                         </svg>
                         Cancel
                     </button>
@@ -489,19 +505,23 @@
         <div class="modal-card">
             <div class="modal-header">
                 <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0;">Edit School Year</h3>
-                <button type="button" onclick="closeEditSchoolYearModal()" style="background: none; border: none; color: #ffffff; font-size: 1.4rem; cursor: pointer;">&times;</button>
+                <button type="button" onclick="closeEditSchoolYearModal()"
+                    style="background: none; border: none; color: #ffffff; font-size: 1.4rem; cursor: pointer;">&times;</button>
             </div>
             <form id="editSchoolYearForm" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">
                         <label>School Year <span style="color: #ef4444;">*</span></label>
-                        <input type="text" name="school_year" id="edit_school_year_input" class="form-control-custom" required>
+                        <input type="text" name="school_year" id="edit_school_year_input" class="form-control-custom"
+                            required>
                     </div>
 
                     <div class="form-group" style="margin-top: 1rem; margin-bottom: 0;">
-                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; text-transform: none; font-size: 0.9rem;">
-                            <input type="checkbox" name="is_active" id="edit_is_active_input" value="1" style="width: 17px; height: 17px; accent-color: #10b981; cursor: pointer;">
+                        <label
+                            style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; text-transform: none; font-size: 0.9rem;">
+                            <input type="checkbox" name="is_active" id="edit_is_active_input" value="1"
+                                style="width: 17px; height: 17px; accent-color: #10b981; cursor: pointer;">
                             <span>Set as <strong>Active School Year</strong> for system</span>
                         </label>
                     </div>
@@ -509,7 +529,8 @@
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeEditSchoolYearModal()">
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
                         </svg>
                         Cancel
                     </button>

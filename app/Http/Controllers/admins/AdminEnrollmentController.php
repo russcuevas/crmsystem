@@ -27,6 +27,7 @@ class AdminEnrollmentController extends Controller
         $selectedLevel = request('level');
         $educationLevelsList = EducationLevel::all();
         $allSchoolYears = SchoolYear::all();
+        $schoolYears = $allSchoolYears;
         $allGradeLevels = GradeLevel::with('educationLevel')->get();
 
         $enrollmentsQuery = Enrollment::with([
@@ -64,6 +65,7 @@ class AdminEnrollmentController extends Controller
             });
         }
         $classSections = $sectionsQuery->get();
+        $sectionsList = $classSections;
 
         $studentsQuery = Student::with(['user', 'educationLevel', 'gradeLevel', 'course']);
         if ($selectedLevel) {
@@ -73,6 +75,7 @@ class AdminEnrollmentController extends Controller
             });
         }
         $students = $studentsQuery->get();
+        $studentsList = $students;
 
         $totalAccounts = User::whereNotIn('role', ['superadmin', 'admin'])->count();
         $totalFaculty = Teacher::count();
@@ -83,8 +86,11 @@ class AdminEnrollmentController extends Controller
         return view('admins.enrollment.index', compact(
             'enrollments',
             'classSections',
+            'sectionsList',
             'students',
+            'studentsList',
             'allSchoolYears',
+            'schoolYears',
             'allGradeLevels',
             'activeSchoolYear',
             'selectedLevel',
