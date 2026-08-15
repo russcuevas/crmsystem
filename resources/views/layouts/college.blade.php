@@ -303,7 +303,7 @@
                 <a href="{{ route('college.grades.page') }}"
                     class="nav-item {{ request()->routeIs('college.grades.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-pen-to-square"></i>
-                    <span>Class Grades & Records</span>
+                    <span>Grading & Records</span>
                 </a>
 
                 <div class="nav-section-label">Student Management</div>
@@ -311,7 +311,7 @@
                 <a href="{{ route('college.students.page') }}"
                     class="nav-item {{ request()->routeIs('college.students.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-user-graduate"></i>
-                    <span>My College Students</span>
+                    <span>Students</span>
                 </a>
 
                 <a href="{{ route('college.enrollment.page') }}"
@@ -327,7 +327,7 @@
                     <button type="submit" class="nav-item"
                         style="width: 100%; border: none; background: rgba(239, 68, 68, 0.15); color: #fca5a5; cursor: pointer; text-align: left;">
                         <i class="fa-solid fa-right-from-bracket" style="color: #fca5a5;"></i>
-                        <span>Logout Portal</span>
+                        <span>Logout</span>
                     </button>
                 </form>
             </div>
@@ -338,9 +338,11 @@
             <!-- Top Header Bar -->
             <header class="top-header">
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <button type="button" class="menu-toggle" id="menuToggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+                    <button type="button" class="menu-toggle" id="menuToggle" onclick="toggleSidebar()"
+                        title="Toggle Sidebar">
                         <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
                     <div class="header-title-area">
@@ -352,8 +354,12 @@
                     @php
                         $user = Auth::user();
                         $teacher = $user->teacher ?? null;
-                        $initials = $teacher ? strtoupper(substr($teacher->first_name, 0, 1) . substr($teacher->last_name, 0, 1)) : 'CP';
-                        $fullName = $teacher ? ($teacher->first_name . ' ' . $teacher->last_name) : ($user->name ?? 'College Instructor');
+                        $initials = $teacher
+                            ? strtoupper(substr($teacher->first_name, 0, 1) . substr($teacher->last_name, 0, 1))
+                            : 'CP';
+                        $fullName = $teacher
+                            ? $teacher->first_name . ' ' . $teacher->last_name
+                            : $user->name ?? 'College Instructor';
                     @endphp
                     <div class="user-avatar">{{ $initials }}</div>
                     <div class="user-info">
@@ -377,12 +383,12 @@
             const mainWrapper = document.getElementById('mainWrapper');
             sidebar.classList.toggle('collapsed');
             mainWrapper.classList.toggle('sidebar-collapsed');
-            
+
             const isCollapsed = sidebar.classList.contains('collapsed');
             localStorage.setItem('college_sidebar_collapsed', isCollapsed ? 'true' : 'false');
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             if (localStorage.getItem('college_sidebar_collapsed') === 'true') {
                 const sidebar = document.getElementById('appSidebar');
                 const mainWrapper = document.getElementById('mainWrapper');
@@ -406,14 +412,14 @@
             }
         });
 
-        @if(session('success'))
+        @if (session('success'))
             Toast.fire({
                 icon: 'success',
                 title: @json(session('success'))
             });
         @endif
 
-        @if(session('error'))
+        @if (session('error'))
             Toast.fire({
                 icon: 'error',
                 title: @json(session('error'))
