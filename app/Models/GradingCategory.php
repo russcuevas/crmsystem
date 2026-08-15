@@ -26,6 +26,11 @@ class GradingCategory extends Model
         return $this->attributes['name'] ?? null;
     }
 
+    public function getWeightPercentageAttribute()
+    {
+        return $this->attributes['weight'] ?? 0;
+    }
+
     public function classSectionSubject()
     {
         return $this->belongsTo(ClassSectionSubject::class);

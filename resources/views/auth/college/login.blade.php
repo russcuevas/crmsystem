@@ -52,14 +52,26 @@
                 <h2 class="form-title">Login</h2>
                 <p class="form-subtitle">Tertiary School Portal (1st Year - 5th Year)</p>
 
-                <form action="#" method="POST">
+                @if (session('error'))
+                    <div style="background-color: #fee2e2; border: 1px solid #f87171; color: #991b1b; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 500;">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @if (session('success'))
+                    <div style="background-color: #d1fae5; border: 1px solid #34d399; color: #065f46; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; font-size: 0.875rem; font-weight: 500;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                <form action="{{ route('college.login') }}" method="POST">
                     @csrf
 
                     <div class="form-group">
                         <label for="email" class="form-label">
                             Email Address <span class="required">*</span>
                         </label>
-                        <input type="email" id="email" name="email" class="form-control"
+                        <input type="email" id="email" name="email" value="{{ old('email') }}" class="form-control"
                             placeholder="Email Address" required autofocus>
                         <span class="form-help">Please enter your email address.</span>
                     </div>

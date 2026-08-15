@@ -182,6 +182,76 @@ class AuthController extends Controller
             ->with('success', 'You have been logged out successfully.');
     }
 
+    public function CollegeLoginPage()
+    {
+        if (Auth::check()) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $isCollegeTeacher = $user->role === 'teacher' 
+                && $user->teacher 
+                && $user->teacher->educationLevel 
+                && in_array(strtoupper($user->teacher->educationLevel->code), ['COLLEGE', 'COL']);
+
+            if ($isCollegeTeacher) {
+                return redirect()->route('college.dashboard.page');
+            }
+        }
+
+        return view('auth.college.login');
+    }
+
+    public function CollegeLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            $isCollegeTeacher = $user->role === 'teacher' 
+                && $user->teacher 
+                && $user->teacher->educationLevel 
+                && in_array(strtoupper($user->teacher->educationLevel->code), ['COLLEGE', 'COL']);
+
+            if ($isCollegeTeacher) {
+                $user->last_login_at = now();
+                $user->save();
+
+                $request->session()->regenerate();
+
+                $teacherName = $user->teacher ? ($user->teacher->first_name . ' ' . $user->teacher->last_name) : $user->name;
+
+                return redirect()->intended(route('college.dashboard.page'))
+                    ->with('success', 'Welcome back, Professor ' . $teacherName . '!');
+            }
+
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('college.login.page')
+                ->with('error', 'Unauthorized access. Only designated College faculty members are permitted to log in here.');
+        }
+
+        return redirect()->back()
+            ->withInput($request->only('email'))
+            ->with('error', 'Invalid email address or password.');
+    }
+
+    public function CollegeLogout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('college.login.page')
+            ->with('success', 'You have been logged out successfully.');
+    }
+
     public function JuniorHighSchoolLoginPage()
     {
         if (Auth::check()) {
@@ -314,10 +384,5 @@ class AuthController extends Controller
 
         return redirect()->route('senior_high_school.login.page')
             ->with('success', 'You have been logged out successfully.');
-    }
-
-    public function CollegeLoginPage()
-    {
-        return view('auth.college.login');
     }
 }

@@ -32,4 +32,9 @@ class GradingTask extends Model
     {
         return $this->hasMany(StudentTaskScore::class);
     }
+
+    public function scores()
+    {
+        return $this->hasMany(StudentTaskScore::class);
+    }
 }

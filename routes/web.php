@@ -34,6 +34,10 @@ use App\Http\Controllers\elementary\ElementaryTeacherController;
 use App\Http\Controllers\elementary\ElementaryStudentController;
 use App\Http\Controllers\elementary\ElementaryEnrollmentController;
 use App\Http\Controllers\elementary\ElementaryGradeController;
+use App\Http\Controllers\college\CollegeTeacherController;
+use App\Http\Controllers\college\CollegeStudentController;
+use App\Http\Controllers\college\CollegeEnrollmentController;
+use App\Http\Controllers\college\CollegeGradeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -55,6 +59,41 @@ Route::get('/', function () {
 Route::get('/auth/elementary', [AuthController::class, 'ElementaryLoginPage'])->name('elementary.login.page');
 Route::post('/auth/elementary', [AuthController::class, 'ElementaryLogin'])->name('elementary.login.submit');
 Route::post('/auth/elementary/submit', [AuthController::class, 'ElementaryLogin'])->name('elementary.login');
+
+// College Faculty Auth Routes
+Route::get('/auth/college', [AuthController::class, 'CollegeLoginPage'])->name('college.login.page');
+Route::post('/auth/college', [AuthController::class, 'CollegeLogin'])->name('college.login.submit');
+Route::post('/auth/college/submit', [AuthController::class, 'CollegeLogin'])->name('college.login');
+
+// College Faculty Protected Routes
+Route::middleware(['auth', 'college.teacher'])->prefix('college')->as('college.')->group(function () {
+    Route::get('/dashboard', [CollegeTeacherController::class, 'dashboard'])->name('dashboard.page');
+    Route::post('/logout', [AuthController::class, 'CollegeLogout'])->name('logout');
+
+    // Students Module
+    Route::get('/students', [CollegeStudentController::class, 'index'])->name('students.page');
+    Route::post('/students/store', [CollegeStudentController::class, 'store'])->name('students.store');
+
+    // Enrollment Module
+    Route::get('/enrollment', [CollegeEnrollmentController::class, 'index'])->name('enrollment.page');
+    Route::post('/enrollment/store', [CollegeEnrollmentController::class, 'store'])->name('enrollment.store');
+
+    // Grades Module (Exact Superadmin Format)
+    Route::get('/grades', [CollegeGradeController::class, 'index'])->name('grades.page');
+    Route::post('/grades/update-score', [CollegeGradeController::class, 'updateTaskScore'])->name('grades.score.update');
+    Route::post('/grades/category/store', [CollegeGradeController::class, 'storeCategory'])->name('grades.category.store');
+    Route::match(['post', 'put'], '/grades/category/update/{id}', [CollegeGradeController::class, 'updateCategory'])->name('grades.category.update');
+    Route::delete('/grades/category/delete/{id}', [CollegeGradeController::class, 'destroyCategory'])->name('grades.category.destroy');
+    Route::post('/grades/task/store', [CollegeGradeController::class, 'storeTask'])->name('grades.task.store');
+    Route::match(['post', 'put'], '/grades/task/update/{id}', [CollegeGradeController::class, 'updateTask'])->name('grades.task.update');
+    Route::delete('/grades/task/delete/{id}', [CollegeGradeController::class, 'destroyTask'])->name('grades.task.destroy');
+    Route::post('/grades/attendance/date/store', [CollegeGradeController::class, 'storeAttendanceDate'])->name('grades.attendance.date.store');
+    Route::delete('/grades/attendance/date/delete', [CollegeGradeController::class, 'destroyAttendanceDate'])->name('grades.attendance.date.destroy');
+    Route::post('/grades/attendance/update-status', [CollegeGradeController::class, 'updateAttendanceStatus'])->name('grades.attendance.status.update');
+    Route::post('/grades/compute-total', [CollegeGradeController::class, 'computeTotalGrades'])->name('grades.compute.total');
+    Route::post('/grades/reset-total', [CollegeGradeController::class, 'resetTotalGrades'])->name('grades.reset.total');
+});
+
 Route::get('/auth/junior-high-school', [AuthController::class, 'JuniorHighSchoolLoginPage'])->name('junior_high_school.login.page');
 
 // Elementary / Basic Education (BED) Teacher Protected Routes
