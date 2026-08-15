@@ -164,6 +164,7 @@ class CollegeGradeController extends Controller
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
             'academic_period' => 'required|string',
             'category_name' => 'required|string|max:100',
+            'component_type' => 'nullable|in:lecture,laboratory,general',
             'weight_percentage' => 'required|numeric|min:0|max:100',
         ]);
 
@@ -171,6 +172,7 @@ class CollegeGradeController extends Controller
             'class_section_subject_id' => $validated['class_section_subject_id'],
             'academic_period' => $validated['academic_period'],
             'name' => $validated['category_name'],
+            'component_type' => $validated['component_type'] ?? 'general',
             'weight' => $validated['weight_percentage'],
         ]);
 
@@ -183,11 +185,13 @@ class CollegeGradeController extends Controller
 
         $validated = $request->validate([
             'category_name' => 'required|string|max:100',
+            'component_type' => 'nullable|in:lecture,laboratory,general',
             'weight_percentage' => 'required|numeric|min:0|max:100',
         ]);
 
         $category->update([
             'name' => $validated['category_name'],
+            'component_type' => $validated['component_type'] ?? $category->component_type ?? 'general',
             'weight' => $validated['weight_percentage'],
         ]);
 
@@ -262,53 +266,54 @@ class CollegeGradeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Attendance status updated.',
-            'status' => $attendance->status
+            'message' => 'Attendance status updated successfully.',
+            'status' => $attendance->status,
         ]);
     }
 
     public function storeAttendanceDate(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
-            'academic_period' => 'required|string',
             'attendance_date' => 'required|date',
+            'academic_period' => 'required|string',
         ]);
 
-        $enrollments = Enrollment::whereHas('classSection.classSectionSubjects', function ($q) use ($validated) {
-            $q->where('id', $validated['class_section_subject_id']);
+        $enrollments = Enrollment::where('class_section_id', function ($query) use ($request) {
+            $query->select('class_section_id')
+                  ->from('class_section_subjects')
+                  ->where('id', $request->class_section_subject_id);
         })->get();
 
         foreach ($enrollments as $enrollment) {
-            Attendance::firstOrCreate([
-                'class_section_subject_id' => $validated['class_section_subject_id'],
-                'enrollment_id' => $enrollment->id,
-                'attendance_date' => $validated['attendance_date'],
-            ], [
-                'status' => 'P',
-                'academic_period' => $validated['academic_period'],
-            ]);
+            Attendance::firstOrCreate(
+                [
+                    'class_section_subject_id' => $request->class_section_subject_id,
+                    'enrollment_id' => $enrollment->id,
+                    'attendance_date' => $request->attendance_date,
+                ],
+                [
+                    'status' => 'P',
+                    'academic_period' => $request->academic_period,
+                ]
+            );
         }
 
-        return redirect()->back()->with('success', 'Attendance session created successfully.');
+        return redirect()->back()->with('success', 'Attendance session created successfully for all students.');
     }
 
     public function destroyAttendanceDate(Request $request)
     {
         $request->validate([
             'class_section_subject_id' => 'required|exists:class_section_subjects,id',
+            'academic_period' => 'required|string',
             'attendance_date' => 'required|date',
-            'academic_period' => 'nullable|string',
         ]);
 
-        $query = Attendance::where('class_section_subject_id', $request->class_section_subject_id)
-            ->where('attendance_date', $request->attendance_date);
-
-        if ($request->filled('academic_period')) {
-            $query->where('academic_period', $request->academic_period);
-        }
-
-        $query->delete();
+        Attendance::where('class_section_subject_id', $request->class_section_subject_id)
+            ->where('academic_period', $request->academic_period)
+            ->where('attendance_date', $request->attendance_date)
+            ->delete();
 
         return redirect()->back()->with('success', 'Attendance session deleted successfully.');
     }
@@ -321,6 +326,11 @@ class CollegeGradeController extends Controller
 
         $cssId = $request->class_section_subject_id;
         $css = ClassSectionSubject::with(['classSection.gradeLevel.educationLevel', 'subject'])->findOrFail($cssId);
+
+        $subject = $css->subject;
+        $hasLab = $subject ? (bool)$subject->has_lab : false;
+        $lecWeightRatio = ($subject && $subject->lecture_weight > 0) ? ($subject->lecture_weight / 100) : 0.60;
+        $labWeightRatio = ($subject && $subject->lab_weight > 0) ? ($subject->lab_weight / 100) : 0.40;
 
         $enrollments = Enrollment::where('class_section_id', $css->class_section_id)->get();
         $periods = ['Prelim', 'Midterm', 'Finals'];
@@ -346,37 +356,87 @@ class CollegeGradeController extends Controller
                     continue;
                 }
 
-                $totalPeriodWeightedScore = 0;
-                $totalCategoryWeights = 0;
+                $hasLabCategories = $categories->contains('component_type', 'laboratory');
 
-                foreach ($categories as $cat) {
-                    $catWeight = (float)$cat->weight_percentage;
-                    $tasks = $cat->tasks;
+                if ($hasLab || $hasLabCategories) {
+                    $lecCats = $categories->where('component_type', '!=', 'laboratory');
+                    $labCats = $categories->where('component_type', 'laboratory');
 
-                    if ($tasks->isEmpty()) continue;
+                    $lecTotalWeight = (float)$lecCats->sum('weight');
+                    $labTotalWeight = (float)$labCats->sum('weight');
 
-                    $catStudentScoreSum = 0;
-                    $catMaxScoreSum = 0;
-
-                    foreach ($tasks as $t) {
-                        $scoreObj = StudentTaskScore::where('grading_task_id', $t->id)
-                            ->where('enrollment_id', $enrollment->id)
-                            ->first();
-
-                        $scoreVal = $scoreObj && $scoreObj->score !== null ? (float)$scoreObj->score : 0;
-                        $catStudentScoreSum += $scoreVal;
-                        $catMaxScoreSum += (float)$t->max_score;
+                    $lecCategoryPctSum = 0;
+                    foreach ($lecCats as $cat) {
+                        $catEarned = 0;
+                        $catMax = 0;
+                        foreach ($cat->tasks as $task) {
+                            $ts = StudentTaskScore::where('grading_task_id', $task->id)->where('enrollment_id', $enrollment->id)->first();
+                            if ($ts && $ts->score !== null) {
+                                $catEarned += (float)$ts->score;
+                            }
+                            $catMax += (float)$task->max_score;
+                        }
+                        $lecCategoryPctSum += ($catMax > 0) ? ($catEarned / $catMax) * (float)$cat->weight : 0;
                     }
 
-                    if ($catMaxScoreSum > 0) {
-                        $catPercentage = ($catStudentScoreSum / $catMaxScoreSum) * 100;
-                        $totalPeriodWeightedScore += ($catPercentage * ($catWeight / 100));
-                        $totalCategoryWeights += $catWeight;
+                    $labCategoryPctSum = 0;
+                    foreach ($labCats as $cat) {
+                        $catEarned = 0;
+                        $catMax = 0;
+                        foreach ($cat->tasks as $task) {
+                            $ts = StudentTaskScore::where('grading_task_id', $task->id)->where('enrollment_id', $enrollment->id)->first();
+                            if ($ts && $ts->score !== null) {
+                                $catEarned += (float)$ts->score;
+                            }
+                            $catMax += (float)$task->max_score;
+                        }
+                        $labCategoryPctSum += ($catMax > 0) ? ($catEarned / $catMax) * (float)$cat->weight : 0;
                     }
+
+                    $lecSubtotal = ($lecTotalWeight > 0) ? ($lecCategoryPctSum / $lecTotalWeight) * 100 : $lecCategoryPctSum;
+                    $labSubtotal = ($labTotalWeight > 0) ? ($labCategoryPctSum / $labTotalWeight) * 100 : $labCategoryPctSum;
+
+                    if ($lecTotalWeight > 0 && $labTotalWeight > 0) {
+                        $finalPeriodGrade = ($lecSubtotal * $lecWeightRatio) + ($labSubtotal * $labWeightRatio);
+                    } elseif ($lecTotalWeight > 0) {
+                        $finalPeriodGrade = $lecSubtotal;
+                    } elseif ($labTotalWeight > 0) {
+                        $finalPeriodGrade = $labSubtotal;
+                    } else {
+                        $finalPeriodGrade = 0;
+                    }
+                    $totalCategoryWeights = $lecTotalWeight + $labTotalWeight;
+                } else {
+                    $generalPctSum = 0;
+                    $totalCategoryWeights = (float)$categories->sum('weight');
+
+                    foreach ($categories as $cat) {
+                        $catWeight = (float)$cat->weight;
+                        $tasks = $cat->tasks;
+                        if ($tasks->isEmpty()) continue;
+
+                        $catStudentScoreSum = 0;
+                        $catMaxScoreSum = 0;
+
+                        foreach ($tasks as $t) {
+                            $scoreObj = StudentTaskScore::where('grading_task_id', $t->id)
+                                ->where('enrollment_id', $enrollment->id)
+                                ->first();
+
+                            $scoreVal = $scoreObj && $scoreObj->score !== null ? (float)$scoreObj->score : 0;
+                            $catStudentScoreSum += $scoreVal;
+                            $catMaxScoreSum += (float)$t->max_score;
+                        }
+
+                        if ($catMaxScoreSum > 0) {
+                            $catPercentage = ($catStudentScoreSum / $catMaxScoreSum) * 100;
+                            $generalPctSum += ($catPercentage * ($catWeight / 100));
+                        }
+                    }
+                    $finalPeriodGrade = ($totalCategoryWeights > 0) ? ($generalPctSum / ($totalCategoryWeights / 100)) : 0;
                 }
 
                 if ($totalCategoryWeights > 0) {
-                    $finalPeriodGrade = ($totalPeriodWeightedScore / ($totalCategoryWeights / 100));
                     $roundedPeriodGrade = round($finalPeriodGrade, 2);
                     $periodGrades[$period] = $roundedPeriodGrade;
                     $validPeriodGrades[] = $roundedPeriodGrade;

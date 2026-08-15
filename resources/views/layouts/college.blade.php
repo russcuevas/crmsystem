@@ -201,23 +201,30 @@
             box-shadow: var(--shadow-sm);
         }
 
-        .sidebar-toggle-btn {
-            background: #f1f5f9;
+        .menu-toggle {
+            background: #f8fafc;
             border: 1px solid var(--border-color);
             color: var(--text-main);
             width: 38px;
             height: 38px;
             border-radius: 8px;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
-        .sidebar-toggle-btn:hover {
-            background: #e2e8f0;
-            color: var(--college-primary);
+        .menu-toggle:hover {
+            background: #f1f5f9;
+            color: var(--college-accent-hover);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .menu-toggle:active {
+            transform: translateY(0);
         }
 
         .header-title-area h1 {
@@ -331,8 +338,10 @@
             <!-- Top Header Bar -->
             <header class="top-header">
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <button type="button" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle Sidebar">
-                        <i class="fa-solid fa-bars"></i>
+                    <button type="button" class="menu-toggle" id="menuToggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+                        <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
                     </button>
                     <div class="header-title-area">
                         <h1>@yield('header_title', 'College Faculty Portal')</h1>
